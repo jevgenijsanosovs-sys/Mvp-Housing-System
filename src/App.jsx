@@ -42,7 +42,7 @@ export default function App() {
 // LOAD TICKETS FROM BACKEND
 // =========================
 useEffect(() => {
-  fetch("https://patient-silence-6666.jevgenijs-anosovs.workers.dev/api/tickets")
+  fetch("https://noisy-band-27a3.jevgenijs-anosovs.workers.dev/api/tickets")
     .then((res) => res.json())
     .then((data) => setTickets(data))
     .catch((err) => console.error("Fetch error:", err));
@@ -64,7 +64,7 @@ const addTicket = async () => {
   if (!newTicket.trim()) return;
 
   try {
-    const res = await fetch("https://patient-silence-6666.jevgenijs-anosovs.workers.dev/api/tickets", {
+    const res = await fetch("https://noisy-band-27a3.jevgenijs-anosovs.workers.dev/api/tickets", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
