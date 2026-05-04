@@ -9,6 +9,9 @@ export default function App() {
   const [tickets, setTickets] = useState([]);
   const [newTicket, setNewTicket] = useState("");
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   // =========================
   // METERS
   // =========================
@@ -82,7 +85,31 @@ const addTicket = async () => {
   }
 };
 
+const login = async (email, password) => {
+  try {
+    const res = await fetch("https://noisy-band-27a3.jevgenijs-anosovs.workers.dev/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Login failed");
+      return;
+    }
+
+    // 🔐 сохраняем JWT
+    localStorage.setItem("token", data.token);
+
+    alert("Login success!");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   // =========================
   // METERS INPUT
@@ -116,6 +143,31 @@ const addTicket = async () => {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>MVX Housing System</h1>
+
+      <div style={{ marginBottom: 20 }}>
+        <h2>Login</h2>
+
+        <div style={styles.row}>
+          <input
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            style={styles.input}
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button style={styles.btn} onClick={() => login(email, password)}>
+            Login
+          </button>
+        </div>
+      </div>
 
       {/* NAVIGATION */}
       <div style={styles.nav}>
@@ -262,3 +314,4 @@ const styles = {
     marginBottom: 10,
   },
 };
+
