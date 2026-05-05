@@ -5,6 +5,10 @@ const API = "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 export default function App() {
   const [view, setView] = useState("tickets");
 
+  // =========================
+  // AUTH STATE
+  // =========================
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
 
   // =========================
@@ -19,7 +23,7 @@ export default function App() {
   const [newTicket, setNewTicket] = useState("");
 
   // =========================
-  // LOGIN
+  // LOGIN FORM
   // =========================
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +38,9 @@ export default function App() {
   // INVOICES (MOCK)
   // =========================
   const [invoices] = useState([
-    { id: 1, period: "2026-02", amount: 50.7, status: "paid" },
-    { id: 2, period: "2026-03", amount: 47.12, status: "paid" },
-    { id: 3, period: "2026-04", amount: 45.2, status: "new" },
+    { id: 1, period: "2026-02", amount: 50.7 },
+    { id: 2, period: "2026-03", amount: 47.12 },
+    { id: 3, period: "2026-04", amount: 45.2 },
   ]);
 
   // =========================
@@ -44,11 +48,20 @@ export default function App() {
   // =========================
   useEffect(() => {
     setMeters([
-      { id: 1, serial: "A123", type: "cold", location: "Kitchen" },
-      { id: 2, serial: "A124", type: "hot", location: "Kitchen" },
-      { id: 3, serial: "B223", type: "cold", location: "Bathroom" },
-      { id: 4, serial: "B224", type: "hot", location: "Bathroom" },
+      { id: 1, serial: "A123", location: "Kitchen" },
+      { id: 2, serial: "A124", location: "Kitchen" },
+      { id: 3, serial: "B223", location: "Bathroom" },
+      { id: 4, serial: "B224", location: "Bathroom" },
     ]);
+  }, []);
+
+  // =========================
+  // AUTO LOGIN
+  // =========================
+  useEffect(() => {
+    if (token) {
+      loadMe(token);
+    }
   }, []);
 
   // =========================
@@ -64,7 +77,7 @@ export default function App() {
     })
       .then((r) => r.json())
       .then(setApartments)
-      .catch((err) => console.error("Apartments error:", err));
+      .catch(console.error);
   }, [token]);
 
   // =========================
@@ -74,36 +87,30 @@ export default function App() {
     fetch(`${API}/api/tickets`)
       .then((r) => r.json())
       .then(setTickets)
-      .catch((err) => console.error("Tickets error:", err));
+      .catch(console.error);
   }, []);
 
   // =========================
   // LOGIN
   // =========================
   const login = async () => {
-    try {
-      const res = await fetch(`${API}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await fetch(API + "/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        alert(data.error || "Login failed");
-        return;
-      }
-
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-
-      alert("Login success!");
-    } catch (err) {
-      console.error(err);
+    if (!res.ok) {
+      alert(data.error || "Login failed");
+      return;
     }
+
+    localStorage.setItem("token", data.token);
+    setToken(data.token);
+
+    loadMe(data.token);
   };
 
   // =========================
@@ -112,6 +119,24 @@ export default function App() {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setUser(null);
+  };
+
+  // =========================
+  // LOAD USER
+  // =========================
+  const loadMe = async (jwt) => {
+    const res = await fetch(API + "/api/me", {
+      headers: {
+        Authorization: "Bearer " + jwt,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setUser(data.user);
+    }
   };
 
   // =========================
@@ -120,173 +145,110 @@ export default function App() {
   const addTicket = async () => {
     if (!newTicket.trim()) return;
 
-    try {
-      const res = await fetch(`${API}/api/tickets`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ text: newTicket }),
-      });
+    await fetch(`${API}/api/tickets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({ text: newTicket }),
+    });
 
-      if (!res.ok) {
-        alert("Error adding ticket");
-        return;
-      }
-
-      setTickets([{ id: Date.now(), text: newTicket }, ...tickets]);
-      setNewTicket("");
-    } catch (err) {
-      console.error(err);
-    }
+    setTickets([{ id: Date.now(), text: newTicket }, ...tickets]);
+    setNewTicket("");
   };
-
-  // =========================
-  // GROUP METERS
-  // =========================
-  const groupedMeters = meters.reduce((acc, m) => {
-    if (!acc[m.location]) acc[m.location] = [];
-    acc[m.location].push(m);
-    return acc;
-  }, {});
 
   // =========================
   // UI
   // =========================
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>MVX Housing System</h1>
+      <h1>MVP Housing System</h1>
 
       {/* LOGIN */}
-      {!token && (
-        <div style={{ marginBottom: 20 }}>
-          <h2>Login</h2>
+      {!token ? (
+        <div>
+          <h3>Login</h3>
 
-          <div style={styles.row}>
-            <input
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <input
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-            <input
-              style={styles.input}
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <input
+            type="password"
+            placeholder="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-            <button style={styles.btn} onClick={login}>
-              Login
-            </button>
-          </div>
+          <button onClick={login}>Login</button>
+        </div>
+      ) : (
+        <div>
+          <p>Logged in as: {user?.email}</p>
+          <button onClick={logout}>Logout</button>
         </div>
       )}
 
-      {/* LOGOUT */}
-      {token && (
-        <button style={styles.btn} onClick={logout}>
-          Logout
-        </button>
-      )}
-
       {/* NAV */}
-      <div style={styles.nav}>
-        <button onClick={() => setView("tickets")}>Tickets</button>
-        <button onClick={() => setView("apartments")}>Apartments</button>
-        <button onClick={() => setView("meters")}>Meters</button>
-        <button onClick={() => setView("billing")}>Invoices</button>
-      </div>
+      <hr />
+
+      <button onClick={() => setView("tickets")}>Tickets</button>
+      <button onClick={() => setView("apartments")}>Apartments</button>
+      <button onClick={() => setView("billing")}>Billing</button>
 
       {/* TICKETS */}
       {view === "tickets" && (
-        <div style={styles.card}>
-          <h2>Tickets</h2>
+        <div>
+          <h3>Tickets</h3>
 
-          <div style={styles.row}>
-            <input
-              style={styles.input}
-              value={newTicket}
-              onChange={(e) => setNewTicket(e.target.value)}
-            />
-            <button onClick={addTicket}>Add</button>
-          </div>
+          <input
+            value={newTicket}
+            onChange={(e) => setNewTicket(e.target.value)}
+          />
 
-          <ul>
-            {tickets.map((t) => (
-              <li key={t.id}>{t.text}</li>
-            ))}
-          </ul>
+          <button onClick={addTicket}>Add</button>
+
+          {tickets.map((t) => (
+            <div key={t.id}>{t.text}</div>
+          ))}
         </div>
       )}
 
       {/* APARTMENTS */}
       {view === "apartments" && (
-        <div style={styles.card}>
-          <h2>My Apartments</h2>
+        <div>
+          <h3>Apartments</h3>
 
-          <ul>
-            {apartments.map((a) => (
-              <li key={a.id}>
-                #{a.number} | Section {a.section} | Floor {a.floor} |{" "}
-                {a.relation_type}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* METERS */}
-      {view === "meters" && (
-        <div style={styles.card}>
-          <h2>Meter Readings</h2>
-
-          {Object.keys(groupedMeters).map((loc) => (
-            <div key={loc}>
-              <h3>{loc}</h3>
-              {groupedMeters[loc].map((m) => (
-                <div key={m.id}>{m.serial}</div>
-              ))}
+          {apartments.map((a) => (
+            <div key={a.id}>
+              #{a.number} ({a.section}) - {a.relation_type}
             </div>
           ))}
         </div>
       )}
 
-      {/* INVOICES */}
+      {/* BILLING */}
       {view === "billing" && (
-        <div style={styles.card}>
-          <h2>Invoices</h2>
+        <div>
+          <h3>Invoices</h3>
 
-          <ul>
-            {invoices.map((i) => (
-              <li key={i.id}>
-                {i.period} — {i.amount}€
-              </li>
-            ))}
-          </ul>
+          {invoices.map((i) => (
+            <div key={i.id}>
+              {i.period} - {i.amount}€
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-// =========================
-// STYLES
-// =========================
 const styles = {
   container: {
-    padding: 20,
-    maxWidth: 900,
-    margin: "0 auto",
     fontFamily: "Arial",
+    padding: 20,
   },
-  title: { marginBottom: 20 },
-  nav: { display: "flex", gap: 10, marginBottom: 20 },
-  card: { border: "1px solid #ccc", padding: 15, borderRadius: 8 },
-  row: { display: "flex", gap: 10, marginBottom: 10 },
-  input: { padding: 8, flex: 1 },
-  btn: { padding: "8px 12px", cursor: "pointer" },
 };
