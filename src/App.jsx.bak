@@ -11,13 +11,10 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRoles, setSelectedRoles] = useState([]);
-
   const [error, setError] = useState("");
 
   // =========================
-  // INIT TOKEN FIX
+  // INIT TOKEN
   // =========================
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -25,22 +22,22 @@ export default function App() {
   }, []);
 
   // =========================
-  // SAFE FETCH
+  // SAFE FETCH (FIXED)
   // =========================
   const apiFetch = async (url, options = {}) => {
     try {
-      if (!token) {
-        setError("no token");
-        return null;
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      };
+
+      if (token) {
+        headers.Authorization = "Bearer " + token;
       }
 
       const res = await fetch(API + url, {
         ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-          ...(options.headers || {}),
-        },
+        headers,
       });
 
       const data = await res.json();
@@ -50,7 +47,9 @@ export default function App() {
         return null;
       }
 
+      setError("");
       return data;
+
     } catch (e) {
       setError(e.message);
       return null;
@@ -58,11 +57,11 @@ export default function App() {
   };
 
   // =========================
-  // LOAD USERS (ADMIN)
+  // LOAD USERS
   // =========================
   const loadUsers = async () => {
     const data = await apiFetch("/api/admin/users");
-    setUsers(Array.isArray(data) ? data : []);
+    if (data) setUsers(data);
   };
 
   // =========================
@@ -70,11 +69,11 @@ export default function App() {
   // =========================
   const loadRoles = async () => {
     const data = await apiFetch("/api/admin/roles");
-    setRoles(Array.isArray(data) ? data : []);
+    if (data) setRoles(data);
   };
 
   // =========================
-  // LOGIN
+  // LOGIN (FIXED: loads user)
   // =========================
   const login = async () => {
     const email = prompt("email");
@@ -88,10 +87,22 @@ export default function App() {
 
     const data = await res.json();
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
+    if (!res.ok || !data.token) {
+      setError(data.error || "login failed");
+      return;
     }
+
+    localStorage.setItem("token", data.token);
+    setToken(data.token);
+
+    const me = await fetch(API + "/api/me", {
+      headers: {
+        Authorization: "Bearer " + data.token,
+      },
+    });
+
+    const meData = await me.json();
+    setUser(meData.user || null);
   };
 
   // =========================
@@ -101,29 +112,40 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setUsers([]);
+    setRoles([]);
+    setView("tickets");
   };
 
   // =========================
-  // OPEN ADMIN
+  // OPEN ADMIN (SAFE)
   // =========================
-  const openAdmin = () => {
-    loadUsers();
-    loadRoles();
+  const openAdmin = async () => {
+    const me = await apiFetch("/api/me");
+
+    if (!me?.roles?.includes("admin")) {
+      setError("forbidden: not admin");
+      return;
+    }
+
+    await loadUsers();
+    await loadRoles();
     setView("admin");
   };
 
   return (
     <div style={{ fontFamily: "Arial", padding: 20 }}>
 
-      {/* =========================
-          HEADER (RESTORED OLD STYLE)
-      ========================= */}
+      {/* HEADER */}
       <h1>MVP Housing System</h1>
 
       <div style={{ marginBottom: 10 }}>
         {token ? (
           <>
-            <span>Logged in</span>
+            <span>
+              Logged in {user?.email ? `(${user.email})` : ""}
+            </span>
+
             <button onClick={logout} style={{ marginLeft: 10 }}>
               Logout
             </button>
@@ -138,16 +160,14 @@ export default function App() {
       </div>
 
       {error && (
-        <div style={{ color: "red" }}>
+        <div style={{ color: "red", marginBottom: 10 }}>
           ERROR: {error}
         </div>
       )}
 
       <hr />
 
-      {/* =========================
-          NORMAL UI (OLD STYLE BACK)
-      ========================= */}
+      {/* NORMAL UI */}
       {view !== "admin" && (
         <div>
           <button onClick={() => setView("tickets")}>Tickets</button>
@@ -155,21 +175,25 @@ export default function App() {
           <button onClick={() => setView("billing")}>Billing</button>
 
           <h3>Welcome to MVP Housing System</h3>
-          <p>Classic UI restored ✔</p>
         </div>
       )}
 
-      {/* =========================
-          ADMIN PANEL
-      ========================= */}
+      {/* ADMIN */}
       {view === "admin" && (
         <div>
           <h2>Admin Panel v2</h2>
 
           <h3>Users</h3>
-          {(users || []).map(u => (
+          {users.map(u => (
             <div key={u.id}>
               {u.email}
+            </div>
+          ))}
+
+          <h3>Roles</h3>
+          {roles.map(r => (
+            <div key={r.id}>
+              {r.name}
             </div>
           ))}
         </div>
