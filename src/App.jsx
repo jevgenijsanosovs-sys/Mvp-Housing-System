@@ -3,41 +3,53 @@ import { useEffect, useState } from "react";
 const API = "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
 export default function App() {
+  const [view, setView] = useState("tickets");
+
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
-
-  const [view, setView] = useState("users");
 
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRoles, setSelectedRoles] = useState([]);
-
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // =========================
-  // SAFE FETCH
+  // INIT TOKEN
+  // =========================
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    if (t) setToken(t);
+  }, []);
+
+  // =========================
+  // SAFE FETCH (FIXED)
   // =========================
   const apiFetch = async (url, options = {}) => {
     try {
-      const res = await fetch(API + url, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? "Bearer " + token : "",
-          ...(options.headers || {}),
-        },
-      });
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      };
 
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data.error || "API error");
+      if (token) {
+        headers.Authorization = "Bearer " + token;
       }
 
+      const res = await fetch(API + url, {
+        ...options,
+        headers,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "API error");
+        return null;
+      }
+
+      setError("");
       return data;
+
     } catch (e) {
       setError(e.message);
       return null;
@@ -45,21 +57,11 @@ export default function App() {
   };
 
   // =========================
-  // LOAD ME
-  // =========================
-  const loadMe = async () => {
-    const data = await apiFetch("/api/me");
-    if (data?.user) setUser(data.user);
-  };
-
-  // =========================
   // LOAD USERS
   // =========================
   const loadUsers = async () => {
-    setLoading(true);
     const data = await apiFetch("/api/admin/users");
-    setUsers(Array.isArray(data) ? data : []);
-    setLoading(false);
+    if (data) setUsers(data);
   };
 
   // =========================
@@ -67,26 +69,40 @@ export default function App() {
   // =========================
   const loadRoles = async () => {
     const data = await apiFetch("/api/admin/roles");
-    setRoles(Array.isArray(data) ? data : []);
+    if (data) setRoles(data);
   };
 
   // =========================
-  // LOGIN (simple)
+  // LOGIN (FIXED: loads user)
   // =========================
   const login = async () => {
     const email = prompt("email");
     const password = prompt("password");
 
-    const data = await apiFetch("/api/login", {
+    const res = await fetch(API + "/api/login", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
-    if (data?.token) {
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      await loadMe();
+    const data = await res.json();
+
+    if (!res.ok || !data.token) {
+      setError(data.error || "login failed");
+      return;
     }
+
+    localStorage.setItem("token", data.token);
+    setToken(data.token);
+
+    const me = await fetch(API + "/api/me", {
+      headers: {
+        Authorization: "Bearer " + data.token,
+      },
+    });
+
+    const meData = await me.json();
+    setUser(meData.user || null);
   };
 
   // =========================
@@ -96,149 +112,90 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setUsers([]);
+    setRoles([]);
+    setView("tickets");
   };
 
   // =========================
-  // OPEN ROLE EDITOR
+  // OPEN ADMIN (SAFE)
   // =========================
-  const openRoleEditor = (u) => {
-    setSelectedUser(u);
-    setSelectedRoles(u.roles || []);
-  };
+  const openAdmin = async () => {
+    const me = await apiFetch("/api/me");
 
-  // =========================
-  // TOGGLE ROLE
-  // =========================
-  const toggleRole = (roleName) => {
-    setSelectedRoles((prev) =>
-      prev.includes(roleName)
-        ? prev.filter((r) => r !== roleName)
-        : [...prev, roleName]
-    );
-  };
-
-  // =========================
-  // SAVE ROLES
-  // =========================
-  const saveRoles = async () => {
-    if (!selectedUser) return;
-
-    await apiFetch("/api/admin/set-roles", {
-      method: "POST",
-      body: JSON.stringify({
-        user_id: selectedUser.id,
-        roles: selectedRoles,
-      }),
-    });
-
-    setSelectedUser(null);
-    setSelectedRoles([]);
-    loadUsers();
-  };
-
-  // =========================
-  // INIT
-  // =========================
-  useEffect(() => {
-    if (token) {
-      loadMe();
-      loadUsers();
-      loadRoles();
+    if (!me?.roles?.includes("admin")) {
+      setError("forbidden: not admin");
+      return;
     }
-  }, [token]);
 
-  // =========================
-  // UI SAFETY
-  // =========================
-  if (!token) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>Admin Panel Login</h2>
-        <button onClick={login}>Login</button>
-      </div>
-    );
-  }
+    await loadUsers();
+    await loadRoles();
+    setView("admin");
+  };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h2>Admin Panel v2</h2>
+    <div style={{ fontFamily: "Arial", padding: 20 }}>
 
-      {/* USER BAR */}
+      {/* HEADER */}
+      <h1>MVP Housing System</h1>
+
       <div style={{ marginBottom: 10 }}>
-        Logged in: {user?.email || "loading..."}
-        <button onClick={logout} style={{ marginLeft: 10 }}>
-          Logout
+        {token ? (
+          <>
+            <span>
+              Logged in {user?.email ? `(${user.email})` : ""}
+            </span>
+
+            <button onClick={logout} style={{ marginLeft: 10 }}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <button onClick={login}>Login</button>
+        )}
+
+        <button onClick={openAdmin} style={{ marginLeft: 10 }}>
+          Admin Panel
         </button>
       </div>
 
-      {/* ERROR */}
       {error && (
         <div style={{ color: "red", marginBottom: 10 }}>
           ERROR: {error}
         </div>
       )}
 
-      {/* NAV */}
-      <div style={{ marginBottom: 20 }}>
-        <button onClick={() => setView("users")}>Users</button>
-      </div>
+      <hr />
 
-      {/* USERS */}
-      {view === "users" && (
+      {/* NORMAL UI */}
+      {view !== "admin" && (
         <div>
-          <h3>Users</h3>
+          <button onClick={() => setView("tickets")}>Tickets</button>
+          <button onClick={() => setView("apartments")}>Apartments</button>
+          <button onClick={() => setView("billing")}>Billing</button>
 
-          {loading && <p>Loading...</p>}
-
-          {(users || []).map((u) => (
-            <div
-              key={u.id}
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                marginBottom: 8,
-              }}
-            >
-              <div>
-                {u.email}
-              </div>
-
-              <button onClick={() => openRoleEditor(u)}>
-                Edit roles
-              </button>
-            </div>
-          ))}
+          <h3>Welcome to MVP Housing System</h3>
         </div>
       )}
 
-      {/* ROLE MODAL */}
-      {selectedUser && (
-        <div
-          style={{
-            position: "fixed",
-            top: 50,
-            left: 50,
-            right: 50,
-            background: "#fff",
-            border: "2px solid #000",
-            padding: 20,
-          }}
-        >
-          <h3>Edit roles: {selectedUser.email}</h3>
+      {/* ADMIN */}
+      {view === "admin" && (
+        <div>
+          <h2>Admin Panel v2</h2>
 
-          {(roles || []).map((r) => (
-            <label key={r.id} style={{ display: "block" }}>
-              <input
-                type="checkbox"
-                checked={selectedRoles.includes(r.name)}
-                onChange={() => toggleRole(r.name)}
-              />
-              {r.name}
-            </label>
+          <h3>Users</h3>
+          {users.map(u => (
+            <div key={u.id}>
+              {u.email}
+            </div>
           ))}
 
-          <button onClick={saveRoles}>Save</button>
-          <button onClick={() => setSelectedUser(null)}>Close</button>
+          <h3>Roles</h3>
+          {roles.map(r => (
+            <div key={r.id}>
+              {r.name}
+            </div>
+          ))}
         </div>
       )}
     </div>

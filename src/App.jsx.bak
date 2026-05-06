@@ -1,65 +1,85 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const API = "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
 export default function App() {
   const [view, setView] = useState("tickets");
 
-  // =========================
-  // AUTH
-  // =========================
-  const [user, setUser] = useState(null);
-  const [roles, setRoles] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [user, setUser] = useState(null);
 
-  // =========================
-  // ADMIN
-  // =========================
-  const [adminUsers, setAdminUsers] = useState([]);
-  const [allRoles, setAllRoles] = useState([]);
-  const [editingUser, setEditingUser] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+
+  const [selectedUser, setSelectedUser] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
 
-  // =========================
-  // DATA
-  // =========================
-  const [apartments, setApartments] = useState([]);
-  const [tickets, setTickets] = useState([]);
-  const [newTicket, setNewTicket] = useState("");
+  const [error, setError] = useState("");
 
   // =========================
-  // LOGIN FORM
-  // =========================
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  // =========================
-  // AUTO LOGIN
+  // INIT TOKEN FIX
   // =========================
   useEffect(() => {
-    if (token) loadMe(token);
+    const t = localStorage.getItem("token");
+    if (t) setToken(t);
   }, []);
 
   // =========================
-  // LOAD USER
+  // SAFE FETCH
   // =========================
-  const loadMe = async (jwt) => {
-    const res = await fetch(API + "/api/me", {
-      headers: { Authorization: "Bearer " + jwt },
-    });
+  const apiFetch = async (url, options = {}) => {
+    try {
+      if (!token) {
+        setError("no token");
+        return null;
+      }
 
-    const data = await res.json();
+      const res = await fetch(API + url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+          ...(options.headers || {}),
+        },
+      });
 
-    if (res.ok) {
-      setUser(data.user);
-      setRoles(data.roles || []);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "API error");
+        return null;
+      }
+
+      return data;
+    } catch (e) {
+      setError(e.message);
+      return null;
     }
+  };
+
+  // =========================
+  // LOAD USERS (ADMIN)
+  // =========================
+  const loadUsers = async () => {
+    const data = await apiFetch("/api/admin/users");
+    setUsers(Array.isArray(data) ? data : []);
+  };
+
+  // =========================
+  // LOAD ROLES
+  // =========================
+  const loadRoles = async () => {
+    const data = await apiFetch("/api/admin/roles");
+    setRoles(Array.isArray(data) ? data : []);
   };
 
   // =========================
   // LOGIN
   // =========================
   const login = async () => {
+    const email = prompt("email");
+    const password = prompt("password");
+
     const res = await fetch(API + "/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,15 +88,10 @@ export default function App() {
 
     const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.error);
-      return;
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
     }
-
-    localStorage.setItem("token", data.token);
-    setToken(data.token);
-
-    await loadMe(data.token);
   };
 
   // =========================
@@ -86,193 +101,77 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    setRoles([]);
   };
 
   // =========================
-  // LOAD DATA
+  // OPEN ADMIN
   // =========================
-  useEffect(() => {
-    fetch(API + "/api/tickets")
-      .then(r => r.json())
-      .then(setTickets);
-  }, []);
-
-  useEffect(() => {
-    if (!token) return;
-
-    fetch(API + "/api/my-apartments", {
-      headers: { Authorization: "Bearer " + token },
-    })
-      .then(r => r.json())
-      .then(setApartments);
-  }, [token]);
-
-  // =========================
-  // ADD TICKET
-  // =========================
-  const addTicket = async () => {
-    if (!newTicket.trim()) return;
-
-    await fetch(API + "/api/tickets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify({ text: newTicket }),
-    });
-
-    setTickets([{ id: Date.now(), text: newTicket }, ...tickets]);
-    setNewTicket("");
+  const openAdmin = () => {
+    loadUsers();
+    loadRoles();
+    setView("admin");
   };
 
-  // =========================
-  // ADMIN LOAD
-  // =========================
-  const loadAdminData = async () => {
-    const headers = { Authorization: "Bearer " + token };
-
-    const users = await fetch(API + "/api/admin/users", { headers })
-      .then(r => r.json());
-
-    const roles = await fetch(API + "/api/admin/roles")
-      .then(r => r.json());
-
-    setAdminUsers(users);
-    setAllRoles(roles);
-  };
-
-  // =========================
-  // ADMIN EDIT
-  // =========================
-  const editUserRoles = (user) => {
-    setEditingUser(user);
-    setSelectedRoles([]);
-  };
-
-  const toggleRole = (role) => {
-    setSelectedRoles(prev =>
-      prev.includes(role)
-        ? prev.filter(r => r !== role)
-        : [...prev, role]
-    );
-  };
-
-  const saveRoles = async () => {
-    await fetch(API + "/api/admin/set-roles", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify({
-        user_id: editingUser.id,
-        roles: selectedRoles,
-      }),
-    });
-
-    setEditingUser(null);
-    loadAdminData();
-  };
-
-  // =========================
-  // UI
-  // =========================
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1>MVP Housing</h1>
+    <div style={{ fontFamily: "Arial", padding: 20 }}>
 
-      {/* LOGIN */}
-      {!token ? (
-        <div>
-          <input placeholder="email" onChange={e => setEmail(e.target.value)} />
-          <input type="password" onChange={e => setPassword(e.target.value)} />
+      {/* =========================
+          HEADER (RESTORED OLD STYLE)
+      ========================= */}
+      <h1>MVP Housing System</h1>
+
+      <div style={{ marginBottom: 10 }}>
+        {token ? (
+          <>
+            <span>Logged in</span>
+            <button onClick={logout} style={{ marginLeft: 10 }}>
+              Logout
+            </button>
+          </>
+        ) : (
           <button onClick={login}>Login</button>
-        </div>
-      ) : (
-        <div>
-          <p>{user?.email}</p>
-          <p>Roles: {roles.join(", ")}</p>
-          <button onClick={logout}>Logout</button>
+        )}
+
+        <button onClick={openAdmin} style={{ marginLeft: 10 }}>
+          Admin Panel
+        </button>
+      </div>
+
+      {error && (
+        <div style={{ color: "red" }}>
+          ERROR: {error}
         </div>
       )}
 
       <hr />
 
-      {/* NAV */}
-      <button onClick={() => setView("tickets")}>Tickets</button>
-      <button onClick={() => setView("apartments")}>Apartments</button>
-
-      {roles.includes("admin") && (
-        <button onClick={() => {
-          setView("admin");
-          loadAdminData();
-        }}>
-          Admin
-        </button>
-      )}
-
-      {/* TICKETS */}
-      {view === "tickets" && (
+      {/* =========================
+          NORMAL UI (OLD STYLE BACK)
+      ========================= */}
+      {view !== "admin" && (
         <div>
-          <h3>Tickets</h3>
-          <input value={newTicket} onChange={e => setNewTicket(e.target.value)} />
-          <button onClick={addTicket}>Add</button>
+          <button onClick={() => setView("tickets")}>Tickets</button>
+          <button onClick={() => setView("apartments")}>Apartments</button>
+          <button onClick={() => setView("billing")}>Billing</button>
 
-          {tickets.map(t => (
-            <div key={t.id}>{t.text}</div>
-          ))}
+          <h3>Welcome to MVP Housing System</h3>
+          <p>Classic UI restored ✔</p>
         </div>
       )}
 
-      {/* APARTMENTS */}
-      {view === "apartments" && (
-        <div>
-          <h3>Apartments</h3>
-          {apartments.map(a => (
-            <div key={a.id}>
-              #{a.number} ({a.section}) - {a.relation_type}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ADMIN PANEL */}
+      {/* =========================
+          ADMIN PANEL
+      ========================= */}
       {view === "admin" && (
         <div>
-          <h3>Admin Panel</h3>
+          <h2>Admin Panel v2</h2>
 
-          {adminUsers.map(u => (
-            <div key={u.id} style={{ border: "1px solid #ccc", margin: 10, padding: 10 }}>
-              <b>{u.email}</b>
-
-              <button onClick={() => editUserRoles(u)}>
-                Edit Roles
-              </button>
+          <h3>Users</h3>
+          {(users || []).map(u => (
+            <div key={u.id}>
+              {u.email}
             </div>
           ))}
-
-          {/* ROLE EDIT MODAL */}
-          {editingUser && (
-            <div style={{ border: "2px solid black", padding: 10 }}>
-              <h4>Edit roles for {editingUser.email}</h4>
-
-              {allRoles.map(r => (
-                <label key={r.name} style={{ display: "block" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedRoles.includes(r.name)}
-                    onChange={() => toggleRole(r.name)}
-                  />
-                  {r.name}
-                </label>
-              ))}
-
-              <button onClick={saveRoles}>Save</button>
-              <button onClick={() => setEditingUser(null)}>Cancel</button>
-            </div>
-          )}
         </div>
       )}
     </div>
