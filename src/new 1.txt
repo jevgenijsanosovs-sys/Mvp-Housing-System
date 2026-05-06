@@ -1,0 +1,38 @@
+if (String(hash) !== String(user.password_hash || ""))
+    return res.json();
+	
+	// DEBUG: LOGIN CHECK
+Router.register("POST", "/api/debug-login", async (ctx) => {
+  const body = await ctx.request.json().catch(() => ({}));
+
+  const user = await ctx.env.DB.prepare(
+    "SELECT * FROM users WHERE email = ?"
+  ).bind(body.email).first();
+
+  return {
+    input_email: body.email,
+    found_user: !!user,
+    user: user || null,
+  };
+});
+
+// DEBUG: ALL USERS
+Router.register("GET", "/api/debug-users", async (ctx) => {
+  const r = await ctx.env.DB.prepare(
+    "SELECT id, email, password_hash FROM users"
+  ).all();
+
+  return r.results;
+});
+
+async function hashPassword(password) {
+  const data = new TextEncoder().encode(password);
+
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+  return hashArray
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}

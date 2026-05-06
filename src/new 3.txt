@@ -1,0 +1,35 @@
+async function signJWT(payload, secret) {
+  const enc = new TextEncoder();
+
+  const header = {
+    alg: "HS256",
+    typ: "JWT",
+  };
+
+  const base64url = (obj) =>
+    btoa(JSON.stringify(obj))
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+
+  const h = base64url(header);
+  const p = base64url(payload);
+
+  const data = enc.encode(h + "." + p);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const sig = await crypto.subtle.sign("HMAC", key, data);
+
+  const s = btoa(String.fromCharCode(...new Uint8Array(sig)))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  return `${h}.${p}.${s}`;
+}
