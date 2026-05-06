@@ -17,34 +17,27 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("");
-
   // =========================
-  // API
+  // SAFE FETCH
   // =========================
   const api = async (url, options = {}) => {
-    try {
-      const res = await fetch(API + url, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? "Bearer " + token : "",
-          ...(options.headers || {}),
-        },
-      });
+    const res = await fetch(API + url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? "Bearer " + token : "",
+        ...(options.headers || {}),
+      },
+    });
 
-      const data = await res.json();
+	const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || "API error");
-        return null;
-      }
+	if (!res.ok || data.error) {
+	  return { error: data.error || "api_error" };
+	}
 
-      return data;
-    } catch (e) {
-      setError(e.message);
-      return null;
-    }
+	return data;
+
   };
 
   // =========================
@@ -54,11 +47,7 @@ export default function App() {
     if (!token) return;
 
     api("/api/me").then((d) => {
-      if (d?.user) {
-        setUser(d.user);
-      } else {
-        setToken(null);
-      }
+      if (d.user) setUser(d);
     });
   }, [token]);
 
@@ -71,13 +60,11 @@ export default function App() {
       body: JSON.stringify({ email, password }),
     });
 
-    if (res?.token) {
+    if (res.token) {
       localStorage.setItem("token", res.token);
       setToken(res.token);
-      setView("home");
-      setError("");
     } else {
-      setError("login failed");
+      alert(res.error || "Login failed");
     }
   };
 
@@ -88,49 +75,24 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    setView("home");
   };
 
   // =========================
-  // ADMIN
+  // ADMIN LOAD
   // =========================
   const openAdmin = async () => {
     const u = await api("/api/admin/users");
     const r = await api("/api/admin/roles");
 
-    if (!u || !r) return;
-
-    setUsers(u);
-    setRoles(r);
-    setSelectedUser(null);
-    setSelectedRoles([]);
-
+    setUsers(u || []);
+    setRoles(r || []);
     setView("admin");
   };
 
-  const backHome = () => {
-    setView("home");
-  };
-
-  const selectUser = (id) => {
-    setSelectedUser(id);
-    setSelectedRoles([]); // reset
-  };
-
-  const toggleRole = (roleId) => {
-    if (selectedRoles.includes(roleId)) {
-      setSelectedRoles(selectedRoles.filter(r => r !== roleId));
-    } else {
-      setSelectedRoles([...selectedRoles, roleId]);
-    }
-  };
-
+  // =========================
+  // SAVE ROLES
+  // =========================
   const saveRoles = async () => {
-    if (!selectedUser) {
-      alert("Select user first");
-      return;
-    }
-
     await api("/api/admin/set-roles", {
       method: "POST",
       body: JSON.stringify({
@@ -147,95 +109,62 @@ export default function App() {
   // =========================
   return (
     <div style={{ fontFamily: "Arial", padding: 20 }}>
-      <h1>MVP Housing System</h1>
+      <h1>MVX Housing System</h1>
 
-      {/* ================= LOGIN ================= */}
       {!token ? (
         <div>
-          <input
-            placeholder="email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input placeholder="email" onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" onChange={(e) => setPassword(e.target.value)} />
           <button onClick={login}>Login</button>
-
-          {error && <div style={{ color: "red" }}>{error}</div>}
         </div>
       ) : (
         <div>
-          <p>Logged in: {user?.email}</p>
-
+          <p>Logged in: {user?.user?.email}</p>
           <button onClick={logout}>Logout</button>
-          <button onClick={() => setView("home")}>Home</button>
           <button onClick={openAdmin}>Admin Panel</button>
         </div>
       )}
 
       <hr />
 
-      {/* ================= HOME ================= */}
-      {view === "home" && token && (
-        <div>
-          <h2>Main Menu</h2>
-
-          <button onClick={() => alert("Tickets coming soon")}>
-            Tickets
-          </button>
-
-          <button onClick={() => alert("Apartments coming soon")}>
-            Apartments
-          </button>
-
-          <button onClick={() => alert("Billing coming soon")}>
-            Billing
-          </button>
-        </div>
-      )}
-
       {/* ================= ADMIN ================= */}
       {view === "admin" && (
         <div>
           <h2>Admin Panel v3</h2>
 
-          <button onClick={backHome}>⬅ Back</button>
-
-          <div style={{ display: "flex", gap: 40, marginTop: 20 }}>
-            {/* USERS */}
+          <div style={{ display: "flex", gap: 20 }}>
             <div>
               <h3>Users</h3>
               {users.map((u) => (
                 <div key={u.id}>
-                  <button onClick={() => selectUser(u.id)}>
+                  <button onClick={() => setSelectedUser(u.id)}>
                     {u.email}
                   </button>
                 </div>
               ))}
             </div>
 
-            {/* ROLES */}
             <div>
               <h3>Roles</h3>
-
               {roles.map((r) => (
-                <div key={r.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selectedRoles.includes(r.id)}
-                      onChange={() => toggleRole(r.id)}
-                    />
-                    {r.name}
-                  </label>
-                </div>
+                <label key={r.id}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRoles.includes(r.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRoles([...selectedRoles, r.id]);
+                      } else {
+                        setSelectedRoles(selectedRoles.filter(x => x !== r.id));
+                      }
+                    }}
+                  />
+                  {r.name}
+                </label>
               ))}
 
               <br />
-
-              <button onClick={saveRoles}>Save Roles</button>
+              <button onClick={saveRoles}>Save roles</button>
             </div>
           </div>
         </div>
