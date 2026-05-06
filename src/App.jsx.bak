@@ -11,33 +11,23 @@ export default function App() {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
 
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+
   const [error, setError] = useState("");
 
   // =========================
-  // INIT TOKEN
-  // =========================
-  useEffect(() => {
-    const t = localStorage.getItem("token");
-    if (t) setToken(t);
-  }, []);
-
-  // =========================
-  // SAFE FETCH (FIXED)
+  // SAFE FETCH
   // =========================
   const apiFetch = async (url, options = {}) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      };
-
-      if (token) {
-        headers.Authorization = "Bearer " + token;
-      }
-
       const res = await fetch(API + url, {
         ...options,
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+          ...(options.headers || {}),
+        },
       });
 
       const data = await res.json();
@@ -49,7 +39,6 @@ export default function App() {
 
       setError("");
       return data;
-
     } catch (e) {
       setError(e.message);
       return null;
@@ -57,23 +46,7 @@ export default function App() {
   };
 
   // =========================
-  // LOAD USERS
-  // =========================
-  const loadUsers = async () => {
-    const data = await apiFetch("/api/admin/users");
-    if (data) setUsers(data);
-  };
-
-  // =========================
-  // LOAD ROLES
-  // =========================
-  const loadRoles = async () => {
-    const data = await apiFetch("/api/admin/roles");
-    if (data) setRoles(data);
-  };
-
-  // =========================
-  // LOGIN (FIXED: loads user)
+  // LOGIN
   // =========================
   const login = async () => {
     const email = prompt("email");
@@ -87,22 +60,36 @@ export default function App() {
 
     const data = await res.json();
 
-    if (!res.ok || !data.token) {
-      setError(data.error || "login failed");
+    if (!data.token) {
+      setError("login failed");
       return;
     }
 
     localStorage.setItem("token", data.token);
     setToken(data.token);
 
-    const me = await fetch(API + "/api/me", {
-      headers: {
-        Authorization: "Bearer " + data.token,
-      },
-    });
+    const me = await apiFetch("/api/me");
+    setUser(me?.user || null);
+  };
 
-    const meData = await me.json();
-    setUser(meData.user || null);
+  // =========================
+  // LOAD ADMIN DATA
+  // =========================
+  const openAdmin = async () => {
+    const me = await apiFetch("/api/me");
+
+    if (!me?.roles?.includes("admin")) {
+      setError("forbidden");
+      return;
+    }
+
+    const u = await apiFetch("/api/admin/users");
+    const r = await apiFetch("/api/admin/roles");
+
+    setUsers(u || []);
+    setRoles(r || []);
+
+    setView("admin");
   };
 
   // =========================
@@ -112,25 +99,24 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    setUsers([]);
-    setRoles([]);
     setView("tickets");
   };
 
   // =========================
-  // OPEN ADMIN (SAFE)
+  // SAVE ROLES
   // =========================
-  const openAdmin = async () => {
-    const me = await apiFetch("/api/me");
+  const saveRoles = async () => {
+    if (!selectedUser) return;
 
-    if (!me?.roles?.includes("admin")) {
-      setError("forbidden: not admin");
-      return;
-    }
+    await apiFetch("/api/admin/set-roles", {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: selectedUser.id,
+        roles: selectedRoles,
+      }),
+    });
 
-    await loadUsers();
-    await loadRoles();
-    setView("admin");
+    alert("roles updated");
   };
 
   return (
@@ -140,43 +126,30 @@ export default function App() {
       <h1>MVP Housing System</h1>
 
       <div style={{ marginBottom: 10 }}>
-        {token ? (
+        {!token ? (
+          <button onClick={login}>Login</button>
+        ) : (
           <>
-            <span>
-              Logged in {user?.email ? `(${user.email})` : ""}
-            </span>
-
+            <span>Logged in</span>
             <button onClick={logout} style={{ marginLeft: 10 }}>
               Logout
             </button>
           </>
-        ) : (
-          <button onClick={login}>Login</button>
         )}
 
         <button onClick={openAdmin} style={{ marginLeft: 10 }}>
-          Admin Panel
+          Admin
         </button>
       </div>
 
-      {error && (
-        <div style={{ color: "red", marginBottom: 10 }}>
-          ERROR: {error}
-        </div>
-      )}
+      {error && <div style={{ color: "red" }}>{error}</div>}
 
-      <hr />
-
-      {/* NORMAL UI */}
-      {view !== "admin" && (
-        <div>
-          <button onClick={() => setView("tickets")}>Tickets</button>
-          <button onClick={() => setView("apartments")}>Apartments</button>
-          <button onClick={() => setView("billing")}>Billing</button>
-
-          <h3>Welcome to MVP Housing System</h3>
-        </div>
-      )}
+      {/* NAV */}
+      <div style={{ marginTop: 10 }}>
+        <button onClick={() => setView("tickets")}>Tickets</button>
+        <button onClick={() => setView("apartments")}>Apartments</button>
+        <button onClick={() => setView("billing")}>Billing</button>
+      </div>
 
       {/* ADMIN */}
       {view === "admin" && (
@@ -184,18 +157,43 @@ export default function App() {
           <h2>Admin Panel v2</h2>
 
           <h3>Users</h3>
-          {users.map(u => (
+          {users.map((u) => (
             <div key={u.id}>
-              {u.email}
+              <button onClick={() => setSelectedUser(u)}>
+                {u.email}
+              </button>
             </div>
           ))}
 
-          <h3>Roles</h3>
-          {roles.map(r => (
-            <div key={r.id}>
-              {r.name}
-            </div>
-          ))}
+          {selectedUser && (
+            <>
+              <h3>Roles for {selectedUser.email}</h3>
+
+              {roles.map((r) => (
+                <label key={r.id}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRoles.includes(r.name)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRoles([...selectedRoles, r.name]);
+                      } else {
+                        setSelectedRoles(
+                          selectedRoles.filter((x) => x !== r.name)
+                        );
+                      }
+                    }}
+                  />
+                  {r.name}
+                </label>
+              ))}
+
+              <button onClick={saveRoles}>Save roles</button>
+              <button onClick={() => setView("tickets")}>
+                Exit admin
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
