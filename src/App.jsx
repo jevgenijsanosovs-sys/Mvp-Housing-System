@@ -30,7 +30,14 @@ export default function App() {
       },
     });
 
-    return res.json();
+	const data = await res.json();
+
+	if (!res.ok || data.error) {
+	  return { error: data.error || "api_error" };
+	}
+
+	return data;
+
   };
 
   // =========================
@@ -57,7 +64,7 @@ export default function App() {
       localStorage.setItem("token", res.token);
       setToken(res.token);
     } else {
-      alert("Login failed");
+      alert(res.error || "Login failed");
     }
   };
 
