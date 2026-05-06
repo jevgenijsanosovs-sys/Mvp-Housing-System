@@ -6,25 +6,24 @@ export default function App() {
   const [view, setView] = useState("tickets");
 
   // =========================
-  // AUTH STATE
+  // AUTH
   // =========================
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const [roles, setRoles] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   // =========================
-  // APARTMENTS
+  // ADMIN
   // =========================
-  const [apartments, setApartments] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
   const [allRoles, setAllRoles] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
 
-
   // =========================
-  // TICKETS
+  // DATA
   // =========================
+  const [apartments, setApartments] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [newTicket, setNewTicket] = useState("");
 
@@ -35,48 +34,27 @@ export default function App() {
   const [password, setPassword] = useState("");
 
   // =========================
-  // INVOICES (MOCK)
-  // =========================
-  const [invoices] = useState([
-    { id: 1, period: "2026-02", amount: 50.7 },
-    { id: 2, period: "2026-03", amount: 47.12 },
-    { id: 3, period: "2026-04", amount: 45.2 },
-  ]);
-
-  // =========================
   // AUTO LOGIN
   // =========================
   useEffect(() => {
-    if (token) {
-      loadMe(token);
+    if (token) loadMe(token);
+  }, []);
+
+  // =========================
+  // LOAD USER
+  // =========================
+  const loadMe = async (jwt) => {
+    const res = await fetch(API + "/api/me", {
+      headers: { Authorization: "Bearer " + jwt },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setUser(data.user);
+      setRoles(data.roles || []);
     }
-  }, []);
-
-  // =========================
-  // LOAD APARTMENTS
-  // =========================
-  useEffect(() => {
-    if (!token) return;
-
-    fetch(`${API}/api/my-apartments`, {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((r) => r.json())
-      .then(setApartments)
-      .catch(console.error);
-  }, [token]);
-
-  // =========================
-  // LOAD TICKETS
-  // =========================
-  useEffect(() => {
-    fetch(`${API}/api/tickets`)
-      .then((r) => r.json())
-      .then(setTickets)
-      .catch(console.error);
-  }, []);
+  };
 
   // =========================
   // LOGIN
@@ -91,14 +69,14 @@ export default function App() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || "Login failed");
+      alert(data.error);
       return;
     }
 
     localStorage.setItem("token", data.token);
     setToken(data.token);
 
-    loadMe(data.token);
+    await loadMe(data.token);
   };
 
   // =========================
@@ -112,52 +90,23 @@ export default function App() {
   };
 
   // =========================
-  // LOAD USER (+ ROLES)
+  // LOAD DATA
   // =========================
-  const loadMe = async (jwt) => {
-    const res = await fetch(API + "/api/me", {
-      headers: {
-        Authorization: "Bearer " + jwt,
-      },
-    });
+  useEffect(() => {
+    fetch(API + "/api/tickets")
+      .then(r => r.json())
+      .then(setTickets);
+  }, []);
 
-    const data = await res.json();
+  useEffect(() => {
+    if (!token) return;
 
-    if (res.ok) {
-      setUser(data.user);
-
-      // 🔥 роли берем из JWT (payload уже внутри user не приходит)
-      try {
-        const payload = JSON.parse(atob(jwt.split(".")[1]));
-        setRoles(payload.roles || []);
-      } catch (e) {
-        console.error("JWT parse error", e);
-      }
-    }
-  };
-  // =========================
-  // ADMIN LOAD DATA
-  // =========================
-  const loadAdminData = async () => {
-    const headers = {
-      Authorization: "Bearer " + token,
-    };
-
-    const users = await fetch(API + "/api/admin/users", { headers })
-      .then(r => r.json());
-
-    const roles = await fetch(API + "/api/admin/roles")
-      .then(r => r.json());
-
-    setAdminUsers(users);
-    setAllRoles(roles);
-  };
-
-
-  // =========================
-  // ROLE CHECK
-  // =========================
-  const hasRole = (role) => roles.includes(role);
+    fetch(API + "/api/my-apartments", {
+      headers: { Authorization: "Bearer " + token },
+    })
+      .then(r => r.json())
+      .then(setApartments);
+  }, [token]);
 
   // =========================
   // ADD TICKET
@@ -165,7 +114,7 @@ export default function App() {
   const addTicket = async () => {
     if (!newTicket.trim()) return;
 
-    await fetch(`${API}/api/tickets`, {
+    await fetch(API + "/api/tickets", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -179,59 +128,87 @@ export default function App() {
   };
 
   // =========================
+  // ADMIN LOAD
+  // =========================
+  const loadAdminData = async () => {
+    const headers = { Authorization: "Bearer " + token };
+
+    const users = await fetch(API + "/api/admin/users", { headers })
+      .then(r => r.json());
+
+    const roles = await fetch(API + "/api/admin/roles")
+      .then(r => r.json());
+
+    setAdminUsers(users);
+    setAllRoles(roles);
+  };
+
+  // =========================
+  // ADMIN EDIT
+  // =========================
+  const editUserRoles = (user) => {
+    setEditingUser(user);
+    setSelectedRoles([]);
+  };
+
+  const toggleRole = (role) => {
+    setSelectedRoles(prev =>
+      prev.includes(role)
+        ? prev.filter(r => r !== role)
+        : [...prev, role]
+    );
+  };
+
+  const saveRoles = async () => {
+    await fetch(API + "/api/admin/set-roles", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        user_id: editingUser.id,
+        roles: selectedRoles,
+      }),
+    });
+
+    setEditingUser(null);
+    loadAdminData();
+  };
+
+  // =========================
   // UI
   // =========================
   return (
-    <div style={styles.container}>
-      <h1>MVP Housing System</h1>
+    <div style={{ padding: 20, fontFamily: "Arial" }}>
+      <h1>MVP Housing</h1>
 
       {/* LOGIN */}
       {!token ? (
         <div>
-          <h3>Login</h3>
-
-          <input
-            placeholder="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
+          <input placeholder="email" onChange={e => setEmail(e.target.value)} />
+          <input type="password" onChange={e => setPassword(e.target.value)} />
           <button onClick={login}>Login</button>
         </div>
       ) : (
         <div>
-          <p>Logged in as: {user?.email}</p>
+          <p>{user?.email}</p>
           <p>Roles: {roles.join(", ")}</p>
           <button onClick={logout}>Logout</button>
         </div>
       )}
 
-      {/* NAV */}
       <hr />
 
+      {/* NAV */}
       <button onClick={() => setView("tickets")}>Tickets</button>
+      <button onClick={() => setView("apartments")}>Apartments</button>
 
-      {hasRole("owner") && (
-        <button onClick={() => setView("apartments")}>
-          Apartments
-        </button>
-      )}
-
-      {hasRole("accountant") && (
-        <button onClick={() => setView("billing")}>
-          Billing
-        </button>
-      )}
-
-      {hasRole("admin") && (
-        <button onClick={() => setView("admin")}>
+      {roles.includes("admin") && (
+        <button onClick={() => {
+          setView("admin");
+          loadAdminData();
+        }}>
           Admin
         </button>
       )}
@@ -240,15 +217,10 @@ export default function App() {
       {view === "tickets" && (
         <div>
           <h3>Tickets</h3>
-
-          <input
-            value={newTicket}
-            onChange={(e) => setNewTicket(e.target.value)}
-          />
-
+          <input value={newTicket} onChange={e => setNewTicket(e.target.value)} />
           <button onClick={addTicket}>Add</button>
 
-          {tickets.map((t) => (
+          {tickets.map(t => (
             <div key={t.id}>{t.text}</div>
           ))}
         </div>
@@ -258,8 +230,7 @@ export default function App() {
       {view === "apartments" && (
         <div>
           <h3>Apartments</h3>
-
-          {apartments.map((a) => (
+          {apartments.map(a => (
             <div key={a.id}>
               #{a.number} ({a.section}) - {a.relation_type}
             </div>
@@ -267,39 +238,43 @@ export default function App() {
         </div>
       )}
 
-      {/* BILLING */}
-      {view === "billing" && (
-        <div>
-          <h3>Invoices</h3>
-
-          {invoices.map((i) => (
-            <div key={i.id}>
-              {i.period} - {i.amount}€
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ADMIN */}
+      {/* ADMIN PANEL */}
       {view === "admin" && (
         <div>
-          {hasRole("admin") ? (
-            <>
-              <h3>Admin Panel</h3>
-              <p>Here will be user/roles management</p>
-            </>
-          ) : (
-            <p>Access denied</p>
+          <h3>Admin Panel</h3>
+
+          {adminUsers.map(u => (
+            <div key={u.id} style={{ border: "1px solid #ccc", margin: 10, padding: 10 }}>
+              <b>{u.email}</b>
+
+              <button onClick={() => editUserRoles(u)}>
+                Edit Roles
+              </button>
+            </div>
+          ))}
+
+          {/* ROLE EDIT MODAL */}
+          {editingUser && (
+            <div style={{ border: "2px solid black", padding: 10 }}>
+              <h4>Edit roles for {editingUser.email}</h4>
+
+              {allRoles.map(r => (
+                <label key={r.name} style={{ display: "block" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRoles.includes(r.name)}
+                    onChange={() => toggleRole(r.name)}
+                  />
+                  {r.name}
+                </label>
+              ))}
+
+              <button onClick={saveRoles}>Save</button>
+              <button onClick={() => setEditingUser(null)}>Cancel</button>
+            </div>
           )}
         </div>
       )}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    fontFamily: "Arial",
-    padding: 20,
-  },
-};
