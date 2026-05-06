@@ -65,10 +65,11 @@ export default function App() {
   // =========================
   // LOGIN
   // =========================
-  const login = async () => {
-    const email = prompt("email");
-    const password = prompt("password");
+const login = async () => {
+  const email = prompt("email");
+  const password = prompt("password");
 
+  try {
     const res = await fetch(API + "/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,18 +78,39 @@ export default function App() {
 
     const data = await res.json();
 
-    if (!data.token) {
-      setError("login failed");
+    if (!res.ok || !data.token) {
+      setError(data.error || "login failed");
       return;
     }
 
+    // 🔥 1. сохраняем токен
     localStorage.setItem("token", data.token);
     setToken(data.token);
 
-    await loadMe(data.token);
-    setView("tickets");
-    setError("");
-  };
+    // 🔥 2. СРАЗУ грузим user (без race condition)
+    const meRes = await fetch(API + "/api/me", {
+      headers: {
+        Authorization: "Bearer " + data.token,
+      },
+    });
+
+    const me = await meRes.json();
+
+    if (me?.user) {
+      setUser(me.user);
+
+      // 🔥 3. КРИТИЧНО: переключаем UI
+      setView("tickets");
+      setError("");
+    } else {
+      setError("auth failed");
+    }
+
+  } catch (e) {
+    console.error(e);
+    setError("network error");
+  }
+};
 
   // =========================
   // LOGOUT
@@ -214,4 +236,5 @@ export default function App() {
       )}
     </div>
   );
+}
 }

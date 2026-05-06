@@ -5,7 +5,7 @@ const API = "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 export default function App() {
   const [view, setView] = useState("tickets");
 
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
 
   const [users, setUsers] = useState([]);
@@ -17,32 +17,49 @@ export default function App() {
   const [error, setError] = useState("");
 
   // =========================
-  // SAFE FETCH
+  // INIT SESSION
+  // =========================
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    if (!t) return;
+
+    setToken(t);
+    loadMe(t);
+  }, []);
+
+  // =========================
+  // LOAD ME
+  // =========================
+  const loadMe = async (t) => {
+    const res = await fetch(API + "/api/me", {
+      headers: { Authorization: "Bearer " + t },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setUser(data.user);
+    } else {
+      logout();
+    }
+  };
+
+  // =========================
+  // API FETCH (SAFE)
   // =========================
   const apiFetch = async (url, options = {}) => {
-    try {
-      const res = await fetch(API + url, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-          ...(options.headers || {}),
-        },
-      });
+    const t = localStorage.getItem("token");
 
-      const data = await res.json();
+    const res = await fetch(API + url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + t,
+        ...(options.headers || {}),
+      },
+    });
 
-      if (!res.ok) {
-        setError(data.error || "API error");
-        return null;
-      }
-
-      setError("");
-      return data;
-    } catch (e) {
-      setError(e.message);
-      return null;
-    }
+    return await res.json();
   };
 
   // =========================
@@ -68,17 +85,28 @@ export default function App() {
     localStorage.setItem("token", data.token);
     setToken(data.token);
 
-    const me = await apiFetch("/api/me");
-    setUser(me?.user || null);
+    await loadMe(data.token);
+    setView("tickets");
+    setError("");
   };
 
   // =========================
-  // LOAD ADMIN DATA
+  // LOGOUT
+  // =========================
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+    setView("tickets");
+  };
+
+  // =========================
+  // ADMIN LOAD
   // =========================
   const openAdmin = async () => {
     const me = await apiFetch("/api/me");
 
-    if (!me?.roles?.includes("admin")) {
+    if (!me.roles?.includes("admin")) {
       setError("forbidden");
       return;
     }
@@ -90,16 +118,6 @@ export default function App() {
     setRoles(r || []);
 
     setView("admin");
-  };
-
-  // =========================
-  // LOGOUT
-  // =========================
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-    setView("tickets");
   };
 
   // =========================
@@ -121,16 +139,14 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "Arial", padding: 20 }}>
-
-      {/* HEADER */}
       <h1>MVP Housing System</h1>
 
-      <div style={{ marginBottom: 10 }}>
+      <div>
         {!token ? (
           <button onClick={login}>Login</button>
         ) : (
           <>
-            <span>Logged in</span>
+            <span>{user?.email}</span>
             <button onClick={logout} style={{ marginLeft: 10 }}>
               Logout
             </button>
@@ -144,17 +160,20 @@ export default function App() {
 
       {error && <div style={{ color: "red" }}>{error}</div>}
 
-      {/* NAV */}
-      <div style={{ marginTop: 10 }}>
-        <button onClick={() => setView("tickets")}>Tickets</button>
-        <button onClick={() => setView("apartments")}>Apartments</button>
-        <button onClick={() => setView("billing")}>Billing</button>
-      </div>
+      <hr />
+
+      <button onClick={() => setView("tickets")}>Tickets</button>
+      <button onClick={() => setView("apartments")}>Apartments</button>
+      <button onClick={() => setView("billing")}>Billing</button>
 
       {/* ADMIN */}
       {view === "admin" && (
         <div>
-          <h2>Admin Panel v2</h2>
+          <h2>Admin Panel v3</h2>
+
+          <button onClick={() => setView("tickets")}>
+            Exit Admin
+          </button>
 
           <h3>Users</h3>
           {users.map((u) => (
@@ -167,7 +186,7 @@ export default function App() {
 
           {selectedUser && (
             <>
-              <h3>Roles for {selectedUser.email}</h3>
+              <h3>Roles</h3>
 
               {roles.map((r) => (
                 <label key={r.id}>
@@ -188,10 +207,7 @@ export default function App() {
                 </label>
               ))}
 
-              <button onClick={saveRoles}>Save roles</button>
-              <button onClick={() => setView("tickets")}>
-                Exit admin
-              </button>
+              <button onClick={saveRoles}>Save</button>
             </>
           )}
         </div>
