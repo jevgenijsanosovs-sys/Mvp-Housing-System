@@ -77,6 +77,11 @@ const login = async () => {
     });
 
     const data = await res.json();
+	
+    // 👇 ВОТ СЮДА ВСТАВЛЯЕШЬ ЛОГИ
+    console.log("LOGIN RESULT:", data);
+    console.log("TOKEN STATE:", data.token);
+	
 
     if (!res.ok || !data.token) {
       setError(data.error || "login failed");
