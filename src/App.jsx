@@ -10,6 +10,7 @@ export default function App() {
   // =========================
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [roles, setRoles] = useState([]);
 
   // =========================
   // APARTMENTS
@@ -29,12 +30,6 @@ export default function App() {
   const [password, setPassword] = useState("");
 
   // =========================
-  // METERS
-  // =========================
-  const [meters, setMeters] = useState([]);
-  const [readings, setReadings] = useState({});
-
-  // =========================
   // INVOICES (MOCK)
   // =========================
   const [invoices] = useState([
@@ -42,18 +37,6 @@ export default function App() {
     { id: 2, period: "2026-03", amount: 47.12 },
     { id: 3, period: "2026-04", amount: 45.2 },
   ]);
-
-  // =========================
-  // LOAD METERS
-  // =========================
-  useEffect(() => {
-    setMeters([
-      { id: 1, serial: "A123", location: "Kitchen" },
-      { id: 2, serial: "A124", location: "Kitchen" },
-      { id: 3, serial: "B223", location: "Bathroom" },
-      { id: 4, serial: "B224", location: "Bathroom" },
-    ]);
-  }, []);
 
   // =========================
   // AUTO LOGIN
@@ -120,10 +103,11 @@ export default function App() {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setRoles([]);
   };
 
   // =========================
-  // LOAD USER
+  // LOAD USER (+ ROLES)
   // =========================
   const loadMe = async (jwt) => {
     const res = await fetch(API + "/api/me", {
@@ -136,8 +120,21 @@ export default function App() {
 
     if (res.ok) {
       setUser(data.user);
+
+      // 🔥 роли берем из JWT (payload уже внутри user не приходит)
+      try {
+        const payload = JSON.parse(atob(jwt.split(".")[1]));
+        setRoles(payload.roles || []);
+      } catch (e) {
+        console.error("JWT parse error", e);
+      }
     }
   };
+
+  // =========================
+  // ROLE CHECK
+  // =========================
+  const hasRole = (role) => roles.includes(role);
 
   // =========================
   // ADD TICKET
@@ -188,6 +185,7 @@ export default function App() {
       ) : (
         <div>
           <p>Logged in as: {user?.email}</p>
+          <p>Roles: {roles.join(", ")}</p>
           <button onClick={logout}>Logout</button>
         </div>
       )}
@@ -196,8 +194,24 @@ export default function App() {
       <hr />
 
       <button onClick={() => setView("tickets")}>Tickets</button>
-      <button onClick={() => setView("apartments")}>Apartments</button>
-      <button onClick={() => setView("billing")}>Billing</button>
+
+      {hasRole("owner") && (
+        <button onClick={() => setView("apartments")}>
+          Apartments
+        </button>
+      )}
+
+      {hasRole("accountant") && (
+        <button onClick={() => setView("billing")}>
+          Billing
+        </button>
+      )}
+
+      {hasRole("admin") && (
+        <button onClick={() => setView("admin")}>
+          Admin
+        </button>
+      )}
 
       {/* TICKETS */}
       {view === "tickets" && (
@@ -240,6 +254,20 @@ export default function App() {
               {i.period} - {i.amount}€
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ADMIN */}
+      {view === "admin" && (
+        <div>
+          {hasRole("admin") ? (
+            <>
+              <h3>Admin Panel</h3>
+              <p>Here will be user/roles management</p>
+            </>
+          ) : (
+            <p>Access denied</p>
+          )}
         </div>
       )}
     </div>
