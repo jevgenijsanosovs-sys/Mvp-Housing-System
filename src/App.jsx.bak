@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -15,7 +19,7 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   // =====================================================
-  // APP STATE
+  // APP
   // =====================================================
 
   const [activeContext, setActiveContext] =
@@ -24,32 +28,70 @@ export default function App() {
   const [section, setSection] =
     useState("dashboard");
 
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
   // =====================================================
-  // LOGIN FORM
+  // LOGIN
   // =====================================================
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] =
+    useState("");
 
   // =====================================================
   // DATA
   // =====================================================
 
   const [users, setUsers] = useState([]);
-  const [apartments, setApartments] = useState([]);
+  const [apartments, setApartments] =
+    useState([]);
+
+  // =====================================================
+  // RESPONSIVE
+  // =====================================================
+
+  const [mobile, setMobile] =
+    useState(window.innerWidth < 900);
+
+  useEffect(() => {
+    const onResize = () => {
+      setMobile(window.innerWidth < 900);
+    };
+
+    window.addEventListener(
+      "resize",
+      onResize
+    );
+
+    return () =>
+      window.removeEventListener(
+        "resize",
+        onResize
+      );
+  }, []);
 
   // =====================================================
   // API
   // =====================================================
 
-  const api = async (url, options = {}) => {
+  const api = async (
+    url,
+    options = {}
+  ) => {
     const res = await fetch(API + url, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
+
         ...(token
-          ? { Authorization: "Bearer " + token }
+          ? {
+              Authorization:
+                "Bearer " + token,
+            }
           : {}),
+
         ...(options.headers || {}),
       },
     });
@@ -73,16 +115,22 @@ export default function App() {
     if (data?.user) {
       setUser(data);
 
-      // ==========================================
-      // AUTO CONTEXT
-      // ==========================================
-
-      if (data.roles?.includes("admin")) {
+      if (
+        data.roles?.includes("admin")
+      ) {
         setActiveContext("admin");
-      } else if (data.roles?.includes("worker")) {
+      } else if (
+        data.roles?.includes("worker")
+      ) {
         setActiveContext("worker");
-      } else if (data.roles?.includes("accountant")) {
-        setActiveContext("accountant");
+      } else if (
+        data.roles?.includes(
+          "accountant"
+        )
+      ) {
+        setActiveContext(
+          "accountant"
+        );
       } else {
         setActiveContext("resident");
       }
@@ -94,19 +142,29 @@ export default function App() {
   // =====================================================
 
   const login = async () => {
-    const data = await api("/api/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    const data = await api(
+      "/api/login",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
 
     if (data?.token) {
-      localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
       setToken(data.token);
     } else {
-      alert(data?.error || "Login failed");
+      alert(
+        data?.error ||
+          "Login failed"
+      );
     }
   };
 
@@ -115,131 +173,243 @@ export default function App() {
   // =====================================================
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem(
+      "token"
+    );
 
     setToken(null);
     setUser(null);
 
     setSection("dashboard");
-    setActiveContext("resident");
+
+    setActiveContext(
+      "resident"
+    );
   };
 
   // =====================================================
-  // LOAD ADMIN DATA
+  // LOAD ADMIN
   // =====================================================
 
   useEffect(() => {
     if (!token) return;
 
-    if (activeContext === "admin") {
+    if (
+      activeContext === "admin"
+    ) {
       loadAdminData();
     }
   }, [activeContext]);
 
-  const loadAdminData = async () => {
-    const u = await api("/api/admin/users");
-    const a = await api("/api/admin/apartments");
+  const loadAdminData =
+    async () => {
+      const u = await api(
+        "/api/admin/users"
+      );
 
-    setUsers(Array.isArray(u) ? u : []);
-    setApartments(Array.isArray(a) ? a : []);
-  };
+      const a = await api(
+        "/api/admin/apartments"
+      );
+
+      setUsers(
+        Array.isArray(u) ? u : []
+      );
+
+      setApartments(
+        Array.isArray(a) ? a : []
+      );
+    };
 
   // =====================================================
   // CONTEXTS
   // =====================================================
 
-  const availableContexts = useMemo(() => {
-    if (!user?.roles) return [];
+  const availableContexts =
+    useMemo(() => {
+      if (!user?.roles) return [];
 
-    const result = [];
+      const result = [];
 
-    if (
-      user.roles.includes("owner") ||
-      user.roles.includes("resident")
-    ) {
-      result.push("resident");
-    }
+      if (
+        user.roles.includes(
+          "owner"
+        ) ||
+        user.roles.includes(
+          "resident"
+        )
+      ) {
+        result.push(
+          "resident"
+        );
+      }
 
-    if (user.roles.includes("admin")) {
-      result.push("admin");
-    }
+      if (
+        user.roles.includes(
+          "admin"
+        )
+      ) {
+        result.push("admin");
+      }
 
-    if (user.roles.includes("worker")) {
-      result.push("worker");
-    }
+      if (
+        user.roles.includes(
+          "worker"
+        )
+      ) {
+        result.push("worker");
+      }
 
-    if (user.roles.includes("accountant")) {
-      result.push("accountant");
-    }
+      if (
+        user.roles.includes(
+          "accountant"
+        )
+      ) {
+        result.push(
+          "accountant"
+        );
+      }
 
-    return result;
-  }, [user]);
+      return result;
+    }, [user]);
 
   // =====================================================
   // SIDEBAR
   // =====================================================
 
-  const sidebarItems = useMemo(() => {
-    // ==========================================
-    // RESIDENT
-    // ==========================================
+  const sidebarItems =
+    useMemo(() => {
+      // =====================
+      // RESIDENT
+      // =====================
 
-    if (activeContext === "resident") {
-      return [
-        ["dashboard", "Dashboard"],
-        ["apartment", "My Apartment"],
-        ["tickets", "My Tickets"],
-        ["invoices", "Invoices & Payments"],
-        ["announcements", "Announcements"],
-        ["chat", "House Chat"],
-        ["documents", "Documents"],
-      ];
-    }
+      if (
+        activeContext ===
+        "resident"
+      ) {
+        return [
+          [
+            "dashboard",
+            "Dashboard",
+          ],
+          [
+            "apartment",
+            "My Apartment",
+          ],
+          [
+            "tickets",
+            "My Tickets",
+          ],
+          [
+            "invoices",
+            "Invoices",
+          ],
+          [
+            "announcements",
+            "Announcements",
+          ],
+          ["chat", "Chat"],
+          [
+            "documents",
+            "Documents",
+          ],
+        ];
+      }
 
-    // ==========================================
-    // ADMIN
-    // ==========================================
+      // =====================
+      // ADMIN
+      // =====================
 
-    if (activeContext === "admin") {
-      return [
-        ["dashboard", "Dashboard"],
-        ["tickets-admin", "Tickets Control"],
-        ["apartments", "Apartments"],
-        ["users", "Users"],
-        ["workers", "Workers"],
-        ["contractors", "Contractors"],
-        ["documents", "Documentation"],
-      ];
-    }
+      if (
+        activeContext ===
+        "admin"
+      ) {
+        return [
+          [
+            "dashboard",
+            "Dashboard",
+          ],
+          [
+            "tickets-admin",
+            "Tickets Control",
+          ],
+          [
+            "apartments",
+            "Apartments",
+          ],
+          ["users", "Users"],
+          [
+            "workers",
+            "Workers",
+          ],
+          [
+            "contractors",
+            "Contractors",
+          ],
+          [
+            "documents-admin",
+            "Documentation",
+          ],
+        ];
+      }
 
-    // ==========================================
-    // WORKER
-    // ==========================================
+      // =====================
+      // WORKER
+      // =====================
 
-    if (activeContext === "worker") {
-      return [
-        ["dashboard", "Dashboard"],
-        ["tickets-worker", "Assigned Tickets"],
-        ["schedule", "Schedule"],
-        ["completed", "Completed Jobs"],
-      ];
-    }
+      if (
+        activeContext ===
+        "worker"
+      ) {
+        return [
+          [
+            "dashboard",
+            "Dashboard",
+          ],
+          [
+            "tickets-worker",
+            "Assigned Tickets",
+          ],
+          [
+            "schedule",
+            "Schedule",
+          ],
+          [
+            "completed",
+            "Completed",
+          ],
+        ];
+      }
 
-    // ==========================================
-    // ACCOUNTANT
-    // ==========================================
+      // =====================
+      // ACCOUNTANT
+      // =====================
 
-    if (activeContext === "accountant") {
-      return [
-        ["dashboard", "Dashboard"],
-        ["invoices-admin", "Invoices"],
-        ["payments", "Payments"],
-        ["reports", "Reports"],
-      ];
-    }
+      if (
+        activeContext ===
+        "accountant"
+      ) {
+        return [
+          [
+            "dashboard",
+            "Dashboard",
+          ],
+          [
+            "invoices-admin",
+            "Invoices",
+          ],
+          [
+            "payments",
+            "Payments",
+          ],
+          [
+            "reports",
+            "Reports",
+          ],
+        ];
+      }
 
-    return [];
-  }, [activeContext]);
+      return [];
+    }, [activeContext]);
 
   // =====================================================
   // LOGIN SCREEN
@@ -249,40 +419,45 @@ export default function App() {
     return (
       <div
         style={{
-          fontFamily: "Arial",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           height: "100vh",
-          background: "#f5f5f5",
+          display: "flex",
+          justifyContent:
+            "center",
+          alignItems: "center",
+          background: "#f3f4f6",
+          fontFamily: "Arial",
+          padding: 20,
         }}
       >
         <div
           style={{
             background: "white",
-            padding: 40,
-            borderRadius: 12,
-            width: 350,
-            boxShadow: "0 0 20px rgba(0,0,0,0.1)",
+            width: "100%",
+            maxWidth: 420,
+            borderRadius: 14,
+            padding: 30,
+            boxShadow:
+              "0 0 25px rgba(0,0,0,0.08)",
           }}
         >
-          <h1>MVP Housing System</h1>
+          <h1>
+            MVP Housing
+          </h1>
 
           <p>
-            Residential Management Platform
+            Residential Management
+            Platform
           </p>
 
           <input
             placeholder="Email"
             value={email}
             onChange={(e) =>
-              setEmail(e.target.value)
+              setEmail(
+                e.target.value
+              )
             }
-            style={{
-              width: "100%",
-              padding: 10,
-              marginBottom: 10,
-            }}
+            style={inputStyle}
           />
 
           <input
@@ -290,22 +465,16 @@ export default function App() {
             placeholder="Password"
             value={password}
             onChange={(e) =>
-              setPassword(e.target.value)
+              setPassword(
+                e.target.value
+              )
             }
-            style={{
-              width: "100%",
-              padding: 10,
-              marginBottom: 20,
-            }}
+            style={inputStyle}
           />
 
           <button
             onClick={login}
-            style={{
-              width: "100%",
-              padding: 12,
-              cursor: "pointer",
-            }}
+            style={primaryButton}
           >
             Login
           </button>
@@ -327,26 +496,105 @@ export default function App() {
       }}
     >
       {/* =====================================================
+          MOBILE OVERLAY
+      ===================================================== */}
+
+      {mobile &&
+        sidebarOpen && (
+          <div
+            onClick={() =>
+              setSidebarOpen(
+                false
+              )
+            }
+            style={{
+              position: "fixed",
+              inset: 0,
+              background:
+                "rgba(0,0,0,0.5)",
+              zIndex: 10,
+            }}
+          />
+        )}
+
+      {/* =====================================================
           SIDEBAR
       ===================================================== */}
 
       <div
         style={{
           width: 260,
-          background: "#1f2937",
+
+          background:
+            "#111827",
+
           color: "white",
+
           padding: 20,
+
+          position: mobile
+            ? "fixed"
+            : "relative",
+
+          left:
+            mobile &&
+            !sidebarOpen
+              ? -280
+              : 0,
+
+          top: 0,
+
+          height: "100vh",
+
+          transition:
+            "0.25s",
+
+          zIndex: 20,
+
+          overflowY: "auto",
         }}
       >
-        <h2>MVP Housing</h2>
+        <h2>
+          MVP Housing
+        </h2>
 
         <hr />
+
+        {/* ==========================================
+            USER
+        ========================================== */}
+
+        <div
+          style={{
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              opacity: 0.7,
+            }}
+          >
+            USER
+          </div>
+
+          <div>
+            {
+              user?.user
+                ?.email
+            }
+          </div>
+        </div>
 
         {/* ==========================================
             CONTEXT SWITCHER
         ========================================== */}
 
-        <div style={{ marginBottom: 20 }}>
+        <div
+          style={{
+            marginBottom: 20,
+          }}
+        >
           <div
             style={{
               fontSize: 12,
@@ -358,58 +606,92 @@ export default function App() {
           </div>
 
           <select
-            value={activeContext}
+            value={
+              activeContext
+            }
             onChange={(e) =>
-              setActiveContext(e.target.value)
+              setActiveContext(
+                e.target.value
+              )
             }
             style={{
               width: "100%",
-              padding: 8,
+              padding: 10,
             }}
           >
-            {availableContexts.map((c) => (
-              <option key={c} value={c}>
-                {c.toUpperCase()}
-              </option>
-            ))}
+            {availableContexts.map(
+              (c) => (
+                <option
+                  key={c}
+                  value={c}
+                >
+                  {c.toUpperCase()}
+                </option>
+              )
+            )}
           </select>
         </div>
 
         {/* ==========================================
-            NAVIGATION
+            MENU
         ========================================== */}
 
-        {sidebarItems.map(([key, label]) => (
-          <div key={key}>
+        {sidebarItems.map(
+          ([key, label]) => (
             <button
-              onClick={() => setSection(key)}
+              key={key}
+              onClick={() => {
+                setSection(
+                  key
+                );
+
+                if (
+                  mobile
+                ) {
+                  setSidebarOpen(
+                    false
+                  );
+                }
+              }}
               style={{
                 width: "100%",
-                padding: 12,
+
+                padding: 14,
+
                 marginBottom: 8,
-                cursor: "pointer",
-                textAlign: "left",
+
+                textAlign:
+                  "left",
+
+                border: "none",
+
+                cursor:
+                  "pointer",
+
+                borderRadius: 8,
+
                 background:
-                  section === key
+                  section ===
+                  key
                     ? "#374151"
                     : "transparent",
+
                 color: "white",
-                border: "none",
               }}
             >
               {label}
             </button>
-          </div>
-        ))}
+          )
+        )}
 
         <hr />
 
         <button
           onClick={logout}
           style={{
-            width: "100%",
-            padding: 10,
-            cursor: "pointer",
+            ...primaryButton,
+            background:
+              "#dc2626",
           }}
         >
           Logout
@@ -423,226 +705,345 @@ export default function App() {
       <div
         style={{
           flex: 1,
-          padding: 30,
           overflow: "auto",
-          background: "#f3f4f6",
+          background:
+            "#f3f4f6",
         }}
       >
-        {/* ==========================================
+        {/* =====================================================
             TOPBAR
-        ========================================== */}
+        ===================================================== */}
 
         <div
           style={{
-            background: "white",
-            padding: 20,
-            borderRadius: 10,
-            marginBottom: 20,
+            background:
+              "white",
+
+            padding: 16,
+
+            display: "flex",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "space-between",
+
+            boxShadow:
+              "0 1px 5px rgba(0,0,0,0.08)",
           }}
         >
-          <h2>
-            Welcome,{" "}
-            {user?.user?.first_name ||
-              user?.user?.email}
-          </h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems:
+                "center",
+              gap: 12,
+            }}
+          >
+            {mobile && (
+              <button
+                onClick={() =>
+                  setSidebarOpen(
+                    true
+                  )
+                }
+                style={{
+                  fontSize: 24,
+                  border:
+                    "none",
+                  background:
+                    "transparent",
+                  cursor:
+                    "pointer",
+                }}
+              >
+                ☰
+              </button>
+            )}
 
-          <div>
-            Roles:{" "}
-            {(user?.roles || []).join(", ")}
+            <div>
+              <div
+                style={{
+                  fontWeight:
+                    "bold",
+                }}
+              >
+                MVP Housing
+              </div>
+
+              <div
+                style={{
+                  fontSize: 12,
+                  opacity: 0.7,
+                }}
+              >
+                {
+                  activeContext
+                }{" "}
+                mode
+              </div>
+            </div>
           </div>
 
           <div>
-            Current mode: {activeContext}
+            {
+              user?.user
+                ?.email
+            }
           </div>
         </div>
 
-        {/* ==========================================
-            DASHBOARD
-        ========================================== */}
+        {/* =====================================================
+            PAGE
+        ===================================================== */}
 
-        {section === "dashboard" && (
-          <div>
-            <h1>
-              {activeContext.toUpperCase()} DASHBOARD
-            </h1>
+        <div
+          style={{
+            padding: mobile
+              ? 16
+              : 30,
+          }}
+        >
+          {/* ==========================================
+              DASHBOARD
+          ========================================== */}
 
-            {/* ================= RESIDENT ================= */}
+          {section ===
+            "dashboard" && (
+            <>
+              <h1>
+                {activeContext.toUpperCase()}{" "}
+                DASHBOARD
+              </h1>
 
-            {activeContext === "resident" && (
-              <>
-                <DashboardCard
-                  title="My Apartment"
-                  text="Apartment info, residents, ownership."
-                />
-
+              <ResponsiveGrid>
                 <DashboardCard
                   title="Announcements"
-                  text="Building announcements."
+                  text="Building announcements and updates."
                 />
 
                 <DashboardCard
-                  title="My Tickets"
-                  text="Track your repair requests."
+                  title="Tickets"
+                  text="Maintenance and repair requests."
                 />
 
                 <DashboardCard
-                  title="House Chat"
-                  text="Communication with residents."
-                />
-              </>
-            )}
-
-            {/* ================= ADMIN ================= */}
-
-            {activeContext === "admin" && (
-              <>
-                <DashboardCard
-                  title="Tickets Control"
-                  text="Manage all building tickets."
+                  title="Invoices"
+                  text="Payments and billing."
                 />
 
                 <DashboardCard
-                  title="Apartments"
-                  text="Apartment management."
+                  title="Chat"
+                  text="Residents communication."
                 />
+              </ResponsiveGrid>
+            </>
+          )}
 
-                <DashboardCard
-                  title="Users"
-                  text="Users and roles."
-                />
+          {/* ==========================================
+              USERS
+          ========================================== */}
 
-                <DashboardCard
-                  title="Workers"
-                  text="Workers and assignments."
-                />
-              </>
-            )}
-          </div>
-        )}
+          {section ===
+            "users" && (
+            <div>
+              <h1>
+                Users
+              </h1>
 
-        {/* =====================================================
-            USERS
-        ===================================================== */}
+              <ResponsiveGrid>
+                {users.map(
+                  (u) => (
+                    <EntityCard
+                      key={u.id}
+                      title={
+                        u.email
+                      }
+                    >
+                      <div>
+                        ID:{" "}
+                        {u.id}
+                      </div>
+                    </EntityCard>
+                  )
+                )}
+              </ResponsiveGrid>
+            </div>
+          )}
 
-        {section === "users" && (
-          <div>
-            <h1>Users</h1>
+          {/* ==========================================
+              APARTMENTS
+          ========================================== */}
 
-            <table
-              border="1"
-              cellPadding="10"
-              style={{
-                background: "white",
-                borderCollapse: "collapse",
-              }}
+          {section ===
+            "apartments" && (
+            <div>
+              <h1>
+                Apartments
+              </h1>
+
+              <ResponsiveGrid>
+                {apartments.map(
+                  (a) => (
+                    <EntityCard
+                      key={a.id}
+                      title={`Apartment ${a.number}`}
+                    >
+                      <div>
+                        Floor:{" "}
+                        {
+                          a.floor
+                        }
+                      </div>
+
+                      <div>
+                        Residents:{" "}
+                        {
+                          a.residents_count
+                        }
+                      </div>
+                    </EntityCard>
+                  )
+                )}
+              </ResponsiveGrid>
+            </div>
+          )}
+
+          {/* ==========================================
+              PLACEHOLDERS
+          ========================================== */}
+
+          {![
+            "dashboard",
+            "users",
+            "apartments",
+          ].includes(
+            section
+          ) && (
+            <EntityCard
+              title={
+                section
+              }
             >
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Email</th>
-                </tr>
-              </thead>
+              <p>
+                Module
+                architecture
+                ready.
+              </p>
 
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id}>
-                    <td>{u.id}</td>
-                    <td>{u.email}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* =====================================================
-            APARTMENTS
-        ===================================================== */}
-
-        {section === "apartments" && (
-          <div>
-            <h1>Apartments</h1>
-
-            <table
-              border="1"
-              cellPadding="10"
-              style={{
-                background: "white",
-                borderCollapse: "collapse",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Number</th>
-                  <th>Floor</th>
-                  <th>Residents</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {apartments.map((a) => (
-                  <tr key={a.id}>
-                    <td>{a.id}</td>
-                    <td>{a.number}</td>
-                    <td>{a.floor}</td>
-                    <td>{a.residents_count}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* =====================================================
-            PLACEHOLDERS
-        ===================================================== */}
-
-        {![
-          "dashboard",
-          "users",
-          "apartments",
-        ].includes(section) && (
-          <div
-            style={{
-              background: "white",
-              padding: 30,
-              borderRadius: 12,
-            }}
-          >
-            <h1>{section}</h1>
-
-            <p>
-              Module architecture prepared.
-            </p>
-
-            <p>
-              Backend integration will be added
-              next.
-            </p>
-          </div>
-        )}
+              <p>
+                Backend
+                integration
+                coming next.
+              </p>
+            </EntityCard>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 // =====================================================
-// CARD
+// RESPONSIVE GRID
 // =====================================================
 
-function DashboardCard({ title, text }) {
+function ResponsiveGrid({
+  children,
+}) {
+  return (
+    <div
+      style={{
+        display: "grid",
+
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(280px, 1fr))",
+
+        gap: 20,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// =====================================================
+// DASHBOARD CARD
+// =====================================================
+
+function DashboardCard({
+  title,
+  text,
+}) {
   return (
     <div
       style={{
         background: "white",
-        padding: 20,
-        marginBottom: 20,
-        borderRadius: 12,
+
+        padding: 24,
+
+        borderRadius: 14,
+
+        minHeight: 140,
+
+        boxShadow:
+          "0 2px 8px rgba(0,0,0,0.06)",
       }}
     >
       <h3>{title}</h3>
+
       <p>{text}</p>
     </div>
   );
 }
+
+// =====================================================
+// ENTITY CARD
+// =====================================================
+
+function EntityCard({
+  title,
+  children,
+}) {
+  return (
+    <div
+      style={{
+        background: "white",
+
+        padding: 20,
+
+        borderRadius: 14,
+
+        boxShadow:
+          "0 2px 8px rgba(0,0,0,0.06)",
+      }}
+    >
+      <h3>{title}</h3>
+
+      {children}
+    </div>
+  );
+}
+
+// =====================================================
+// STYLES
+// =====================================================
+
+const inputStyle = {
+  width: "100%",
+  padding: 12,
+  marginBottom: 12,
+  borderRadius: 8,
+  border: "1px solid #d1d5db",
+};
+
+const primaryButton = {
+  width: "100%",
+  padding: 12,
+  border: "none",
+  borderRadius: 8,
+  cursor: "pointer",
+  background: "#2563eb",
+  color: "white",
+};
