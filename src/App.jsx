@@ -536,8 +536,10 @@ export default function App() {
 
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Email</th>
+					<th>ID</th>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Email</th>
                 </tr>
               </thead>
 
@@ -545,8 +547,10 @@ export default function App() {
 
                 {users.map((u) => (
                   <tr key={u.id}>
-                    <td>{u.id}</td>
-                    <td>{u.email}</td>
+					<td>{u.id}</td>
+					<td>{u.first_name}</td>
+					<td>{u.last_name}</td>
+					<td>{u.email}</td>
                   </tr>
                 ))}
 
@@ -577,35 +581,64 @@ export default function App() {
                   Apartment #{a.number}
                 </h3>
 
-                <p>
-                  Section:
-                  {" "}
-                  {a.section}
-                </p>
+				<div
+				  style={{
+					display: "flex",
+					justifyContent: "center",
+					marginTop: 20,
+					marginBottom: 20,
+				  }}
+				>
 
-                <p>
-                  Floor:
-                  {" "}
-                  {a.floor}
-                </p>
+				  <table>
+					<tbody>
 
-                <p>
-                  Levels:
-                  {" "}
-                  {a.level_count}
-                </p>
+					  <tr>
+						<td style={labelStyle}>
+						  Section:
+						</td>
+						<td>{a.section}</td>
+					  </tr>
 
-                <p>
-                  Living Area:
-                  {" "}
-                  {a.living_area}
-                </p>
+					  <tr>
+						<td style={labelStyle}>
+						  Floor:
+						</td>
+						<td>{a.floor}</td>
+					  </tr>
 
-                <p>
-                  Heated Area:
-                  {" "}
-                  {a.heated_area}
-                </p>
+					  <tr>
+						<td style={labelStyle}>
+						  Levels:
+						</td>
+						<td>{a.level_count}</td>
+					  </tr>
+
+					  <tr>
+						<td style={labelStyle}>
+						  Living Area:
+						</td>
+						<td>{a.living_area}</td>
+					  </tr>
+
+					  <tr>
+						<td style={labelStyle}>
+						  Heated Area:
+						</td>
+						<td>{a.heated_area}</td>
+					  </tr>
+
+					  <tr>
+						<td style={labelStyle}>
+						  Notes:
+						</td>
+						<td>{a.notes}</td>
+					  </tr>
+
+					</tbody>
+				  </table>
+
+				</div>
 
                 <p>
                   Notes:
@@ -622,7 +655,7 @@ export default function App() {
                 <ul>
                   {a.owners?.map((o) => (
                     <li key={o.id}>
-                      {o.email}
+                      {o.first_name} {o.last_name}
                     </li>
                   ))}
                 </ul>
@@ -634,7 +667,7 @@ export default function App() {
                 <ul>
                   {a.residents?.map((r) => (
                     <li key={r.id}>
-                      {r.email}
+                      {r.first_name} {r.last_name}
                     </li>
                   ))}
                 </ul>
@@ -708,6 +741,12 @@ const cardStyle = {
   padding: 20,
   borderRadius: 20,
   marginBottom: 20,
+};
+
+const labelStyle = {
+  textAlign: "right",
+  paddingRight: 20,
+  fontWeight: "bold",
 };
 
 const tableStyle = {
