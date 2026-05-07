@@ -23,11 +23,10 @@ export default function App() {
   const [password, setPassword] = useState("");
 
   // =========================
-  // UI STATE
+  // UI
   // =========================
 
   const [mode, setMode] = useState("resident");
-
   const [screen, setScreen] = useState("dashboard");
 
   // =========================
@@ -76,9 +75,19 @@ export default function App() {
 
           setMe(d);
 
-          // default mode
-          if (d.roles?.includes("admin")) {
+          const hasResident =
+            d.roles?.includes("resident") ||
+            d.roles?.includes("owner");
+
+          const hasAdmin =
+            d.roles?.includes("admin");
+
+          if (hasAdmin && !hasResident) {
             setMode("admin");
+          }
+
+          if (hasResident) {
+            setMode("resident");
           }
 
         } else {
@@ -141,7 +150,7 @@ export default function App() {
   };
 
   // =========================
-  // LOAD ADMIN DATA
+  // LOADERS
   // =========================
 
   const loadApartments = async () => {
@@ -163,10 +172,6 @@ export default function App() {
     setUsers(d || []);
 
   };
-
-  // =========================
-  // SCREEN LOADERS
-  // =========================
 
   useEffect(() => {
 
@@ -204,7 +209,7 @@ export default function App() {
             padding: 30,
             borderRadius: 20,
             width: "100%",
-            maxWidth: 400,
+            maxWidth: 420,
             boxShadow:
               "0 10px 30px rgba(0,0,0,0.1)",
           }}
@@ -251,11 +256,19 @@ export default function App() {
   }
 
   // =========================
-  // MAIN APP
+  // ROLES
   // =========================
 
   const isAdmin =
     me.roles?.includes("admin");
+
+  const hasResident =
+    me.roles?.includes("resident") ||
+    me.roles?.includes("owner");
+
+  // =========================
+  // MAIN APP
+  // =========================
 
   return (
     <div
@@ -263,100 +276,91 @@ export default function App() {
         display: "flex",
         minHeight: "100vh",
         background: "#f5f5f5",
+        flexWrap: "wrap",
       }}
     >
 
-      {/* ================= SIDEBAR ================= */}
+      {/* SIDEBAR */}
 
       <div
         style={{
-          width: 260,
+          width: 280,
           background: "#111827",
           color: "white",
           padding: 20,
         }}
       >
 
-		<h2
-		  style={{
-			color: "white",
-			marginBottom: 10,
-		  }}
-		>
-		  MVX System
-		</h2>
+        <h2
+          style={{
+            color: "white",
+            marginBottom: 10,
+          }}
+        >
+          MVX System
+        </h2>
 
-		<p
-		  style={{
-			color: "#d1d5db",
-			marginBottom: 20,
-		  }}
-		>
-		  {me.user.first_name}
-		  {" "}
-		  {me.user.last_name}
-		</p>
+        <p
+          style={{
+            color: "#d1d5db",
+            marginBottom: 20,
+          }}
+        >
+          {me.user.first_name} {me.user.last_name}
+        </p>
 
         {/* MODE SWITCH */}
 
-        {isAdmin && (
-			{/* MODE SWITCH */}
+        {(isAdmin && hasResident) && (
 
-			<div
-			  style={{
-				marginTop: 20,
-				marginBottom: 20,
-			  }}
-			>
+          <div
+            style={{
+              marginBottom: 20,
+            }}
+          >
 
-			  {/* RESIDENT MODE */}
+            <button
+              style={
+                mode === "resident"
+                  ? activeButton
+                  : menuButton
+              }
+              onClick={() =>
+                setMode("resident")
+              }
+            >
+              Resident Mode
+            </button>
 
-			  {(me.roles?.includes("resident") ||
-				me.roles?.includes("owner")) && (
+            <button
+              style={
+                mode === "admin"
+                  ? activeButton
+                  : menuButton
+              }
+              onClick={() =>
+                setMode("admin")
+              }
+            >
+              Admin Mode
+            </button>
 
-				<div>
-				  <button
-					style={
-					  mode === "resident"
-						? activeButton
-						: menuButton
-					}
-					onClick={() =>
-					  setMode("resident")
-					}
-				  >
-					Resident Mode
-				  </button>
-				</div>
-			  )}
-
-			  {/* ADMIN MODE */}
-
-			  {me.roles?.includes("admin") && (
-				<div>
-				  <button
-					style={
-					  mode === "admin"
-						? activeButton
-						: menuButton
-					}
-					onClick={() =>
-					  setMode("admin")
-					}
-				  >
-					Admin Mode
-				  </button>
-				</div>
-			  )}
-
-			</div>
+          </div>
         )}
 
-        {/* RESIDENT */}
+        <hr
+          style={{
+            borderColor: "#374151",
+            marginTop: 20,
+            marginBottom: 20,
+          }}
+        />
+
+        {/* RESIDENT MENU */}
 
         {mode === "resident" && (
-          <>
 
+          <>
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -384,15 +388,14 @@ export default function App() {
                 setScreen("chat")
               }
             />
-
           </>
         )}
 
-        {/* ADMIN */}
+        {/* ADMIN MENU */}
 
         {mode === "admin" && (
-          <>
 
+          <>
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -441,11 +444,16 @@ export default function App() {
                 setScreen("docs")
               }
             />
-
           </>
         )}
 
-        <hr />
+        <hr
+          style={{
+            borderColor: "#374151",
+            marginTop: 20,
+            marginBottom: 20,
+          }}
+        />
 
         <button
           onClick={logout}
@@ -456,25 +464,20 @@ export default function App() {
 
       </div>
 
-      {/* ================= CONTENT ================= */}
+      {/* CONTENT */}
 
       <div
         style={{
           flex: 1,
           padding: 30,
+          minWidth: 320,
         }}
       >
-		<hr
-		  style={{
-			borderColor: "#374151",
-			marginTop: 20,
-			marginBottom: 20,
-		  }}
-		/>
 
         {/* DASHBOARD */}
 
         {screen === "dashboard" && (
+
           <div>
 
             <h1>
@@ -482,41 +485,8 @@ export default function App() {
             </h1>
 
             <p>
-              Logged as:
-              {" "}
-              {mode.toUpperCase()}
+              Logged as: {mode.toUpperCase()}
             </p>
-
-            <div style={cardStyle}>
-              <h3>
-                My Apartment
-              </h3>
-
-              <p>
-                Apartment info
-                will be here
-              </p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>
-                Announcements
-              </h3>
-
-              <p>
-                Building news board
-              </p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>
-                Building Chat
-              </h3>
-
-              <p>
-                Chat system coming soon
-              </p>
-            </div>
 
           </div>
         )}
@@ -524,34 +494,35 @@ export default function App() {
         {/* USERS */}
 
         {screen === "users" && (
+
           <div>
 
             <h1>
               Users
             </h1>
 
-            <table
-              style={tableStyle}
-            >
+            <table style={tableStyle}>
 
               <thead>
                 <tr>
-					<th>ID</th>
-					<th>First Name</th>
-					<th>Last Name</th>
-					<th>Email</th>
+                  <th>ID</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
                 </tr>
               </thead>
 
               <tbody>
 
                 {users.map((u) => (
+
                   <tr key={u.id}>
-					<td>{u.id}</td>
-					<td>{u.first_name}</td>
-					<td>{u.last_name}</td>
-					<td>{u.email}</td>
+                    <td>{u.id}</td>
+                    <td>{u.first_name}</td>
+                    <td>{u.last_name}</td>
+                    <td>{u.email}</td>
                   </tr>
+
                 ))}
 
               </tbody>
@@ -564,6 +535,7 @@ export default function App() {
         {/* APARTMENTS */}
 
         {screen === "apartments" && (
+
           <div>
 
             <h1>
@@ -577,79 +549,59 @@ export default function App() {
                 style={cardStyle}
               >
 
-                <h3>
+                <h2>
                   Apartment #{a.number}
-                </h3>
+                </h2>
 
-				<div
-				  style={{
-					display: "flex",
-					justifyContent: "center",
-					marginTop: 20,
-					marginBottom: 20,
-				  }}
-				>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
 
-				  <table>
-					<tbody>
+                  <table>
+                    <tbody>
 
-					  <tr>
-						<td style={labelStyle}>
-						  Section:
-						</td>
-						<td>{a.section}</td>
-					  </tr>
+                      <InfoRow
+                        label="Section"
+                        value={a.section}
+                      />
 
-					  <tr>
-						<td style={labelStyle}>
-						  Floor:
-						</td>
-						<td>{a.floor}</td>
-					  </tr>
+                      <InfoRow
+                        label="Floor"
+                        value={a.floor}
+                      />
 
-					  <tr>
-						<td style={labelStyle}>
-						  Levels:
-						</td>
-						<td>{a.level_count}</td>
-					  </tr>
+                      <InfoRow
+                        label="Levels"
+                        value={a.level_count}
+                      />
 
-					  <tr>
-						<td style={labelStyle}>
-						  Living Area:
-						</td>
-						<td>{a.living_area}</td>
-					  </tr>
+                      <InfoRow
+                        label="Living Area"
+                        value={a.living_area}
+                      />
 
-					  <tr>
-						<td style={labelStyle}>
-						  Heated Area:
-						</td>
-						<td>{a.heated_area}</td>
-					  </tr>
+                      <InfoRow
+                        label="Heated Area"
+                        value={a.heated_area}
+                      />
 
-					  <tr>
-						<td style={labelStyle}>
-						  Notes:
-						</td>
-						<td>{a.notes}</td>
-					  </tr>
+                      <InfoRow
+                        label="Notes"
+                        value={a.notes}
+                      />
 
-					</tbody>
-				  </table>
+                    </tbody>
+                  </table>
 
-				</div>
-
-                <p>
-                  Notes:
-                  {" "}
-                  {a.notes}
-                </p>
+                </div>
 
                 <hr />
 
                 <strong>
-                  Owners:
+                  Owners
                 </strong>
 
                 <ul>
@@ -661,7 +613,7 @@ export default function App() {
                 </ul>
 
                 <strong>
-                  Residents:
+                  Residents
                 </strong>
 
                 <ul>
@@ -686,7 +638,7 @@ export default function App() {
 }
 
 // =========================
-// UI
+// COMPONENTS
 // =========================
 
 function MenuButton({
@@ -704,12 +656,35 @@ function MenuButton({
   );
 }
 
+function InfoRow({
+  label,
+  value,
+}) {
+
+  return (
+    <tr>
+      <td style={labelStyle}>
+        {label}:
+      </td>
+
+      <td>
+        {value}
+      </td>
+    </tr>
+  );
+}
+
+// =========================
+// STYLES
+// =========================
+
 const inputStyle = {
   width: "100%",
   padding: 12,
   marginTop: 10,
   borderRadius: 10,
   border: "1px solid #ccc",
+  boxSizing: "border-box",
 };
 
 const buttonStyle = {

@@ -306,7 +306,7 @@ export default function App() {
             marginBottom: 20,
           }}
         >
-          {me.user.first_name} {me.user.last_name}
+          User: {me.user.first_name} {me.user.last_name}
         </p>
 
         {/* MODE SWITCH */}
