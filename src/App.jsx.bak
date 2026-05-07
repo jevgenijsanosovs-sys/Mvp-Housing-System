@@ -743,6 +743,12 @@ const cardStyle = {
   marginBottom: 20,
 };
 
+const labelStyle = {
+  textAlign: "right",
+  paddingRight: 20,
+  fontWeight: "bold",
+};
+
 const tableStyle = {
   width: "100%",
   background: "white",
