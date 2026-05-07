@@ -1,245 +1,648 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const API = "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
+const API =
+  "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
 export default function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  // =====================================================
+  // AUTH
+  // =====================================================
+
+  const [token, setToken] = useState(
+    localStorage.getItem("token")
+  );
+
   const [user, setUser] = useState(null);
 
-  const [view, setView] = useState("home");
+  // =====================================================
+  // APP STATE
+  // =====================================================
+
+  const [activeContext, setActiveContext] =
+    useState("resident");
+
+  const [section, setSection] =
+    useState("dashboard");
+
+  // =====================================================
+  // LOGIN FORM
+  // =====================================================
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // =====================================================
+  // DATA
+  // =====================================================
+
   const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [userRoles, setUserRoles] = useState([]);
-
-  const [selectedUser, setSelectedUser] = useState(null);
-
   const [apartments, setApartments] = useState([]);
-  const [selectedApartment, setSelectedApartment] = useState(null);
-  const [apartmentDetails, setApartmentDetails] = useState(null);
 
-  // =========================
+  // =====================================================
   // API
-  // =========================
+  // =====================================================
+
   const api = async (url, options = {}) => {
     const res = await fetch(API + url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: token ? "Bearer " + token : "",
+        ...(token
+          ? { Authorization: "Bearer " + token }
+          : {}),
         ...(options.headers || {}),
       },
     });
 
-    return res.json();
+    return await res.json();
   };
 
-  // =========================
-  // AUTH
-  // =========================
+  // =====================================================
+  // LOAD USER
+  // =====================================================
+
   useEffect(() => {
     if (!token) return;
 
-    api("/api/me").then((d) => {
-      if (d.user) setUser(d);
-    });
+    loadMe();
   }, [token]);
 
-  const login = async () => {
-    const res = await api("/api/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+  const loadMe = async () => {
+    const data = await api("/api/me");
 
-    if (res.token) {
-      localStorage.setItem("token", res.token);
-      setToken(res.token);
-    } else {
-      alert("Login failed");
+    if (data?.user) {
+      setUser(data);
+
+      // ==========================================
+      // AUTO CONTEXT
+      // ==========================================
+
+      if (data.roles?.includes("admin")) {
+        setActiveContext("admin");
+      } else if (data.roles?.includes("worker")) {
+        setActiveContext("worker");
+      } else if (data.roles?.includes("accountant")) {
+        setActiveContext("accountant");
+      } else {
+        setActiveContext("resident");
+      }
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-    setView("home");
-  };
+  // =====================================================
+  // LOGIN
+  // =====================================================
 
-  // =========================
-  // ADMIN LOAD
-  // =========================
-  const openAdmin = async () => {
-    const u = await api("/api/admin/users");
-    const r = await api("/api/admin/roles");
-    const a = await api("/api/admin/apartments");
-
-    setUsers(u || []);
-    setRoles(r || []);
-    setApartments(a || []);
-
-    setView("admin");
-  };
-
-  // =========================
-  // USER ROLES LOAD
-  // =========================
-  const selectUser = async (id) => {
-    setSelectedUser(id);
-
-    const res = await api(`/api/admin/user-roles?user_id=${id}`);
-    setUserRoles(res.roles || []);
-  };
-
-  // =========================
-  // SAVE ROLES
-  // =========================
-  const saveRoles = async () => {
-    await api("/api/admin/set-roles", {
+  const login = async () => {
+    const data = await api("/api/login", {
       method: "POST",
       body: JSON.stringify({
-        user_id: selectedUser,
-        roles: userRoles,
+        email,
+        password,
       }),
     });
 
-    alert("Roles updated");
+    if (data?.token) {
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+    } else {
+      alert(data?.error || "Login failed");
+    }
   };
 
-  // =========================
-  // APARTMENT DETAILS
-  // =========================
-  const openApartment = async (id) => {
-    setSelectedApartment(id);
+  // =====================================================
+  // LOGOUT
+  // =====================================================
 
-    const res = await api(`/api/admin/apartment-details?id=${id}`);
-    setApartmentDetails(res);
+  const logout = () => {
+    localStorage.removeItem("token");
+
+    setToken(null);
+    setUser(null);
+
+    setSection("dashboard");
+    setActiveContext("resident");
   };
 
-  // =========================
-  // UI
-  // =========================
-  return (
-    <div style={{ fontFamily: "Arial", padding: 20 }}>
-      <h1>MVP Housing System</h1>
+  // =====================================================
+  // LOAD ADMIN DATA
+  // =====================================================
 
-      {/* LOGIN */}
-      {!token ? (
-        <div>
+  useEffect(() => {
+    if (!token) return;
+
+    if (activeContext === "admin") {
+      loadAdminData();
+    }
+  }, [activeContext]);
+
+  const loadAdminData = async () => {
+    const u = await api("/api/admin/users");
+    const a = await api("/api/admin/apartments");
+
+    setUsers(Array.isArray(u) ? u : []);
+    setApartments(Array.isArray(a) ? a : []);
+  };
+
+  // =====================================================
+  // CONTEXTS
+  // =====================================================
+
+  const availableContexts = useMemo(() => {
+    if (!user?.roles) return [];
+
+    const result = [];
+
+    if (
+      user.roles.includes("owner") ||
+      user.roles.includes("resident")
+    ) {
+      result.push("resident");
+    }
+
+    if (user.roles.includes("admin")) {
+      result.push("admin");
+    }
+
+    if (user.roles.includes("worker")) {
+      result.push("worker");
+    }
+
+    if (user.roles.includes("accountant")) {
+      result.push("accountant");
+    }
+
+    return result;
+  }, [user]);
+
+  // =====================================================
+  // SIDEBAR
+  // =====================================================
+
+  const sidebarItems = useMemo(() => {
+    // ==========================================
+    // RESIDENT
+    // ==========================================
+
+    if (activeContext === "resident") {
+      return [
+        ["dashboard", "Dashboard"],
+        ["apartment", "My Apartment"],
+        ["tickets", "My Tickets"],
+        ["invoices", "Invoices & Payments"],
+        ["announcements", "Announcements"],
+        ["chat", "House Chat"],
+        ["documents", "Documents"],
+      ];
+    }
+
+    // ==========================================
+    // ADMIN
+    // ==========================================
+
+    if (activeContext === "admin") {
+      return [
+        ["dashboard", "Dashboard"],
+        ["tickets-admin", "Tickets Control"],
+        ["apartments", "Apartments"],
+        ["users", "Users"],
+        ["workers", "Workers"],
+        ["contractors", "Contractors"],
+        ["documents", "Documentation"],
+      ];
+    }
+
+    // ==========================================
+    // WORKER
+    // ==========================================
+
+    if (activeContext === "worker") {
+      return [
+        ["dashboard", "Dashboard"],
+        ["tickets-worker", "Assigned Tickets"],
+        ["schedule", "Schedule"],
+        ["completed", "Completed Jobs"],
+      ];
+    }
+
+    // ==========================================
+    // ACCOUNTANT
+    // ==========================================
+
+    if (activeContext === "accountant") {
+      return [
+        ["dashboard", "Dashboard"],
+        ["invoices-admin", "Invoices"],
+        ["payments", "Payments"],
+        ["reports", "Reports"],
+      ];
+    }
+
+    return [];
+  }, [activeContext]);
+
+  // =====================================================
+  // LOGIN SCREEN
+  // =====================================================
+
+  if (!token) {
+    return (
+      <div
+        style={{
+          fontFamily: "Arial",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#f5f5f5",
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            padding: 40,
+            borderRadius: 12,
+            width: 350,
+            boxShadow: "0 0 20px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h1>MVP Housing System</h1>
+
+          <p>
+            Residential Management Platform
+          </p>
+
           <input
-            placeholder="email"
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            style={{
+              width: "100%",
+              padding: 10,
+              marginBottom: 10,
+            }}
           />
+
           <input
             type="password"
-            placeholder="password"
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            value={password}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            style={{
+              width: "100%",
+              padding: 10,
+              marginBottom: 20,
+            }}
           />
-          <button onClick={login}>Login</button>
+
+          <button
+            onClick={login}
+            style={{
+              width: "100%",
+              padding: 12,
+              cursor: "pointer",
+            }}
+          >
+            Login
+          </button>
         </div>
-      ) : (
-        <div>
-          <p>Logged in: {user?.user?.email}</p>
-          <button onClick={logout}>Logout</button>
-          <button onClick={openAdmin}>Admin Panel</button>
+      </div>
+    );
+  }
+
+  // =====================================================
+  // MAIN APP
+  // =====================================================
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        fontFamily: "Arial",
+      }}
+    >
+      {/* =====================================================
+          SIDEBAR
+      ===================================================== */}
+
+      <div
+        style={{
+          width: 260,
+          background: "#1f2937",
+          color: "white",
+          padding: 20,
+        }}
+      >
+        <h2>MVP Housing</h2>
+
+        <hr />
+
+        {/* ==========================================
+            CONTEXT SWITCHER
+        ========================================== */}
+
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              fontSize: 12,
+              opacity: 0.7,
+              marginBottom: 6,
+            }}
+          >
+            ACTIVE MODE
+          </div>
+
+          <select
+            value={activeContext}
+            onChange={(e) =>
+              setActiveContext(e.target.value)
+            }
+            style={{
+              width: "100%",
+              padding: 8,
+            }}
+          >
+            {availableContexts.map((c) => (
+              <option key={c} value={c}>
+                {c.toUpperCase()}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      <hr />
+        {/* ==========================================
+            NAVIGATION
+        ========================================== */}
 
-      {/* ================= ADMIN ================= */}
-      {view === "admin" && (
-        <div>
-          <h2>Admin Panel v4</h2>
+        {sidebarItems.map(([key, label]) => (
+          <div key={key}>
+            <button
+              onClick={() => setSection(key)}
+              style={{
+                width: "100%",
+                padding: 12,
+                marginBottom: 8,
+                cursor: "pointer",
+                textAlign: "left",
+                background:
+                  section === key
+                    ? "#374151"
+                    : "transparent",
+                color: "white",
+                border: "none",
+              }}
+            >
+              {label}
+            </button>
+          </div>
+        ))}
 
-          <button onClick={() => setView("home")}>← Back</button>
+        <hr />
 
-          <div style={{ display: "flex", gap: 40, marginTop: 20 }}>
+        <button
+          onClick={logout}
+          style={{
+            width: "100%",
+            padding: 10,
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
 
-            {/* USERS */}
-            <div>
-              <h3>Users</h3>
-              {users.map((u) => (
-                <div key={u.id}>
-                  <button onClick={() => selectUser(u.id)}>
-                    {u.email}
-                  </button>
-                </div>
-              ))}
-            </div>
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
 
-            {/* ROLES */}
-            <div>
-              <h3>Roles</h3>
+      <div
+        style={{
+          flex: 1,
+          padding: 30,
+          overflow: "auto",
+          background: "#f3f4f6",
+        }}
+      >
+        {/* ==========================================
+            TOPBAR
+        ========================================== */}
 
-              {roles.map((r) => (
-                <label key={r.id} style={{ display: "block" }}>
-                  <input
-                    type="checkbox"
-                    checked={userRoles.includes(r.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setUserRoles([...userRoles, r.id]);
-                      } else {
-                        setUserRoles(userRoles.filter(x => x !== r.id));
-                      }
-                    }}
-                  />
-                  {r.name}
-                </label>
-              ))}
+        <div
+          style={{
+            background: "white",
+            padding: 20,
+            borderRadius: 10,
+            marginBottom: 20,
+          }}
+        >
+          <h2>
+            Welcome,{" "}
+            {user?.user?.first_name ||
+              user?.user?.email}
+          </h2>
 
-              <br />
-              <button onClick={saveRoles} disabled={!selectedUser}>
-                Save roles
-              </button>
-            </div>
+          <div>
+            Roles:{" "}
+            {(user?.roles || []).join(", ")}
+          </div>
 
-            {/* APARTMENTS */}
-            <div>
-              <h3>Apartments</h3>
-              {apartments.map((a) => (
-                <div key={a.id}>
-                  <button onClick={() => openApartment(a.id)}>
-                    #{a.number}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* APARTMENT DETAILS */}
-            <div>
-              <h3>Details</h3>
-
-              {apartmentDetails && (
-                <div>
-                  <p><b>Number:</b> {apartmentDetails.apartment.number}</p>
-                  <p><b>Section:</b> {apartmentDetails.apartment.section}</p>
-                  <p><b>Floor:</b> {apartmentDetails.apartment.floor}</p>
-                  <p><b>Living:</b> {apartmentDetails.apartment.living_area}</p>
-                  <p><b>Heated:</b> {apartmentDetails.apartment.heated_area}</p>
-                  <p><b>Levels:</b> {apartmentDetails.apartment.level_count}</p>
-                  <p><b>Notes:</b> {apartmentDetails.apartment.notes}</p>
-
-                  <h4>Owners</h4>
-                  {apartmentDetails.owners.map(o => (
-                    <div key={o.id}>{o.email}</div>
-                  ))}
-
-                  <h4>Residents</h4>
-                  {apartmentDetails.residents.map(r => (
-                    <div key={r.id}>{r.email}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-
+          <div>
+            Current mode: {activeContext}
           </div>
         </div>
-      )}
+
+        {/* ==========================================
+            DASHBOARD
+        ========================================== */}
+
+        {section === "dashboard" && (
+          <div>
+            <h1>
+              {activeContext.toUpperCase()} DASHBOARD
+            </h1>
+
+            {/* ================= RESIDENT ================= */}
+
+            {activeContext === "resident" && (
+              <>
+                <DashboardCard
+                  title="My Apartment"
+                  text="Apartment info, residents, ownership."
+                />
+
+                <DashboardCard
+                  title="Announcements"
+                  text="Building announcements."
+                />
+
+                <DashboardCard
+                  title="My Tickets"
+                  text="Track your repair requests."
+                />
+
+                <DashboardCard
+                  title="House Chat"
+                  text="Communication with residents."
+                />
+              </>
+            )}
+
+            {/* ================= ADMIN ================= */}
+
+            {activeContext === "admin" && (
+              <>
+                <DashboardCard
+                  title="Tickets Control"
+                  text="Manage all building tickets."
+                />
+
+                <DashboardCard
+                  title="Apartments"
+                  text="Apartment management."
+                />
+
+                <DashboardCard
+                  title="Users"
+                  text="Users and roles."
+                />
+
+                <DashboardCard
+                  title="Workers"
+                  text="Workers and assignments."
+                />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* =====================================================
+            USERS
+        ===================================================== */}
+
+        {section === "users" && (
+          <div>
+            <h1>Users</h1>
+
+            <table
+              border="1"
+              cellPadding="10"
+              style={{
+                background: "white",
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* =====================================================
+            APARTMENTS
+        ===================================================== */}
+
+        {section === "apartments" && (
+          <div>
+            <h1>Apartments</h1>
+
+            <table
+              border="1"
+              cellPadding="10"
+              style={{
+                background: "white",
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Number</th>
+                  <th>Floor</th>
+                  <th>Residents</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {apartments.map((a) => (
+                  <tr key={a.id}>
+                    <td>{a.id}</td>
+                    <td>{a.number}</td>
+                    <td>{a.floor}</td>
+                    <td>{a.residents_count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* =====================================================
+            PLACEHOLDERS
+        ===================================================== */}
+
+        {![
+          "dashboard",
+          "users",
+          "apartments",
+        ].includes(section) && (
+          <div
+            style={{
+              background: "white",
+              padding: 30,
+              borderRadius: 12,
+            }}
+          >
+            <h1>{section}</h1>
+
+            <p>
+              Module architecture prepared.
+            </p>
+
+            <p>
+              Backend integration will be added
+              next.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CARD
+// =====================================================
+
+function DashboardCard({ title, text }) {
+  return (
+    <div
+      style={{
+        background: "white",
+        padding: 20,
+        marginBottom: 20,
+        borderRadius: 12,
+      }}
+    >
+      <h3>{title}</h3>
+      <p>{text}</p>
     </div>
   );
 }
