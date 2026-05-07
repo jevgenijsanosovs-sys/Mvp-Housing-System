@@ -727,5 +727,6 @@ const labelStyle = {
 const tableStyle = {
   width: "100%",
   background: "white",
+  borderRadius: 10,
   borderCollapse: "collapse",
 };
