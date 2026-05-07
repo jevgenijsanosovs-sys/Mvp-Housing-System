@@ -4,56 +4,102 @@ const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
 export default function App() {
+
+  // =========================
+  // AUTH
+  // =========================
+
   const [token, setToken] = useState(
     localStorage.getItem("token")
   );
 
   const [me, setMe] = useState(null);
 
+  // =========================
+  // LOGIN FORM
+  // =========================
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // =========================
+  // UI STATE
+  // =========================
+
+  const [mode, setMode] = useState("resident");
+
   const [screen, setScreen] = useState("dashboard");
 
+  // =========================
+  // DATA
+  // =========================
+
   const [apartments, setApartments] = useState([]);
+  const [users, setUsers] = useState([]);
 
   // =========================
   // API
   // =========================
+
   const api = async (url, options = {}) => {
+
     const res = await fetch(API + url, {
       ...options,
+
       headers: {
         "Content-Type": "application/json",
-        Authorization: token
-          ? "Bearer " + token
-          : "",
+
+        Authorization:
+          token
+            ? "Bearer " + token
+            : "",
+
         ...(options.headers || {}),
       },
     });
 
-    return res.json();
+    return await res.json();
   };
 
   // =========================
   // LOAD USER
   // =========================
+
   useEffect(() => {
+
     if (!token) return;
 
-    api("/api/me").then((d) => {
-      if (d.user) {
-        setMe(d);
-      }
-    });
+    api("/api/me")
+      .then((d) => {
+
+        if (d?.user) {
+
+          setMe(d);
+
+          // default mode
+          if (d.roles?.includes("admin")) {
+            setMode("admin");
+          }
+
+        } else {
+
+          logout();
+
+        }
+
+      });
+
   }, [token]);
 
   // =========================
   // LOGIN
   // =========================
+
   const login = async () => {
+
     const res = await api("/api/login", {
       method: "POST",
+
       body: JSON.stringify({
         email,
         password,
@@ -61,64 +107,116 @@ export default function App() {
     });
 
     if (res.token) {
-      localStorage.setItem("token", res.token);
+
+      localStorage.setItem(
+        "token",
+        res.token
+      );
+
       setToken(res.token);
+
     } else {
-      alert("Login failed");
+
+      alert(
+        res?.error || "Login failed"
+      );
+
     }
   };
 
   // =========================
   // LOGOUT
   // =========================
+
   const logout = () => {
+
     localStorage.removeItem("token");
 
     setToken(null);
+
     setMe(null);
+
+    setScreen("dashboard");
+
   };
 
   // =========================
-  // LOAD APARTMENTS
+  // LOAD ADMIN DATA
   // =========================
-  const openApartments = async () => {
-    const data = await api(
+
+  const loadApartments = async () => {
+
+    const d = await api(
       "/api/apartments/full"
     );
 
-    setApartments(
-      Array.isArray(data) ? data : []
+    setApartments(d || []);
+
+  };
+
+  const loadUsers = async () => {
+
+    const d = await api(
+      "/api/admin/users"
     );
 
-    setScreen("apartments");
+    setUsers(d || []);
+
   };
+
+  // =========================
+  // SCREEN LOADERS
+  // =========================
+
+  useEffect(() => {
+
+    if (screen === "apartments") {
+      loadApartments();
+    }
+
+    if (screen === "users") {
+      loadUsers();
+    }
+
+  }, [screen]);
 
   // =========================
   // LOGIN SCREEN
   // =========================
-  if (!token) {
+
+  if (!token || !me) {
+
     return (
       <div
         style={{
           minHeight: "100vh",
           display: "flex",
-          alignItems: "center",
           justifyContent: "center",
-          background: "#f4f4f4",
-          fontFamily: "Arial",
+          alignItems: "center",
+          background: "#f3f4f6",
+          padding: 20,
         }}
       >
+
         <div
           style={{
             background: "white",
             padding: 30,
-            borderRadius: 12,
-            width: 320,
+            borderRadius: 20,
+            width: "100%",
+            maxWidth: 400,
             boxShadow:
-              "0 0 20px rgba(0,0,0,0.1)",
+              "0 10px 30px rgba(0,0,0,0.1)",
           }}
         >
-          <h2>MVP Housing System</h2>
+
+          <h1>
+            MVX Housing System
+          </h1>
+
+          <p>
+            Residential Management Platform
+          </p>
 
           <input
             placeholder="Email"
@@ -126,11 +224,7 @@ export default function App() {
             onChange={(e) =>
               setEmail(e.target.value)
             }
-            style={{
-              width: "100%",
-              marginBottom: 10,
-              padding: 10,
-            }}
+            style={inputStyle}
           />
 
           <input
@@ -140,288 +234,477 @@ export default function App() {
             onChange={(e) =>
               setPassword(e.target.value)
             }
-            style={{
-              width: "100%",
-              marginBottom: 10,
-              padding: 10,
-            }}
+            style={inputStyle}
           />
 
           <button
             onClick={login}
-            style={{
-              width: "100%",
-              padding: 10,
-            }}
+            style={buttonStyle}
           >
             Login
           </button>
+
         </div>
+
       </div>
     );
   }
 
   // =========================
-  // DASHBOARD
+  // MAIN APP
   // =========================
+
+  const isAdmin =
+    me.roles?.includes("admin");
+
   return (
     <div
       style={{
-        fontFamily: "Arial",
-        minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
+        minHeight: "100vh",
+        background: "#f5f5f5",
       }}
     >
-      {/* TOPBAR */}
+
+      {/* ================= SIDEBAR ================= */}
+
       <div
         style={{
-          background: "#1f2937",
+          width: 260,
+          background: "#111827",
           color: "white",
-          padding: 15,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 10,
+          padding: 20,
         }}
       >
-        <div>
-          <strong>
-            MVP Housing System
-          </strong>
-        </div>
 
-        <div>
-          {me?.user?.email}
-        </div>
+		<h2
+		  style={{
+			color: "white",
+			marginBottom: 10,
+		  }}
+		>
+		  MVX System
+		</h2>
 
-        <div>
-          <button
-            onClick={() =>
-              setScreen("dashboard")
-            }
-          >
-            Dashboard
-          </button>
+		<p
+		  style={{
+			color: "#d1d5db",
+			marginBottom: 20,
+		  }}
+		>
+		  {me.user.first_name}
+		  {" "}
+		  {me.user.last_name}
+		</p>
 
-          {me?.roles?.includes(
-            "admin"
-          ) && (
-            <button
-              onClick={openApartments}
-              style={{
-                marginLeft: 10,
-              }}
-            >
-              Apartments
-            </button>
-          )}
+        {/* MODE SWITCH */}
 
-          <button
-            onClick={logout}
-            style={{
-              marginLeft: 10,
-            }}
-          >
-            Logout
-          </button>
-        </div>
+        {isAdmin && (
+			{/* MODE SWITCH */}
+
+			<div
+			  style={{
+				marginTop: 20,
+				marginBottom: 20,
+			  }}
+			>
+
+			  {/* RESIDENT MODE */}
+
+			  {(me.roles?.includes("resident") ||
+				me.roles?.includes("owner")) && (
+
+				<div>
+				  <button
+					style={
+					  mode === "resident"
+						? activeButton
+						: menuButton
+					}
+					onClick={() =>
+					  setMode("resident")
+					}
+				  >
+					Resident Mode
+				  </button>
+				</div>
+			  )}
+
+			  {/* ADMIN MODE */}
+
+			  {me.roles?.includes("admin") && (
+				<div>
+				  <button
+					style={
+					  mode === "admin"
+						? activeButton
+						: menuButton
+					}
+					onClick={() =>
+					  setMode("admin")
+					}
+				  >
+					Admin Mode
+				  </button>
+				</div>
+			  )}
+
+			</div>
+        )}
+
+        {/* RESIDENT */}
+
+        {mode === "resident" && (
+          <>
+
+            <MenuButton
+              title="Dashboard"
+              onClick={() =>
+                setScreen("dashboard")
+              }
+            />
+
+            <MenuButton
+              title="Invoices & Payments"
+              onClick={() =>
+                setScreen("invoices")
+              }
+            />
+
+            <MenuButton
+              title="Tickets"
+              onClick={() =>
+                setScreen("tickets")
+              }
+            />
+
+            <MenuButton
+              title="Chat"
+              onClick={() =>
+                setScreen("chat")
+              }
+            />
+
+          </>
+        )}
+
+        {/* ADMIN */}
+
+        {mode === "admin" && (
+          <>
+
+            <MenuButton
+              title="Dashboard"
+              onClick={() =>
+                setScreen("dashboard")
+              }
+            />
+
+            <MenuButton
+              title="Users"
+              onClick={() =>
+                setScreen("users")
+              }
+            />
+
+            <MenuButton
+              title="Apartments"
+              onClick={() =>
+                setScreen("apartments")
+              }
+            />
+
+            <MenuButton
+              title="Tickets"
+              onClick={() =>
+                setScreen("tickets-admin")
+              }
+            />
+
+            <MenuButton
+              title="Workers"
+              onClick={() =>
+                setScreen("workers")
+              }
+            />
+
+            <MenuButton
+              title="Contractors"
+              onClick={() =>
+                setScreen("contractors")
+              }
+            />
+
+            <MenuButton
+              title="Documentation"
+              onClick={() =>
+                setScreen("docs")
+              }
+            />
+
+          </>
+        )}
+
+        <hr />
+
+        <button
+          onClick={logout}
+          style={buttonStyle}
+        >
+          Logout
+        </button>
+
       </div>
 
-      {/* MAIN */}
-      <div style={{ padding: 20 }}>
+      {/* ================= CONTENT ================= */}
+
+      <div
+        style={{
+          flex: 1,
+          padding: 30,
+        }}
+      >
+
         {/* DASHBOARD */}
+
         {screen === "dashboard" && (
           <div>
-            <h2>Welcome</h2>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: 20,
-              }}
-            >
-              <div
-                style={{
-                  border:
-                    "1px solid #ddd",
-                  borderRadius: 10,
-                  padding: 20,
-                }}
-              >
-                <h3>My Apartment</h3>
+            <h1>
+              Welcome
+            </h1>
 
-                <p>
-                  Apartment info will
-                  be here
-                </p>
-              </div>
+            <p>
+              Logged as:
+              {" "}
+              {mode.toUpperCase()}
+            </p>
 
-              <div
-                style={{
-                  border:
-                    "1px solid #ddd",
-                  borderRadius: 10,
-                  padding: 20,
-                }}
-              >
-                <h3>Tickets</h3>
+            <div style={cardStyle}>
+              <h3>
+                My Apartment
+              </h3>
 
-                <p>
-                  Resident ticket
-                  view
-                </p>
-              </div>
-
-              <div
-                style={{
-                  border:
-                    "1px solid #ddd",
-                  borderRadius: 10,
-                  padding: 20,
-                }}
-              >
-                <h3>
-                  Announcements
-                </h3>
-
-                <p>
-                  House announcements
-                </p>
-              </div>
-
-              <div
-                style={{
-                  border:
-                    "1px solid #ddd",
-                  borderRadius: 10,
-                  padding: 20,
-                }}
-              >
-                <h3>House Chat</h3>
-
-                <p>
-                  Future realtime
-                  chat
-                </p>
-              </div>
+              <p>
+                Apartment info
+                will be here
+              </p>
             </div>
+
+            <div style={cardStyle}>
+              <h3>
+                Announcements
+              </h3>
+
+              <p>
+                Building news board
+              </p>
+            </div>
+
+            <div style={cardStyle}>
+              <h3>
+                Building Chat
+              </h3>
+
+              <p>
+                Chat system coming soon
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* USERS */}
+
+        {screen === "users" && (
+          <div>
+
+            <h1>
+              Users
+            </h1>
+
+            <table
+              style={tableStyle}
+            >
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.email}</td>
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
           </div>
         )}
 
         {/* APARTMENTS */}
+
         {screen === "apartments" && (
           <div>
-            <h2>Apartments</h2>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(320px, 1fr))",
-                gap: 20,
-              }}
-            >
-              {apartments.map((a) => (
-                <div
-                  key={a.id}
-                  style={{
-                    border:
-                      "1px solid #ccc",
-                    borderRadius: 12,
-                    padding: 20,
-                    background: "white",
-                  }}
-                >
-                  <h3>
-                    Apartment{" "}
-                    {a.number}
-                  </h3>
+            <h1>
+              Apartments
+            </h1>
 
-                  <p>
-                    Section:{" "}
-                    {a.section}
-                  </p>
+            {apartments.map((a) => (
 
-                  <p>
-                    Floor: {a.floor}
-                  </p>
+              <div
+                key={a.id}
+                style={cardStyle}
+              >
 
-                  <p>
-                    Levels:{" "}
-                    {a.level_count}
-                  </p>
+                <h3>
+                  Apartment #{a.number}
+                </h3>
 
-                  <p>
-                    Living Area:{" "}
-                    {a.living_area}
-                  </p>
+                <p>
+                  Section:
+                  {" "}
+                  {a.section}
+                </p>
 
-                  <p>
-                    Heated Area:{" "}
-                    {a.heated_area}
-                  </p>
+                <p>
+                  Floor:
+                  {" "}
+                  {a.floor}
+                </p>
 
-                  <p>
-                    Residents Count:{" "}
-                    {a.residents_count}
-                  </p>
+                <p>
+                  Levels:
+                  {" "}
+                  {a.level_count}
+                </p>
 
-                  <p>
-                    Notes:{" "}
-                    {a.notes || "-"}
-                  </p>
+                <p>
+                  Living Area:
+                  {" "}
+                  {a.living_area}
+                </p>
 
-                  <hr />
+                <p>
+                  Heated Area:
+                  {" "}
+                  {a.heated_area}
+                </p>
 
-                  <strong>
-                    Owners:
-                  </strong>
+                <p>
+                  Notes:
+                  {" "}
+                  {a.notes}
+                </p>
 
-                  {(a.owners || []).map(
-                    (o) => (
-                      <div
-                        key={o.id}
-                      >
-                        {
-                          o.first_name
-                        }{" "}
-                        {
-                          o.last_name
-                        }
-                      </div>
-                    )
-                  )}
+                <hr />
 
-                  <br />
+                <strong>
+                  Owners:
+                </strong>
 
-                  <strong>
-                    Residents:
-                  </strong>
+                <ul>
+                  {a.owners?.map((o) => (
+                    <li key={o.id}>
+                      {o.email}
+                    </li>
+                  ))}
+                </ul>
 
-                  {(a.residents || []).map(
-                    (r) => (
-                      <div
-                        key={r.id}
-                      >
-                        {
-                          r.first_name
-                        }{" "}
-                        {
-                          r.last_name
-                        }
-                      </div>
-                    )
-                  )}
-                </div>
-              ))}
-            </div>
+                <strong>
+                  Residents:
+                </strong>
+
+                <ul>
+                  {a.residents?.map((r) => (
+                    <li key={r.id}>
+                      {r.email}
+                    </li>
+                  ))}
+                </ul>
+
+              </div>
+
+            ))}
+
           </div>
         )}
+
       </div>
+
     </div>
   );
 }
+
+// =========================
+// UI
+// =========================
+
+function MenuButton({
+  title,
+  onClick,
+}) {
+
+  return (
+    <button
+      onClick={onClick}
+      style={menuButton}
+    >
+      {title}
+    </button>
+  );
+}
+
+const inputStyle = {
+  width: "100%",
+  padding: 12,
+  marginTop: 10,
+  borderRadius: 10,
+  border: "1px solid #ccc",
+};
+
+const buttonStyle = {
+  marginTop: 20,
+  padding: 12,
+  borderRadius: 10,
+  border: "none",
+  cursor: "pointer",
+  width: "100%",
+};
+
+const menuButton = {
+  width: "100%",
+  padding: 12,
+  marginTop: 10,
+  border: "none",
+  borderRadius: 10,
+  cursor: "pointer",
+};
+
+const activeButton = {
+  ...menuButton,
+  background: "#2563eb",
+  color: "white",
+};
+
+const cardStyle = {
+  background: "white",
+  padding: 20,
+  borderRadius: 20,
+  marginBottom: 20,
+};
+
+const tableStyle = {
+  width: "100%",
+  background: "white",
+  borderCollapse: "collapse",
+};

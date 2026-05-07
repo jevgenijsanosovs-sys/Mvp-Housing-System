@@ -277,55 +277,79 @@ export default function App() {
         }}
       >
 
-        <h2>
-          MVX System
-        </h2>
+		<h2
+		  style={{
+			color: "white",
+			marginBottom: 10,
+		  }}
+		>
+		  MVX System
+		</h2>
 
-        <p>
-          {me.user.email}
-        </p>
+		<p
+		  style={{
+			color: "#d1d5db",
+			marginBottom: 20,
+		  }}
+		>
+		  {me.user.first_name}
+		  {" "}
+		  {me.user.last_name}
+		</p>
 
         {/* MODE SWITCH */}
 
         {isAdmin && (
-          <div
-            style={{
-              marginTop: 20,
-              marginBottom: 20,
-            }}
-          >
+			{/* MODE SWITCH */}
 
-            <div>
-              <button
-                style={
-                  mode === "resident"
-                    ? activeButton
-                    : menuButton
-                }
-                onClick={() =>
-                  setMode("resident")
-                }
-              >
-                Resident Mode
-              </button>
-            </div>
+			<div
+			  style={{
+				marginTop: 20,
+				marginBottom: 20,
+			  }}
+			>
 
-            <div>
-              <button
-                style={
-                  mode === "admin"
-                    ? activeButton
-                    : menuButton
-                }
-                onClick={() =>
-                  setMode("admin")
-                }
-              >
-                Admin Mode
-              </button>
-            </div>
+			  {/* RESIDENT MODE */}
 
-          </div>
+			  {(me.roles?.includes("resident") ||
+				me.roles?.includes("owner")) && (
+
+				<div>
+				  <button
+					style={
+					  mode === "resident"
+						? activeButton
+						: menuButton
+					}
+					onClick={() =>
+					  setMode("resident")
+					}
+				  >
+					Resident Mode
+				  </button>
+				</div>
+			  )}
+
+			  {/* ADMIN MODE */}
+
+			  {me.roles?.includes("admin") && (
+				<div>
+				  <button
+					style={
+					  mode === "admin"
+						? activeButton
+						: menuButton
+					}
+					onClick={() =>
+					  setMode("admin")
+					}
+				  >
+					Admin Mode
+				  </button>
+				</div>
+			  )}
+
+			</div>
         )}
 
         {/* RESIDENT */}
@@ -440,6 +464,13 @@ export default function App() {
           padding: 30,
         }}
       >
+		<hr
+		  style={{
+			borderColor: "#374151",
+			marginTop: 20,
+			marginBottom: 20,
+		  }}
+		/>
 
         {/* DASHBOARD */}
 
