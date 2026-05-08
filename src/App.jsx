@@ -5,9 +5,9 @@ const API =
 
 export default function App() {
 
-  // =========================
+  // =====================================
   // AUTH
-  // =========================
+  // =====================================
 
   const [token, setToken] = useState(
     localStorage.getItem("token")
@@ -15,32 +15,48 @@ export default function App() {
 
   const [me, setMe] = useState(null);
 
-  // =========================
-  // LOGIN FORM
-  // =========================
+  // =====================================
+  // LOGIN
+  // =====================================
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // =========================
+  // =====================================
   // UI
-  // =========================
+  // =====================================
 
   const [mode, setMode] = useState("resident");
-  const [screen, setScreen] = useState("dashboard");
 
-  // =========================
+  const [screen, setScreen] =
+    useState("dashboard");
+
+  // =====================================
   // DATA
-  // =========================
+  // =====================================
 
-  const [apartments, setApartments] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // =========================
-  // API
-  // =========================
+  const [apartments, setApartments] =
+    useState([]);
 
-  const api = async (url, options = {}) => {
+  const [waterMeters, setWaterMeters] =
+    useState([]);
+
+  const [adminWater, setAdminWater] =
+    useState([]);
+
+  const [dashboard, setDashboard] =
+    useState(null);
+
+  // =====================================
+  // API
+  // =====================================
+
+  const api = async (
+    url,
+    options = {}
+  ) => {
 
     const res = await fetch(API + url, {
       ...options,
@@ -60,9 +76,9 @@ export default function App() {
     return await res.json();
   };
 
-  // =========================
+  // =====================================
   // LOAD USER
-  // =========================
+  // =====================================
 
   useEffect(() => {
 
@@ -71,71 +87,156 @@ export default function App() {
     api("/api/me")
       .then((d) => {
 
-        if (d?.user) {
-
-          setMe(d);
-
-          const hasResident =
-            d.roles?.includes("resident") ||
-            d.roles?.includes("owner");
-
-          const hasAdmin =
-            d.roles?.includes("admin");
-
-          if (hasAdmin && !hasResident) {
-            setMode("admin");
-          }
-
-          if (hasResident) {
-            setMode("resident");
-          }
-
-        } else {
-
+        if (!d?.user) {
           logout();
+          return;
+        }
 
+        setMe(d);
+
+        const roles = d.roles || [];
+
+        const hasResident =
+          roles.includes("resident") ||
+          roles.includes("owner");
+
+        const hasAdmin =
+          roles.includes("admin");
+
+        if (hasResident) {
+          setMode("resident");
+        } else if (hasAdmin) {
+          setMode("admin");
         }
 
       });
 
   }, [token]);
 
-  // =========================
+  // =====================================
+  // LOADERS
+  // =====================================
+
+  const loadUsers = async () => {
+
+    const d = await api(
+      "/api/admin/users"
+    );
+
+    setUsers(Array.isArray(d) ? d : []);
+  };
+
+  const loadApartments = async () => {
+
+    const d = await api(
+      "/api/apartments/full"
+    );
+
+    setApartments(
+      Array.isArray(d) ? d : []
+    );
+  };
+
+  const loadMyWater = async () => {
+
+    const d = await api(
+      "/api/my-water-meters"
+    );
+
+    setWaterMeters(
+      Array.isArray(d) ? d : []
+    );
+  };
+
+  const loadAdminWater = async () => {
+
+    const d = await api(
+      "/api/admin/water-readings"
+    );
+
+    setAdminWater(
+      Array.isArray(d) ? d : []
+    );
+  };
+
+  const loadDashboard = async () => {
+
+    const d = await api(
+      "/api/admin/dashboard"
+    );
+
+    setDashboard(d);
+  };
+
+  // =====================================
+  // SCREEN LOADERS
+  // =====================================
+
+  useEffect(() => {
+
+    if (screen === "users") {
+      loadUsers();
+    }
+
+    if (screen === "apartments") {
+      loadApartments();
+    }
+
+    if (screen === "water") {
+      loadMyWater();
+    }
+
+    if (screen === "water-admin") {
+      loadAdminWater();
+    }
+
+    if (
+      screen === "dashboard" &&
+      mode === "admin"
+    ) {
+      loadDashboard();
+    }
+
+  }, [screen, mode]);
+
+  // =====================================
   // LOGIN
-  // =========================
+  // =====================================
 
   const login = async () => {
 
-    const res = await api("/api/login", {
-      method: "POST",
+    const res = await api(
+      "/api/login",
+      {
+        method: "POST",
 
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
 
-    if (res.token) {
-
-      localStorage.setItem(
-        "token",
-        res.token
-      );
-
-      setToken(res.token);
-
-    } else {
+    if (!res?.token) {
 
       alert(
         res?.error || "Login failed"
       );
 
+      return;
     }
+
+    localStorage.setItem(
+      "token",
+      res.token
+    );
+
+    setToken(res.token);
   };
 
-  // =========================
+  // =====================================
   // LOGOUT
-  // =========================
+  // =====================================
 
   const logout = () => {
 
@@ -146,74 +247,59 @@ export default function App() {
     setMe(null);
 
     setScreen("dashboard");
-
   };
 
-  // =========================
-  // LOADERS
-  // =========================
+  // =====================================
+  // SUBMIT WATER
+  // =====================================
 
-  const loadApartments = async () => {
+  const submitReading = async (
+    meterId,
+    value
+  ) => {
 
-    const d = await api(
-      "/api/apartments/full"
-    );
-
-    setApartments(d || []);
-
-  };
-
-  const loadUsers = async () => {
-
-    const d = await api(
-      "/api/admin/users"
-    );
-
-    setUsers(d || []);
-
-  };
-
-  useEffect(() => {
-
-    if (screen === "apartments") {
-      loadApartments();
+    if (!value) {
+      alert("Enter value");
+      return;
     }
 
-    if (screen === "users") {
-      loadUsers();
+    const r = await api(
+      "/api/submit-water-reading",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          meter_id: meterId,
+          reading_value: Number(value),
+        }),
+      }
+    );
+
+    if (r.ok) {
+
+      alert("Submitted");
+
+      loadMyWater();
+
+    } else {
+
+      alert(
+        r?.error || "Submit failed"
+      );
+
     }
+  };
 
-  }, [screen]);
-
-  // =========================
+  // =====================================
   // LOGIN SCREEN
-  // =========================
+  // =====================================
 
   if (!token || !me) {
 
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#f3f4f6",
-          padding: 20,
-        }}
-      >
+      <div style={loginPage}>
 
-        <div
-          style={{
-            background: "white",
-            padding: 30,
-            borderRadius: 20,
-            width: "100%",
-            maxWidth: 420,
-            boxShadow:
-              "0 10px 30px rgba(0,0,0,0.1)",
-          }}
-        >
+        <div style={loginCard}>
 
           <h1>
             MVX Housing System
@@ -255,70 +341,45 @@ export default function App() {
     );
   }
 
-  // =========================
+  // =====================================
   // ROLES
-  // =========================
+  // =====================================
 
-  const isAdmin =
-    me.roles?.includes("admin");
+  const roles = me.roles || [];
 
   const hasResident =
-    me.roles?.includes("resident") ||
-    me.roles?.includes("owner");
+    roles.includes("resident") ||
+    roles.includes("owner");
 
-  // =========================
+  const hasAdmin =
+    roles.includes("admin");
+
+  // =====================================
   // MAIN APP
-  // =========================
+  // =====================================
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#f5f5f5",
-        flexWrap: "wrap",
-      }}
-    >
+    <div style={layout}>
 
       {/* SIDEBAR */}
 
-      <div
-        style={{
-          width: 280,
-          background: "#111827",
-          color: "white",
-          padding: 20,
-        }}
-      >
+      <div style={sidebar}>
 
-        <h2
-          style={{
-            color: "white",
-            marginBottom: 10,
-          }}
-        >
+        <h2 style={sidebarTitle}>
           MVX System
         </h2>
 
-        <p
-          style={{
-            color: "#d1d5db",
-            marginBottom: 20,
-          }}
-        >
-          User: {me.user.first_name} {me.user.last_name}
-        </p>
+        <div style={sidebarUser}>
+          {me.user.first_name}
+          {" "}
+          {me.user.last_name}
+        </div>
 
-        {/* MODE SWITCH */}
+        {/* MODES */}
 
-        {(isAdmin && hasResident) && (
+        <div style={modeBlock}>
 
-          <div
-            style={{
-              marginBottom: 20,
-            }}
-          >
-
+          {hasResident && (
             <button
               style={
                 mode === "resident"
@@ -331,7 +392,9 @@ export default function App() {
             >
               Resident Mode
             </button>
+          )}
 
+          {hasAdmin && (
             <button
               style={
                 mode === "admin"
@@ -344,23 +407,17 @@ export default function App() {
             >
               Admin Mode
             </button>
+          )}
 
-          </div>
-        )}
+        </div>
 
-        <hr
-          style={{
-            borderColor: "#374151",
-            marginTop: 20,
-            marginBottom: 20,
-          }}
-        />
+        <hr style={divider} />
 
-        {/* RESIDENT MENU */}
+        {/* RESIDENT */}
 
         {mode === "resident" && (
-
           <>
+
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -369,7 +426,14 @@ export default function App() {
             />
 
             <MenuButton
-              title="Invoices & Payments"
+              title="Water Meters"
+              onClick={() =>
+                setScreen("water")
+              }
+            />
+
+            <MenuButton
+              title="Invoices"
               onClick={() =>
                 setScreen("invoices")
               }
@@ -388,14 +452,15 @@ export default function App() {
                 setScreen("chat")
               }
             />
+
           </>
         )}
 
-        {/* ADMIN MENU */}
+        {/* ADMIN */}
 
         {mode === "admin" && (
-
           <>
+
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -418,6 +483,13 @@ export default function App() {
             />
 
             <MenuButton
+              title="Water Readings"
+              onClick={() =>
+                setScreen("water-admin")
+              }
+            />
+
+            <MenuButton
               title="Tickets"
               onClick={() =>
                 setScreen("tickets-admin")
@@ -431,29 +503,12 @@ export default function App() {
               }
             />
 
-            <MenuButton
-              title="Contractors"
-              onClick={() =>
-                setScreen("contractors")
-              }
-            />
-
-            <MenuButton
-              title="Documentation"
-              onClick={() =>
-                setScreen("docs")
-              }
-            />
           </>
         )}
 
-        <hr
-          style={{
-            borderColor: "#374151",
-            marginTop: 20,
-            marginBottom: 20,
-          }}
-        />
+        <div style={{ flex: 1 }} />
+
+        <hr style={divider} />
 
         <button
           onClick={logout}
@@ -466,13 +521,7 @@ export default function App() {
 
       {/* CONTENT */}
 
-      <div
-        style={{
-          flex: 1,
-          padding: 30,
-          minWidth: 320,
-        }}
-      >
+      <div style={content}>
 
         {/* DASHBOARD */}
 
@@ -485,8 +534,84 @@ export default function App() {
             </h1>
 
             <p>
-              Logged as: {mode.toUpperCase()}
+              Current mode:
+              {" "}
+              {mode.toUpperCase()}
             </p>
+
+            {/* RESIDENT DASHBOARD */}
+
+            {mode === "resident" && (
+              <>
+
+                <div style={cardStyle}>
+                  <h3>
+                    My Apartment
+                  </h3>
+
+                  <p>
+                    Apartment info panel
+                  </p>
+                </div>
+
+                <div style={cardStyle}>
+                  <h3>
+                    Announcements
+                  </h3>
+
+                  <p>
+                    Building announcements
+                  </p>
+                </div>
+
+                <div style={cardStyle}>
+                  <h3>
+                    Water Meters
+                  </h3>
+
+                  <p>
+                    Last submitted readings
+                  </p>
+                </div>
+
+              </>
+            )}
+
+            {/* ADMIN DASHBOARD */}
+
+            {mode === "admin" && (
+              <div style={dashboardGrid}>
+
+                <DashboardCard
+                  title="Apartments"
+                  value={
+                    dashboard?.apartments || 0
+                  }
+                />
+
+                <DashboardCard
+                  title="Users"
+                  value={
+                    dashboard?.users || 0
+                  }
+                />
+
+                <DashboardCard
+                  title="Meters"
+                  value={
+                    dashboard?.meters || 0
+                  }
+                />
+
+                <DashboardCard
+                  title="Readings"
+                  value={
+                    dashboard?.readings || 0
+                  }
+                />
+
+              </div>
+            )}
 
           </div>
         )}
@@ -515,14 +640,12 @@ export default function App() {
               <tbody>
 
                 {users.map((u) => (
-
                   <tr key={u.id}>
                     <td>{u.id}</td>
                     <td>{u.first_name}</td>
                     <td>{u.last_name}</td>
                     <td>{u.email}</td>
                   </tr>
-
                 ))}
 
               </tbody>
@@ -549,54 +672,49 @@ export default function App() {
                 style={cardStyle}
               >
 
-                <h2>
+                <h3>
                   Apartment #{a.number}
-                </h2>
+                </h3>
 
-                <div
+                <table
                   style={{
-                    display: "flex",
-                    justifyContent: "center",
+                    margin: "0 auto",
                   }}
                 >
+                  <tbody>
 
-                  <table>
-                    <tbody>
+                    <InfoRow
+                      label="Section"
+                      value={a.section}
+                    />
 
-                      <InfoRow
-                        label="Section"
-                        value={a.section}
-                      />
+                    <InfoRow
+                      label="Floor"
+                      value={a.floor}
+                    />
 
-                      <InfoRow
-                        label="Floor"
-                        value={a.floor}
-                      />
+                    <InfoRow
+                      label="Levels"
+                      value={a.level_count}
+                    />
 
-                      <InfoRow
-                        label="Levels"
-                        value={a.level_count}
-                      />
+                    <InfoRow
+                      label="Living Area"
+                      value={a.living_area}
+                    />
 
-                      <InfoRow
-                        label="Living Area"
-                        value={a.living_area}
-                      />
+                    <InfoRow
+                      label="Heated Area"
+                      value={a.heated_area}
+                    />
 
-                      <InfoRow
-                        label="Heated Area"
-                        value={a.heated_area}
-                      />
+                    <InfoRow
+                      label="Notes"
+                      value={a.notes}
+                    />
 
-                      <InfoRow
-                        label="Notes"
-                        value={a.notes}
-                      />
-
-                    </tbody>
-                  </table>
-
-                </div>
+                  </tbody>
+                </table>
 
                 <hr />
 
@@ -607,7 +725,9 @@ export default function App() {
                 <ul>
                   {a.owners?.map((o) => (
                     <li key={o.id}>
-                      {o.first_name} {o.last_name}
+                      {o.first_name}
+                      {" "}
+                      {o.last_name}
                     </li>
                   ))}
                 </ul>
@@ -619,14 +739,104 @@ export default function App() {
                 <ul>
                   {a.residents?.map((r) => (
                     <li key={r.id}>
-                      {r.first_name} {r.last_name}
+                      {r.first_name}
+                      {" "}
+                      {r.last_name}
                     </li>
                   ))}
                 </ul>
 
               </div>
+            ))}
+
+          </div>
+        )}
+
+        {/* RESIDENT WATER */}
+
+        {screen === "water" && (
+
+          <div>
+
+            <h1>
+              Water Meters
+            </h1>
+
+            {waterMeters.map((m) => (
+
+              <WaterCard
+                key={m.id}
+                meter={m}
+                onSubmit={submitReading}
+              />
 
             ))}
+
+          </div>
+        )}
+
+        {/* ADMIN WATER */}
+
+        {screen === "water-admin" && (
+
+          <div>
+
+            <h1>
+              Water Readings
+            </h1>
+
+            <table style={tableStyle}>
+
+              <thead>
+                <tr>
+                  <th>Apartment</th>
+                  <th>Type</th>
+                  <th>Serial</th>
+                  <th>Value</th>
+                  <th>Date</th>
+                  <th>User</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {adminWater.map((r, i) => (
+
+                  <tr key={i}>
+
+                    <td>
+                      {r.apartment_number}
+                    </td>
+
+                    <td>
+                      {r.type}
+                    </td>
+
+                    <td>
+                      {r.serial_number}
+                    </td>
+
+                    <td>
+                      {r.reading_value}
+                    </td>
+
+                    <td>
+                      {r.reading_date}
+                    </td>
+
+                    <td>
+                      {r.first_name}
+                      {" "}
+                      {r.last_name}
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
 
           </div>
         )}
@@ -637,9 +847,9 @@ export default function App() {
   );
 }
 
-// =========================
+// =====================================
 // COMPONENTS
-// =========================
+// =====================================
 
 function MenuButton({
   title,
@@ -653,6 +863,27 @@ function MenuButton({
     >
       {title}
     </button>
+  );
+}
+
+function DashboardCard({
+  title,
+  value,
+}) {
+
+  return (
+    <div style={dashboardCard}>
+      <h3>{title}</h3>
+
+      <div
+        style={{
+          fontSize: 36,
+          fontWeight: "bold",
+        }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }
 
@@ -674,9 +905,128 @@ function InfoRow({
   );
 }
 
-// =========================
+function WaterCard({
+  meter,
+  onSubmit,
+}) {
+
+  const [value, setValue] =
+    useState("");
+
+  return (
+    <div style={cardStyle}>
+
+      <h3>
+        Apartment #
+        {meter.apartment_number}
+      </h3>
+
+      <p>
+        Type:
+        {" "}
+        {meter.type}
+      </p>
+
+      <p>
+        Serial:
+        {" "}
+        {meter.serial_number}
+      </p>
+
+      <p>
+        Last Reading:
+        {" "}
+        {meter.last_reading}
+      </p>
+
+      <p>
+        Last Date:
+        {" "}
+        {meter.last_date}
+      </p>
+
+      <input
+        placeholder="New reading"
+        value={value}
+        onChange={(e) =>
+          setValue(e.target.value)
+        }
+        style={inputStyle}
+      />
+
+      <button
+        style={buttonStyle}
+        onClick={() =>
+          onSubmit(meter.id, value)
+        }
+      >
+        Submit
+      </button>
+
+    </div>
+  );
+}
+
+// =====================================
 // STYLES
-// =========================
+// =====================================
+
+const layout = {
+  display: "flex",
+  minHeight: "100vh",
+  background: "#f3f4f6",
+};
+
+const sidebar = {
+  width: 280,
+  background: "#111827",
+  color: "white",
+  padding: 20,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const sidebarTitle = {
+  color: "white",
+};
+
+const sidebarUser = {
+  color: "#d1d5db",
+  marginBottom: 20,
+};
+
+const divider = {
+  borderColor: "#374151",
+  width: "100%",
+};
+
+const modeBlock = {
+  marginBottom: 20,
+};
+
+const content = {
+  flex: 1,
+  padding: 30,
+};
+
+const loginPage = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "#f3f4f6",
+  padding: 20,
+};
+
+const loginCard = {
+  background: "white",
+  padding: 30,
+  borderRadius: 20,
+  width: "100%",
+  maxWidth: 420,
+  boxShadow:
+    "0 10px 30px rgba(0,0,0,0.1)",
+};
 
 const inputStyle = {
   width: "100%",
@@ -727,6 +1077,18 @@ const labelStyle = {
 const tableStyle = {
   width: "100%",
   background: "white",
-  borderRadius: 10,
   borderCollapse: "collapse",
+};
+
+const dashboardGrid = {
+  display: "grid",
+  gridTemplateColumns:
+    "repeat(auto-fit,minmax(220px,1fr))",
+  gap: 20,
+};
+
+const dashboardCard = {
+  background: "white",
+  borderRadius: 20,
+  padding: 30,
 };
