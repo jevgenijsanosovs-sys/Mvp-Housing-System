@@ -36,29 +36,6 @@ export default function App() {
   // =====================================
 
   const [users, setUsers] = useState([]);
-  
-  const [showCreateUser, setShowCreateUser] = useState(false);
-
-  const [newUser, setNewUser] = useState({
-    email: "",
-    password: "",
-    first_name: "",
-    last_name: "",
-  });
-
-  const [showCreateApartment, setShowCreateApartment] =
-    useState(false);
-
-  const [newApartment, setNewApartment] = useState({
-    number: "",
-    section: "",
-    floor: "",
-    level_count: 1,
-    living_area: "",
-    non_living_area: "",
-    heated_area: "",
-    notes: "",
-  });
 
   const [apartments, setApartments] =
     useState([]);
@@ -97,64 +74,6 @@ export default function App() {
     });
 
     return await res.json();
-  };
-
-  // =========================
-  // CRUD FUNCTIONS
-  // =========================
-
-  const createUser = async () => {
-
-    const email = prompt("Email:");
-    if (!email) return;
-
-    const password = prompt("Password:");
-    if (!password) return;
-
-    const first_name = prompt("First name:");
-    const last_name = prompt("Last name:");
-
-    const res = await api("/api/admin/users/create", {
-      method: "POST",
-      body: JSON.stringify({
-        email,
-        password,
-        first_name,
-        last_name,
-      }),
-    });
-
-    if (res.ok) {
-      loadUsers();
-      alert("User created");
-    } else {
-      alert(res.error || "Create failed");
-    }
-  };
-
-  const createApartment = async () => {
-
-    const number = prompt("Apartment number:");
-    if (!number) return;
-
-    const section = prompt("Section:");
-    const floor = prompt("Floor:");
-
-    const res = await api("/api/admin/apartments/create", {
-      method: "POST",
-      body: JSON.stringify({
-        number,
-        section,
-        floor,
-      }),
-    });
-
-    if (res.ok) {
-      loadApartments();
-      alert("Apartment created");
-    } else {
-      alert(res.error || "Create failed");
-    }
   };
 
   // =====================================
@@ -707,13 +626,6 @@ export default function App() {
               Users
             </h1>
 
-			<button
-			  onClick={() => setShowCreateUser(true)}
-			  style={buttonStyle}
-			>
-			  Add User
-			</button>
-
             <table style={tableStyle}>
 
               <thead>
@@ -740,84 +652,6 @@ export default function App() {
 
             </table>
 
-			{showCreateUser && (
-
-			  <div style={modalStyle}>
-
-				<div style={modalContentStyle}>
-
-				  <h2>Create User</h2>
-
-				  <input
-					placeholder="First Name"
-					value={newUser.first_name}
-					onChange={(e) =>
-					  setNewUser({
-						...newUser,
-						first_name: e.target.value,
-					  })
-					}
-					style={inputStyle}
-				  />
-
-				  <input
-					placeholder="Last Name"
-					value={newUser.last_name}
-					onChange={(e) =>
-					  setNewUser({
-						...newUser,
-						last_name: e.target.value,
-					  })
-					}
-					style={inputStyle}
-				  />
-
-				  <input
-					placeholder="Email"
-					value={newUser.email}
-					onChange={(e) =>
-					  setNewUser({
-						...newUser,
-						email: e.target.value,
-					  })
-					}
-					style={inputStyle}
-				  />
-
-				  <input
-					type="password"
-					placeholder="Password"
-					value={newUser.password}
-					onChange={(e) =>
-					  setNewUser({
-						...newUser,
-						password: e.target.value,
-					  })
-					}
-					style={inputStyle}
-				  />
-
-				  <button
-					onClick={createUser}
-					style={buttonStyle}
-				  >
-					Save User
-				  </button>
-
-				  <button
-					onClick={() =>
-					  setShowCreateUser(false)
-					}
-					style={menuButton}
-				  >
-					Cancel
-				  </button>
-
-				</div>
-
-			  </div>
-			)}
-
           </div>
         )}
 
@@ -830,15 +664,6 @@ export default function App() {
             <h1>
               Apartments
             </h1>
-
-			<button
-			  onClick={() =>
-				setShowCreateApartment(true)
-			  }
-			  style={buttonStyle}
-			>
-			  Add Apartment
-			</button>
 
             {apartments.map((a) => (
 
@@ -921,114 +746,8 @@ export default function App() {
                   ))}
                 </ul>
 
-
-
               </div>
             ))}
-
-            {showCreateApartment && (
-
-              <div style={modalStyle}>
-
-                <div style={modalContentStyle}>
-
-                  <h2>Create Apartment</h2>
-
-                  <input
-                    placeholder="Number"
-                    value={newApartment.number}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        number: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Section"
-                    value={newApartment.section}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        section: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Floor"
-                    value={newApartment.floor}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        floor: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Levels"
-                    value={newApartment.level_count}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        level_count: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Living Area"
-                    value={newApartment.living_area}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        living_area: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <textarea
-                    placeholder="Notes"
-                    value={newApartment.notes}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        notes: e.target.value,
-                      })
-                    }
-                    style={{
-                      ...inputStyle,
-                      minHeight: 100,
-                    }}
-                  />
-
-                  <button
-                    onClick={createApartment}
-                    style={buttonStyle}
-                  >
-                    Save Apartment
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setShowCreateApartment(false)
-                    }
-                    style={menuButton}
-                  >
-                    Cancel
-                  </button>
-
-                </div>
-
-              </div>
-            )}
 
           </div>
         )}
@@ -1372,22 +1091,4 @@ const dashboardCard = {
   background: "white",
   borderRadius: 20,
   padding: 30,
-};
-
-const modalStyle = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(0,0,0,0.5)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 999,
-};
-
-const modalContentStyle = {
-  background: "white",
-  padding: 30,
-  borderRadius: 20,
-  width: "100%",
-  maxWidth: 500,
 };
