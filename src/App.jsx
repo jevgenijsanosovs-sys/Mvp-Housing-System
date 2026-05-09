@@ -403,7 +403,7 @@ const createApartment = async () => {
 
           <h1>
             DžIKS IRLAVA 20
-			<br>
+			<br />
 			MVP Housing System
           </h1>
 
