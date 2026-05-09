@@ -401,7 +401,7 @@ const createApartment = async () => {
 
         <div style={loginCard}>
 
-          <h1 style={{ lineHeight: "1.6" }}>
+          <h1 style={{ lineHeight: "1.0" }}>
             DžIKS IRLAVA 20
 			<br />
 			MVP Housing System
