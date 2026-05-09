@@ -402,8 +402,8 @@ const createApartment = async () => {
         <div style={loginCard}>
 
           <h1>
-            DžIKS Irlava20
-			MVX Housing System
+            DžIKS IRLAVA 20
+			MVP Housing System
           </h1>
 
           <p>
