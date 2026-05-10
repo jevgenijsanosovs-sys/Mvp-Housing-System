@@ -402,8 +402,10 @@ const createApartment = async () => {
 
         <div style={loginCard}>
 
-          <h1>
-            MVX Housing System
+          <h1 style={{ lineHeight: "1.0" }}>
+            DžIKS IRLAVA 20
+			<br />
+			MVP Housing System
           </h1>
 
           <p>
@@ -623,6 +625,9 @@ const createApartment = async () => {
       {/* CONTENT */}
 
       <div style={content}>
+	  <AdminAssignmentUIV1
+	  api={api}
+	  />
 
         {/* DASHBOARD */}
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import AdminAssignmentUIV1 from "./AdminAssignmentUIV1";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -625,9 +624,7 @@ const createApartment = async () => {
       {/* CONTENT */}
 
       <div style={content}>
-	  <AdminAssignmentUIV1
-	  api={api}
-	  />
+
 
         {/* DASHBOARD */}
 
