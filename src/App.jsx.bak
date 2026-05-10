@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import AdminAssignmentUIV1 from "./AdminAssignmentUIV1";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -37,6 +36,18 @@ export default function App() {
   // =====================================
 
   const [users, setUsers] = useState([]);
+  
+  const [assignmentUser, setAssignmentUser] =
+  useState(null);
+
+  const [assignmentApartmentId, setAssignmentApartmentId] =
+    useState("");
+
+  const [assignmentRelation, setAssignmentRelation] =
+    useState("owner");
+
+  const [userAssignments, setUserAssignments] =
+    useState([]);
   
   const [showCreateUser, setShowCreateUser] = useState(false);
 
@@ -139,6 +150,47 @@ const createUser = async () => {
   }
 };
 
+const addAssignment = async () => {
+
+  if (
+    !assignmentUser ||
+    !assignmentApartmentId
+  ) {
+    return;
+  }
+
+  const r = await api(
+    "/api/admin/add-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        user_id: assignmentUser.id,
+        apartment_id:
+          assignmentApartmentId,
+        relation_type:
+          assignmentRelation,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+    alert("Assignment added");
+
+  } else {
+
+    alert(
+      r.error || "Assignment failed"
+    );
+
+  }
+};
+
 const createApartment = async () => {
 
   const res = await api(
@@ -225,6 +277,20 @@ const createApartment = async () => {
     );
 
     setUsers(Array.isArray(d) ? d : []);
+  };
+
+  const loadUserAssignments = async (
+    userId
+  ) => {
+
+    const d = await api(
+      "/api/admin/user-apartments?user_id=" +
+      userId
+    );
+
+    setUserAssignments(
+      Array.isArray(d) ? d : []
+    );
   };
 
   const loadApartments = async () => {
@@ -353,6 +419,36 @@ const createApartment = async () => {
   // =====================================
   // SUBMIT WATER
   // =====================================
+
+const removeAssignment = async (
+  assignmentId
+) => {
+
+  const r = await api(
+    "/api/admin/remove-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        assignment_id: assignmentId,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+  } else {
+
+    alert(
+      r.error || "Remove failed"
+    );
+
+  }
+};
 
   const submitReading = async (
     meterId,
@@ -625,9 +721,7 @@ const createApartment = async () => {
       {/* CONTENT */}
 
       <div style={content}>
-	  <AdminAssignmentUIV1
-	  api={api}
-	  />
+
 
         {/* DASHBOARD */}
 
@@ -747,6 +841,7 @@ const createApartment = async () => {
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Email</th>
+				  <th>Assignments</th>
                 </tr>
               </thead>
 
@@ -758,6 +853,25 @@ const createApartment = async () => {
                     <td>{u.first_name}</td>
                     <td>{u.last_name}</td>
                     <td>{u.email}</td>
+					<td>
+
+					  <button
+						style={menuButton}
+						onClick={async () => {
+
+						  setAssignmentUser(u);
+
+						  await loadUserAssignments(
+							u.id
+						  );
+						}}
+					  >
+						Assign Apartment
+					  </button>
+
+					</td>
+
+
                   </tr>
                 ))}
 

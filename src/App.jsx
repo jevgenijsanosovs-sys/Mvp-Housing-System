@@ -37,6 +37,18 @@ export default function App() {
 
   const [users, setUsers] = useState([]);
   
+  const [assignmentUser, setAssignmentUser] =
+  useState(null);
+
+  const [assignmentApartmentId, setAssignmentApartmentId] =
+    useState("");
+
+  const [assignmentRelation, setAssignmentRelation] =
+    useState("owner");
+
+  const [userAssignments, setUserAssignments] =
+    useState([]);
+  
   const [showCreateUser, setShowCreateUser] = useState(false);
 
   const [newUser, setNewUser] = useState({
@@ -138,6 +150,47 @@ const createUser = async () => {
   }
 };
 
+const addAssignment = async () => {
+
+  if (
+    !assignmentUser ||
+    !assignmentApartmentId
+  ) {
+    return;
+  }
+
+  const r = await api(
+    "/api/admin/add-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        user_id: assignmentUser.id,
+        apartment_id:
+          assignmentApartmentId,
+        relation_type:
+          assignmentRelation,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+    alert("Assignment added");
+
+  } else {
+
+    alert(
+      r.error || "Assignment failed"
+    );
+
+  }
+};
+
 const createApartment = async () => {
 
   const res = await api(
@@ -224,6 +277,20 @@ const createApartment = async () => {
     );
 
     setUsers(Array.isArray(d) ? d : []);
+  };
+
+  const loadUserAssignments = async (
+    userId
+  ) => {
+
+    const d = await api(
+      "/api/admin/user-apartments?user_id=" +
+      userId
+    );
+
+    setUserAssignments(
+      Array.isArray(d) ? d : []
+    );
   };
 
   const loadApartments = async () => {
@@ -352,6 +419,36 @@ const createApartment = async () => {
   // =====================================
   // SUBMIT WATER
   // =====================================
+
+const removeAssignment = async (
+  assignmentId
+) => {
+
+  const r = await api(
+    "/api/admin/remove-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        assignment_id: assignmentId,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+  } else {
+
+    alert(
+      r.error || "Remove failed"
+    );
+
+  }
+};
 
   const submitReading = async (
     meterId,
@@ -744,6 +841,7 @@ const createApartment = async () => {
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Email</th>
+				  <th>Assignments</th>
                 </tr>
               </thead>
 
@@ -755,6 +853,25 @@ const createApartment = async () => {
                     <td>{u.first_name}</td>
                     <td>{u.last_name}</td>
                     <td>{u.email}</td>
+					<td>
+
+					  <button
+						style={menuButton}
+						onClick={async () => {
+
+						  setAssignmentUser(u);
+
+						  await loadUserAssignments(
+							u.id
+						  );
+						}}
+					  >
+						Assign Apartment
+					  </button>
+
+					</td>
+
+
                   </tr>
                 ))}
 
@@ -839,6 +956,133 @@ const createApartment = async () => {
 
 			  </div>
 			)}
+
+			{assignmentUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>
+					Assign Apartment
+				  </h2>
+
+				  <p>
+					User:
+					{" "}
+					{assignmentUser.first_name}
+					{" "}
+					{assignmentUser.last_name}
+				  </p>
+
+				  <select
+					value={assignmentApartmentId}
+					onChange={(e) =>
+					  setAssignmentApartmentId(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="">
+					  Select apartment
+					</option>
+
+					{apartments.map((a) => (
+
+					  <option
+						key={a.id}
+						value={a.id}
+					  >
+						Apartment #{a.number}
+					  </option>
+
+					))}
+
+				  </select>
+
+				  <select
+					value={assignmentRelation}
+					onChange={(e) =>
+					  setAssignmentRelation(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="owner">
+					  owner
+					</option>
+
+					<option value="resident">
+					  resident
+					</option>
+
+				  </select>
+
+				  <button
+					onClick={addAssignment}
+					style={buttonStyle}
+				  >
+					Save
+				  </button>
+
+				  <button
+					onClick={() => {
+
+					  setAssignmentUser(null);
+
+					  setAssignmentApartmentId("");
+
+					  setUserAssignments([]);
+
+					}}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				  <hr />
+
+				  <h3>
+					Existing Assignments
+				  </h3>
+
+				  {userAssignments.map((x) => (
+
+					<div
+					  key={x.id}
+					  style={{
+						marginBottom: 10,
+					  }}
+					>
+
+					  Apartment #{x.number}
+					  {" "}
+					  ({x.relation_type})
+
+					  <button
+						style={{
+						  marginLeft: 10,
+						}}
+						onClick={() =>
+						  removeAssignment(x.id)
+						}
+					  >
+						Remove
+					  </button>
+
+					</div>
+
+				  ))}
+
+				</div>
+
+			  </div>
+			)}
+
 
           </div>
         )}
