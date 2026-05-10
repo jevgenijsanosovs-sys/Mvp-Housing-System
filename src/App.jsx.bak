@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminAssignmentUIV1 from "./AdminAssignmentUIV1";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -103,59 +104,78 @@ export default function App() {
   // CRUD FUNCTIONS
   // =========================
 
-  const createUser = async () => {
+const createUser = async () => {
 
-    const email = prompt("Email:");
-    if (!email) return;
-
-    const password = prompt("Password:");
-    if (!password) return;
-
-    const first_name = prompt("First name:");
-    const last_name = prompt("Last name:");
-
-    const res = await api("/api/admin/users/create", {
+  const res = await api(
+    "/api/admin/create-user",
+    {
       method: "POST",
-      body: JSON.stringify({
-        email,
-        password,
-        first_name,
-        last_name,
-      }),
+
+      body: JSON.stringify(newUser),
+    }
+  );
+
+  if (res.ok) {
+
+    alert("User created");
+
+    setShowCreateUser(false);
+
+    setNewUser({
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
     });
 
-    if (res.ok) {
-      loadUsers();
-      alert("User created");
-    } else {
-      alert(res.error || "Create failed");
-    }
-  };
+    loadUsers();
 
-  const createApartment = async () => {
+  } else {
 
-    const number = prompt("Apartment number:");
-    if (!number) return;
+    alert(
+      res.error || "Create failed"
+    );
 
-    const section = prompt("Section:");
-    const floor = prompt("Floor:");
+  }
+};
 
-    const res = await api("/api/admin/apartments/create", {
+const createApartment = async () => {
+
+  const res = await api(
+    "/api/admin/create-apartment",
+    {
       method: "POST",
-      body: JSON.stringify({
-        number,
-        section,
-        floor,
-      }),
+
+      body: JSON.stringify(newApartment),
+    }
+  );
+
+  if (res.ok) {
+
+    alert("Apartment created");
+
+    setShowCreateApartment(false);
+
+    setNewApartment({
+      number: "",
+      section: "",
+      floor: "",
+      living_area: "",
+      heated_area: "",
+      level_count: 1,
+      notes: "",
     });
 
-    if (res.ok) {
-      loadApartments();
-      alert("Apartment created");
-    } else {
-      alert(res.error || "Create failed");
-    }
-  };
+    loadApartments();
+
+  } else {
+
+    alert(
+      res.error || "Create failed"
+    );
+
+  }
+};
 
   // =====================================
   // LOAD USER
