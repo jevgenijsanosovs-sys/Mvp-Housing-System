@@ -859,6 +859,8 @@ const removeAssignment = async (
 						style={menuButton}
 						onClick={async () => {
 
+						  await loadApartments();
+
 						  setAssignmentUser(u);
 
 						  await loadUserAssignments(

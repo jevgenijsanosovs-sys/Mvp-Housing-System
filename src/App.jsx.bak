@@ -957,6 +957,133 @@ const removeAssignment = async (
 			  </div>
 			)}
 
+			{assignmentUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>
+					Assign Apartment
+				  </h2>
+
+				  <p>
+					User:
+					{" "}
+					{assignmentUser.first_name}
+					{" "}
+					{assignmentUser.last_name}
+				  </p>
+
+				  <select
+					value={assignmentApartmentId}
+					onChange={(e) =>
+					  setAssignmentApartmentId(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="">
+					  Select apartment
+					</option>
+
+					{apartments.map((a) => (
+
+					  <option
+						key={a.id}
+						value={a.id}
+					  >
+						Apartment #{a.number}
+					  </option>
+
+					))}
+
+				  </select>
+
+				  <select
+					value={assignmentRelation}
+					onChange={(e) =>
+					  setAssignmentRelation(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="owner">
+					  owner
+					</option>
+
+					<option value="resident">
+					  resident
+					</option>
+
+				  </select>
+
+				  <button
+					onClick={addAssignment}
+					style={buttonStyle}
+				  >
+					Save
+				  </button>
+
+				  <button
+					onClick={() => {
+
+					  setAssignmentUser(null);
+
+					  setAssignmentApartmentId("");
+
+					  setUserAssignments([]);
+
+					}}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				  <hr />
+
+				  <h3>
+					Existing Assignments
+				  </h3>
+
+				  {userAssignments.map((x) => (
+
+					<div
+					  key={x.id}
+					  style={{
+						marginBottom: 10,
+					  }}
+					>
+
+					  Apartment #{x.number}
+					  {" "}
+					  ({x.relation_type})
+
+					  <button
+						style={{
+						  marginLeft: 10,
+						}}
+						onClick={() =>
+						  removeAssignment(x.id)
+						}
+					  >
+						Remove
+					  </button>
+
+					</div>
+
+				  ))}
+
+				</div>
+
+			  </div>
+			)}
+
+
           </div>
         )}
 
