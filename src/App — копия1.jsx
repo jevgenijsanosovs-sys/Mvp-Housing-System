@@ -36,6 +36,41 @@ export default function App() {
   // =====================================
 
   const [users, setUsers] = useState([]);
+  
+  const [assignmentUser, setAssignmentUser] =
+  useState(null);
+
+  const [assignmentApartmentId, setAssignmentApartmentId] =
+    useState("");
+
+  const [assignmentRelation, setAssignmentRelation] =
+    useState("owner");
+
+  const [userAssignments, setUserAssignments] =
+    useState([]);
+  
+  const [showCreateUser, setShowCreateUser] = useState(false);
+
+  const [newUser, setNewUser] = useState({
+    email: "",
+    password: "",
+    first_name: "",
+    last_name: "",
+  });
+
+  const [showCreateApartment, setShowCreateApartment] =
+    useState(false);
+
+  const [newApartment, setNewApartment] = useState({
+    number: "",
+    section: "",
+    floor: "",
+    level_count: 1,
+    living_area: "",
+    non_living_area: "",
+    heated_area: "",
+    notes: "",
+  });
 
   const [apartments, setApartments] =
     useState([]);
@@ -75,6 +110,124 @@ export default function App() {
 
     return await res.json();
   };
+
+  // =========================
+  // CRUD FUNCTIONS
+  // =========================
+
+const createUser = async () => {
+
+  const res = await api(
+    "/api/admin/create-user",
+    {
+      method: "POST",
+
+      body: JSON.stringify(newUser),
+    }
+  );
+
+  if (res.ok) {
+
+    alert("User created");
+
+    setShowCreateUser(false);
+
+    setNewUser({
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+    });
+
+    loadUsers();
+
+  } else {
+
+    alert(
+      res.error || "Create failed"
+    );
+
+  }
+};
+
+const addAssignment = async () => {
+
+  if (
+    !assignmentUser ||
+    !assignmentApartmentId
+  ) {
+    return;
+  }
+
+  const r = await api(
+    "/api/admin/add-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        user_id: assignmentUser.id,
+        apartment_id:
+          assignmentApartmentId,
+        relation_type:
+          assignmentRelation,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+    alert("Assignment added");
+
+  } else {
+
+    alert(
+      r.error || "Assignment failed"
+    );
+
+  }
+};
+
+const createApartment = async () => {
+
+  const res = await api(
+    "/api/admin/create-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify(newApartment),
+    }
+  );
+
+  if (res.ok) {
+
+    alert("Apartment created");
+
+    setShowCreateApartment(false);
+
+    setNewApartment({
+      number: "",
+      section: "",
+      floor: "",
+      living_area: "",
+      heated_area: "",
+      level_count: 1,
+      notes: "",
+    });
+
+    loadApartments();
+
+  } else {
+
+    alert(
+      res.error || "Create failed"
+    );
+
+  }
+};
 
   // =====================================
   // LOAD USER
@@ -124,6 +277,20 @@ export default function App() {
     );
 
     setUsers(Array.isArray(d) ? d : []);
+  };
+
+  const loadUserAssignments = async (
+    userId
+  ) => {
+
+    const d = await api(
+      "/api/admin/user-apartments?user_id=" +
+      userId
+    );
+
+    setUserAssignments(
+      Array.isArray(d) ? d : []
+    );
   };
 
   const loadApartments = async () => {
@@ -253,6 +420,36 @@ export default function App() {
   // SUBMIT WATER
   // =====================================
 
+const removeAssignment = async (
+  assignmentId
+) => {
+
+  const r = await api(
+    "/api/admin/remove-user-apartment",
+    {
+      method: "POST",
+
+      body: JSON.stringify({
+        assignment_id: assignmentId,
+      }),
+    }
+  );
+
+  if (r.ok) {
+
+    await loadUserAssignments(
+      assignmentUser.id
+    );
+
+  } else {
+
+    alert(
+      r.error || "Remove failed"
+    );
+
+  }
+};
+
   const submitReading = async (
     meterId,
     value
@@ -301,8 +498,10 @@ export default function App() {
 
         <div style={loginCard}>
 
-          <h1>
-            MVX Housing System
+          <h1 style={{ lineHeight: "1.0" }}>
+            DžIKS IRLAVA 20
+			<br />
+			MVP Housing System
           </h1>
 
           <p>
@@ -523,6 +722,7 @@ export default function App() {
 
       <div style={content}>
 
+
         {/* DASHBOARD */}
 
         {screen === "dashboard" && (
@@ -626,6 +826,13 @@ export default function App() {
               Users
             </h1>
 
+			<button
+			  onClick={() => setShowCreateUser(true)}
+			  style={buttonStyle}
+			>
+			  Add User
+			</button>
+
             <table style={tableStyle}>
 
               <thead>
@@ -634,6 +841,7 @@ export default function App() {
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Email</th>
+				  <th>Assignments</th>
                 </tr>
               </thead>
 
@@ -645,12 +853,238 @@ export default function App() {
                     <td>{u.first_name}</td>
                     <td>{u.last_name}</td>
                     <td>{u.email}</td>
+					<td>
+
+					  <button
+						style={menuButton}
+						onClick={async () => {
+
+						  await loadApartments();
+
+						  setAssignmentUser(u);
+
+						  await loadUserAssignments(
+							u.id
+						  );
+						}}
+					  >
+						Assign Apartment
+					  </button>
+
+					</td>
+
+
                   </tr>
                 ))}
 
               </tbody>
 
             </table>
+
+			{showCreateUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>Create User</h2>
+
+				  <input
+					placeholder="First Name"
+					value={newUser.first_name}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						first_name: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					placeholder="Last Name"
+					value={newUser.last_name}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						last_name: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					placeholder="Email"
+					value={newUser.email}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						email: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					type="password"
+					placeholder="Password"
+					value={newUser.password}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						password: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <button
+					onClick={createUser}
+					style={buttonStyle}
+				  >
+					Save User
+				  </button>
+
+				  <button
+					onClick={() =>
+					  setShowCreateUser(false)
+					}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				</div>
+
+			  </div>
+			)}
+
+			{assignmentUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>
+					Assign Apartment
+				  </h2>
+
+				  <p>
+					User:
+					{" "}
+					{assignmentUser.first_name}
+					{" "}
+					{assignmentUser.last_name}
+				  </p>
+
+				  <select
+					value={assignmentApartmentId}
+					onChange={(e) =>
+					  setAssignmentApartmentId(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="">
+					  Select apartment
+					</option>
+
+					{apartments.map((a) => (
+
+					  <option
+						key={a.id}
+						value={a.id}
+					  >
+						Apartment #{a.number}
+					  </option>
+
+					))}
+
+				  </select>
+
+				  <select
+					value={assignmentRelation}
+					onChange={(e) =>
+					  setAssignmentRelation(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="owner">
+					  owner
+					</option>
+
+					<option value="resident">
+					  resident
+					</option>
+
+				  </select>
+
+				  <button
+					onClick={addAssignment}
+					style={buttonStyle}
+				  >
+					Save
+				  </button>
+
+				  <button
+					onClick={() => {
+
+					  setAssignmentUser(null);
+
+					  setAssignmentApartmentId("");
+
+					  setUserAssignments([]);
+
+					}}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				  <hr />
+
+				  <h3>
+					Existing Assignments
+				  </h3>
+
+				  {userAssignments.map((x) => (
+
+					<div
+					  key={x.id}
+					  style={{
+						marginBottom: 10,
+					  }}
+					>
+
+					  Apartment #{x.number}
+					  {" "}
+					  ({x.relation_type})
+
+					  <button
+						style={{
+						  marginLeft: 10,
+						}}
+						onClick={() =>
+						  removeAssignment(x.id)
+						}
+					  >
+						Remove
+					  </button>
+
+					</div>
+
+				  ))}
+
+				</div>
+
+			  </div>
+			)}
+
 
           </div>
         )}
@@ -664,6 +1098,15 @@ export default function App() {
             <h1>
               Apartments
             </h1>
+
+			<button
+			  onClick={() =>
+				setShowCreateApartment(true)
+			  }
+			  style={buttonStyle}
+			>
+			  Add Apartment
+			</button>
 
             {apartments.map((a) => (
 
@@ -746,8 +1189,114 @@ export default function App() {
                   ))}
                 </ul>
 
+
+
               </div>
             ))}
+
+            {showCreateApartment && (
+
+              <div style={modalStyle}>
+
+                <div style={modalContentStyle}>
+
+                  <h2>Create Apartment</h2>
+
+                  <input
+                    placeholder="Number"
+                    value={newApartment.number}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        number: e.target.value,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    placeholder="Section"
+                    value={newApartment.section}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        section: e.target.value,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    placeholder="Floor"
+                    value={newApartment.floor}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        floor: e.target.value,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    placeholder="Levels"
+                    value={newApartment.level_count}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        level_count: e.target.value,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    placeholder="Living Area"
+                    value={newApartment.living_area}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        living_area: e.target.value,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+
+                  <textarea
+                    placeholder="Notes"
+                    value={newApartment.notes}
+                    onChange={(e) =>
+                      setNewApartment({
+                        ...newApartment,
+                        notes: e.target.value,
+                      })
+                    }
+                    style={{
+                      ...inputStyle,
+                      minHeight: 100,
+                    }}
+                  />
+
+                  <button
+                    onClick={createApartment}
+                    style={buttonStyle}
+                  >
+                    Save Apartment
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setShowCreateApartment(false)
+                    }
+                    style={menuButton}
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+
+              </div>
+            )}
 
           </div>
         )}
@@ -1091,4 +1640,22 @@ const dashboardCard = {
   background: "white",
   borderRadius: 20,
   padding: 30,
+};
+
+const modalStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 999,
+};
+
+const modalContentStyle = {
+  background: "white",
+  padding: 30,
+  borderRadius: 20,
+  width: "100%",
+  maxWidth: 500,
 };
