@@ -1,0 +1,225 @@
+import InfoRow from "../components/InfoRow";
+
+import {
+  buttonStyle,
+  menuButton,
+  cardStyle,
+  modalStyle,
+  modalContentStyle,
+  inputStyle,
+} from "../styles/theme";
+
+export default function ApartmentsScreen({
+  apartments,
+  showCreateApartment,
+  setShowCreateApartment,
+  newApartment,
+  setNewApartment,
+  createApartment,
+}) {
+  return (
+    <div>
+
+      <h1>Apartments</h1>
+
+      <button
+        onClick={() =>
+          setShowCreateApartment(true)
+        }
+        style={buttonStyle}
+      >
+        Add Apartment
+      </button>
+
+      {apartments.map((a) => (
+
+        <div
+          key={a.id}
+          style={cardStyle}
+        >
+
+          <h3>
+            Apartment #{a.number}
+          </h3>
+
+          <table
+            style={{
+              margin: "0 auto",
+            }}
+          >
+            <tbody>
+
+              <InfoRow
+                label="Section"
+                value={a.section}
+              />
+
+              <InfoRow
+                label="Floor"
+                value={a.floor}
+              />
+
+              <InfoRow
+                label="Levels"
+                value={a.level_count}
+              />
+
+              <InfoRow
+                label="Living Area"
+                value={a.living_area}
+              />
+
+              <InfoRow
+                label="Heated Area"
+                value={a.heated_area}
+              />
+
+              <InfoRow
+                label="Notes"
+                value={a.notes}
+              />
+
+            </tbody>
+          </table>
+
+          <hr />
+
+          <strong>
+            Owners
+          </strong>
+
+          <ul>
+            {a.owners?.map((o) => (
+              <li key={o.id}>
+                {o.first_name}
+                {" "}
+                {o.last_name}
+              </li>
+            ))}
+          </ul>
+
+          <strong>
+            Residents
+          </strong>
+
+          <ul>
+            {a.residents?.map((r) => (
+              <li key={r.id}>
+                {r.first_name}
+                {" "}
+                {r.last_name}
+              </li>
+            ))}
+          </ul>
+
+        </div>
+
+      ))}
+
+      {showCreateApartment && (
+
+        <div style={modalStyle}>
+
+          <div style={modalContentStyle}>
+
+            <h2>Create Apartment</h2>
+
+            <input
+              placeholder="Number"
+              value={newApartment.number}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  number: e.target.value,
+                })
+              }
+              style={inputStyle}
+            />
+
+            <input
+              placeholder="Section"
+              value={newApartment.section}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  section: e.target.value,
+                })
+              }
+              style={inputStyle}
+            />
+
+            <input
+              placeholder="Floor"
+              value={newApartment.floor}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  floor: e.target.value,
+                })
+              }
+              style={inputStyle}
+            />
+
+            <input
+              placeholder="Levels"
+              value={newApartment.level_count}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  level_count: e.target.value,
+                })
+              }
+              style={inputStyle}
+            />
+
+            <input
+              placeholder="Living Area"
+              value={newApartment.living_area}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  living_area: e.target.value,
+                })
+              }
+              style={inputStyle}
+            />
+
+            <textarea
+              placeholder="Notes"
+              value={newApartment.notes}
+              onChange={(e) =>
+                setNewApartment({
+                  ...newApartment,
+                  notes: e.target.value,
+                })
+              }
+              style={{
+                ...inputStyle,
+                minHeight: 100,
+              }}
+            />
+
+            <button
+              onClick={createApartment}
+              style={buttonStyle}
+            >
+              Save Apartment
+            </button>
+
+            <button
+              onClick={() =>
+                setShowCreateApartment(false)
+              }
+              style={menuButton}
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}

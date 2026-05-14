@@ -1,0 +1,26 @@
+import WaterCard from "../components/WaterCard";
+
+export default function ResidentWaterScreen({
+  waterMeters,
+  submitReading,
+}) {
+  return (
+    <div>
+
+      <h1>
+        Water Meters
+      </h1>
+
+      {waterMeters.map((m) => (
+
+        <WaterCard
+          key={m.id}
+          meter={m}
+          onSubmit={submitReading}
+        />
+
+      ))}
+
+    </div>
+  );
+}

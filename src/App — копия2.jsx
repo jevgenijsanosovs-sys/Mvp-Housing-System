@@ -3,7 +3,6 @@ import MenuButton from "./components/MenuButton";
 import DashboardCard from "./components/DashboardCard";
 import InfoRow from "./components/InfoRow";
 import WaterCard from "./components/WaterCard";
-import UsersScreen from "./screens/UsersScreen";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -821,38 +820,280 @@ const removeAssignment = async (
           </div>
         )}
 
-{screen === "users" && (
+        {/* USERS */}
 
-  <UsersScreen
-    users={users}
-    loadApartments={loadApartments}
-    setAssignmentUser={setAssignmentUser}
-    loadUserAssignments={loadUserAssignments}
-    showCreateUser={showCreateUser}
-    setShowCreateUser={setShowCreateUser}
-    newUser={newUser}
-    setNewUser={setNewUser}
-    createUser={createUser}
-    assignmentUser={assignmentUser}
-    assignmentApartmentId={assignmentApartmentId}
-    setAssignmentApartmentId={
-      setAssignmentApartmentId
-    }
-    apartments={apartments}
-    assignmentRelation={assignmentRelation}
-    setAssignmentRelation={
-      setAssignmentRelation
-    }
-    addAssignment={addAssignment}
-    setUserAssignments={
-      setUserAssignments
-    }
-    userAssignments={userAssignments}
-    removeAssignment={removeAssignment}
-  />
+        {screen === "users" && (
 
-)}
+          <div>
 
+            <h1>
+              Users
+            </h1>
+
+			<button
+			  onClick={() => setShowCreateUser(true)}
+			  style={buttonStyle}
+			>
+			  Add User
+			</button>
+
+            <table style={tableStyle}>
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+				  <th>Assignments</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.first_name}</td>
+                    <td>{u.last_name}</td>
+                    <td>{u.email}</td>
+					<td>
+
+					  <button
+						style={menuButton}
+						onClick={async () => {
+
+						  await loadApartments();
+
+						  setAssignmentUser(u);
+
+						  await loadUserAssignments(
+							u.id
+						  );
+						}}
+					  >
+						Assign Apartment
+					  </button>
+
+					</td>
+
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+			{showCreateUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>Create User</h2>
+
+				  <input
+					placeholder="First Name"
+					value={newUser.first_name}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						first_name: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					placeholder="Last Name"
+					value={newUser.last_name}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						last_name: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					placeholder="Email"
+					value={newUser.email}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						email: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <input
+					type="password"
+					placeholder="Password"
+					value={newUser.password}
+					onChange={(e) =>
+					  setNewUser({
+						...newUser,
+						password: e.target.value,
+					  })
+					}
+					style={inputStyle}
+				  />
+
+				  <button
+					onClick={createUser}
+					style={buttonStyle}
+				  >
+					Save User
+				  </button>
+
+				  <button
+					onClick={() =>
+					  setShowCreateUser(false)
+					}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				</div>
+
+			  </div>
+			)}
+
+			{assignmentUser && (
+
+			  <div style={modalStyle}>
+
+				<div style={modalContentStyle}>
+
+				  <h2>
+					Assign Apartment
+				  </h2>
+
+				  <p>
+					User:
+					{" "}
+					{assignmentUser.first_name}
+					{" "}
+					{assignmentUser.last_name}
+				  </p>
+
+				  <select
+					value={assignmentApartmentId}
+					onChange={(e) =>
+					  setAssignmentApartmentId(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="">
+					  Select apartment
+					</option>
+
+					{apartments.map((a) => (
+
+					  <option
+						key={a.id}
+						value={a.id}
+					  >
+						Apartment #{a.number}
+					  </option>
+
+					))}
+
+				  </select>
+
+				  <select
+					value={assignmentRelation}
+					onChange={(e) =>
+					  setAssignmentRelation(
+						e.target.value
+					  )
+					}
+					style={inputStyle}
+				  >
+
+					<option value="owner">
+					  owner
+					</option>
+
+					<option value="resident">
+					  resident
+					</option>
+
+				  </select>
+
+				  <button
+					onClick={addAssignment}
+					style={buttonStyle}
+				  >
+					Save
+				  </button>
+
+				  <button
+					onClick={() => {
+
+					  setAssignmentUser(null);
+
+					  setAssignmentApartmentId("");
+
+					  setUserAssignments([]);
+
+					}}
+					style={menuButton}
+				  >
+					Cancel
+				  </button>
+
+				  <hr />
+
+				  <h3>
+					Existing Assignments
+				  </h3>
+
+				  {userAssignments.map((x) => (
+
+					<div
+					  key={x.id}
+					  style={{
+						marginBottom: 10,
+					  }}
+					>
+
+					  Apartment #{x.number}
+					  {" "}
+					  ({x.relation_type})
+
+					  <button
+						style={{
+						  marginLeft: 10,
+						}}
+						onClick={() =>
+						  removeAssignment(x.id)
+						}
+					  >
+						Remove
+					  </button>
+
+					</div>
+
+				  ))}
+
+				</div>
+
+			  </div>
+			)}
+
+
+          </div>
+        )}
+
+        {/* APARTMENTS */}
 
         {screen === "apartments" && (
 
