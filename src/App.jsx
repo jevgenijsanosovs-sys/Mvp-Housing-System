@@ -1,3 +1,5 @@
+import { api } from "./services/api";
+
 import { useEffect, useState } from "react";
 import MenuButton from "./components/MenuButton";
 
@@ -6,9 +8,6 @@ import ApartmentsScreen from "./screens/ApartmentsScreen";
 import ResidentWaterScreen from "./screens/ResidentWaterScreen";
 import AdminWaterScreen from "./screens/AdminWaterScreen";
 import DashboardScreen from "./screens/DashboardScreen";
-
-const API =
-  "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
 export default function App() {
 
@@ -91,32 +90,7 @@ export default function App() {
   const [dashboard, setDashboard] =
     useState(null);
 
-  // =====================================
-  // API
-  // =====================================
 
-  const api = async (
-    url,
-    options = {}
-  ) => {
-
-    const res = await fetch(API + url, {
-      ...options,
-
-      headers: {
-        "Content-Type": "application/json",
-
-        Authorization:
-          token
-            ? "Bearer " + token
-            : "",
-
-        ...(options.headers || {}),
-      },
-    });
-
-    return await res.json();
-  };
 
   // =========================
   // CRUD FUNCTIONS
@@ -834,16 +808,9 @@ import {
   buttonStyle,
   menuButton,
   activeButton,
-  cardStyle,
-  tableStyle,
-  dashboardGrid,
-  dashboardCard,
-  modalStyle,
-  modalContentStyle,
   divider,
   sidebarTitle,
   sidebarUser,
-  labelStyle,
   modeBlock,
   content,
   loginPage,
