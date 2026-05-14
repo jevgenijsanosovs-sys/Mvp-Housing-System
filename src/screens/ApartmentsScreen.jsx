@@ -1,4 +1,5 @@
 import InfoRow from "../components/InfoRow";
+import Modal from "../components/Modal";
 
 import {
   buttonStyle,
@@ -116,109 +117,97 @@ export default function ApartmentsScreen({
 
       ))}
 
-      {showCreateApartment && (
+<Modal
+  open={showCreateApartment}
+  title="Create Apartment"
+  onClose={() =>
+    setShowCreateApartment(false)
+  }
+>
 
-        <div style={modalStyle}>
+  <input
+    placeholder="Number"
+    value={newApartment.number}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        number: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-          <div style={modalContentStyle}>
+  <input
+    placeholder="Section"
+    value={newApartment.section}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        section: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <h2>Create Apartment</h2>
+  <input
+    placeholder="Floor"
+    value={newApartment.floor}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        floor: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <input
-              placeholder="Number"
-              value={newApartment.number}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  number: e.target.value,
-                })
-              }
-              style={inputStyle}
-            />
+  <input
+    placeholder="Levels"
+    value={newApartment.level_count}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        level_count: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <input
-              placeholder="Section"
-              value={newApartment.section}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  section: e.target.value,
-                })
-              }
-              style={inputStyle}
-            />
+  <input
+    placeholder="Living Area"
+    value={newApartment.living_area}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        living_area: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <input
-              placeholder="Floor"
-              value={newApartment.floor}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  floor: e.target.value,
-                })
-              }
-              style={inputStyle}
-            />
+  <textarea
+    placeholder="Notes"
+    value={newApartment.notes}
+    onChange={(e) =>
+      setNewApartment({
+        ...newApartment,
+        notes: e.target.value,
+      })
+    }
+    style={{
+      ...inputStyle,
+      minHeight: 100,
+    }}
+  />
 
-            <input
-              placeholder="Levels"
-              value={newApartment.level_count}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  level_count: e.target.value,
-                })
-              }
-              style={inputStyle}
-            />
+  <button
+    onClick={createApartment}
+    style={buttonStyle}
+  >
+    Save Apartment
+  </button>
 
-            <input
-              placeholder="Living Area"
-              value={newApartment.living_area}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  living_area: e.target.value,
-                })
-              }
-              style={inputStyle}
-            />
-
-            <textarea
-              placeholder="Notes"
-              value={newApartment.notes}
-              onChange={(e) =>
-                setNewApartment({
-                  ...newApartment,
-                  notes: e.target.value,
-                })
-              }
-              style={{
-                ...inputStyle,
-                minHeight: 100,
-              }}
-            />
-
-            <button
-              onClick={createApartment}
-              style={buttonStyle}
-            >
-              Save Apartment
-            </button>
-
-            <button
-              onClick={() =>
-                setShowCreateApartment(false)
-              }
-              style={menuButton}
-            >
-              Cancel
-            </button>
-
-          </div>
-
-        </div>
-      )}
+</Modal>
 
     </div>
   );
