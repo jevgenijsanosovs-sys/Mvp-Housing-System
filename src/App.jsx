@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import MenuButton from "./components/MenuButton";
-import DashboardCard from "./components/DashboardCard";
-import InfoRow from "./components/InfoRow";
-import WaterCard from "./components/WaterCard";
+
 import UsersScreen from "./screens/UsersScreen";
+import ApartmentsScreen from "./screens/ApartmentsScreen";
+import ResidentWaterScreen from "./screens/ResidentWaterScreen";
+import AdminWaterScreen from "./screens/AdminWaterScreen";
+import DashboardScreen from "./screens/DashboardScreen";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -730,96 +732,14 @@ const removeAssignment = async (
 
         {/* DASHBOARD */}
 
-        {screen === "dashboard" && (
+{screen === "dashboard" && (
 
-          <div>
+  <DashboardScreen
+    mode={mode}
+    dashboard={dashboard}
+  />
 
-            <h1>
-              Welcome
-            </h1>
-
-            <p>
-              Current mode:
-              {" "}
-              {mode.toUpperCase()}
-            </p>
-
-            {/* RESIDENT DASHBOARD */}
-
-            {mode === "resident" && (
-              <>
-
-                <div style={cardStyle}>
-                  <h3>
-                    My Apartment
-                  </h3>
-
-                  <p>
-                    Apartment info panel
-                  </p>
-                </div>
-
-                <div style={cardStyle}>
-                  <h3>
-                    Announcements
-                  </h3>
-
-                  <p>
-                    Building announcements
-                  </p>
-                </div>
-
-                <div style={cardStyle}>
-                  <h3>
-                    Water Meters
-                  </h3>
-
-                  <p>
-                    Last submitted readings
-                  </p>
-                </div>
-
-              </>
-            )}
-
-            {/* ADMIN DASHBOARD */}
-
-            {mode === "admin" && (
-              <div style={dashboardGrid}>
-
-                <DashboardCard
-                  title="Apartments"
-                  value={
-                    dashboard?.apartments || 0
-                  }
-                />
-
-                <DashboardCard
-                  title="Users"
-                  value={
-                    dashboard?.users || 0
-                  }
-                />
-
-                <DashboardCard
-                  title="Meters"
-                  value={
-                    dashboard?.meters || 0
-                  }
-                />
-
-                <DashboardCard
-                  title="Readings"
-                  value={
-                    dashboard?.readings || 0
-                  }
-                />
-
-              </div>
-            )}
-
-          </div>
-        )}
+)}
 
 {screen === "users" && (
 
@@ -853,305 +773,45 @@ const removeAssignment = async (
 
 )}
 
+{screen === "apartments" && (
 
-        {screen === "apartments" && (
+  <ApartmentsScreen
+    apartments={apartments}
+    showCreateApartment={
+      showCreateApartment
+    }
+    setShowCreateApartment={
+      setShowCreateApartment
+    }
+    newApartment={newApartment}
+    setNewApartment={setNewApartment}
+    createApartment={createApartment}
+  />
 
-          <div>
-
-            <h1>
-              Apartments
-            </h1>
-
-			<button
-			  onClick={() =>
-				setShowCreateApartment(true)
-			  }
-			  style={buttonStyle}
-			>
-			  Add Apartment
-			</button>
-
-            {apartments.map((a) => (
-
-              <div
-                key={a.id}
-                style={cardStyle}
-              >
-
-                <h3>
-                  Apartment #{a.number}
-                </h3>
-
-                <table
-                  style={{
-                    margin: "0 auto",
-                  }}
-                >
-                  <tbody>
-
-                    <InfoRow
-                      label="Section"
-                      value={a.section}
-                    />
-
-                    <InfoRow
-                      label="Floor"
-                      value={a.floor}
-                    />
-
-                    <InfoRow
-                      label="Levels"
-                      value={a.level_count}
-                    />
-
-                    <InfoRow
-                      label="Living Area"
-                      value={a.living_area}
-                    />
-
-                    <InfoRow
-                      label="Heated Area"
-                      value={a.heated_area}
-                    />
-
-                    <InfoRow
-                      label="Notes"
-                      value={a.notes}
-                    />
-
-                  </tbody>
-                </table>
-
-                <hr />
-
-                <strong>
-                  Owners
-                </strong>
-
-                <ul>
-                  {a.owners?.map((o) => (
-                    <li key={o.id}>
-                      {o.first_name}
-                      {" "}
-                      {o.last_name}
-                    </li>
-                  ))}
-                </ul>
-
-                <strong>
-                  Residents
-                </strong>
-
-                <ul>
-                  {a.residents?.map((r) => (
-                    <li key={r.id}>
-                      {r.first_name}
-                      {" "}
-                      {r.last_name}
-                    </li>
-                  ))}
-                </ul>
+)}
 
 
-
-              </div>
-            ))}
-
-            {showCreateApartment && (
-
-              <div style={modalStyle}>
-
-                <div style={modalContentStyle}>
-
-                  <h2>Create Apartment</h2>
-
-                  <input
-                    placeholder="Number"
-                    value={newApartment.number}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        number: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Section"
-                    value={newApartment.section}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        section: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Floor"
-                    value={newApartment.floor}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        floor: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Levels"
-                    value={newApartment.level_count}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        level_count: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <input
-                    placeholder="Living Area"
-                    value={newApartment.living_area}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        living_area: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
-
-                  <textarea
-                    placeholder="Notes"
-                    value={newApartment.notes}
-                    onChange={(e) =>
-                      setNewApartment({
-                        ...newApartment,
-                        notes: e.target.value,
-                      })
-                    }
-                    style={{
-                      ...inputStyle,
-                      minHeight: 100,
-                    }}
-                  />
-
-                  <button
-                    onClick={createApartment}
-                    style={buttonStyle}
-                  >
-                    Save Apartment
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setShowCreateApartment(false)
-                    }
-                    style={menuButton}
-                  >
-                    Cancel
-                  </button>
-
-                </div>
-
-              </div>
-            )}
-
-          </div>
-        )}
 
         {/* RESIDENT WATER */}
 
-        {screen === "water" && (
+{screen === "water" && (
 
-          <div>
+  <ResidentWaterScreen
+    waterMeters={waterMeters}
+    submitReading={submitReading}
+  />
 
-            <h1>
-              Water Meters
-            </h1>
-
-            {waterMeters.map((m) => (
-
-              <WaterCard
-                key={m.id}
-                meter={m}
-                onSubmit={submitReading}
-              />
-
-            ))}
-
-          </div>
-        )}
+)}
 
         {/* ADMIN WATER */}
 
-        {screen === "water-admin" && (
+{screen === "water-admin" && (
 
-          <div>
+  <AdminWaterScreen
+    adminWater={adminWater}
+  />
 
-            <h1>
-              Water Readings
-            </h1>
-
-            <table style={tableStyle}>
-
-              <thead>
-                <tr>
-                  <th>Apartment</th>
-                  <th>Type</th>
-                  <th>Serial</th>
-                  <th>Value</th>
-                  <th>Date</th>
-                  <th>User</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {adminWater.map((r, i) => (
-
-                  <tr key={i}>
-
-                    <td>
-                      {r.apartment_number}
-                    </td>
-
-                    <td>
-                      {r.type}
-                    </td>
-
-                    <td>
-                      {r.serial_number}
-                    </td>
-
-                    <td>
-                      {r.reading_value}
-                    </td>
-
-                    <td>
-                      {r.reading_date}
-                    </td>
-
-                    <td>
-                      {r.first_name}
-                      {" "}
-                      {r.last_name}
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-        )}
+)}
 
       </div>
 

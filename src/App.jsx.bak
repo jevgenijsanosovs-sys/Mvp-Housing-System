@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import MenuButton from "./components/MenuButton";
-import DashboardCard from "./components/DashboardCard";
-import InfoRow from "./components/InfoRow";
-import WaterCard from "./components/WaterCard";
+
 import UsersScreen from "./screens/UsersScreen";
+import ApartmentsScreen from "./screens/ApartmentsScreen";
+import ResidentWaterScreen from "./screens/ResidentWaterScreen";
+import AdminWaterScreen from "./screens/AdminWaterScreen";
+import DashboardScreen from "./screens/DashboardScreen";
 
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -820,6 +822,38 @@ const removeAssignment = async (
 
           </div>
         )}
+
+{screen === "users" && (
+
+  <UsersScreen
+    users={users}
+    loadApartments={loadApartments}
+    setAssignmentUser={setAssignmentUser}
+    loadUserAssignments={loadUserAssignments}
+    showCreateUser={showCreateUser}
+    setShowCreateUser={setShowCreateUser}
+    newUser={newUser}
+    setNewUser={setNewUser}
+    createUser={createUser}
+    assignmentUser={assignmentUser}
+    assignmentApartmentId={assignmentApartmentId}
+    setAssignmentApartmentId={
+      setAssignmentApartmentId
+    }
+    apartments={apartments}
+    assignmentRelation={assignmentRelation}
+    setAssignmentRelation={
+      setAssignmentRelation
+    }
+    addAssignment={addAssignment}
+    setUserAssignments={
+      setUserAssignments
+    }
+    userAssignments={userAssignments}
+    removeAssignment={removeAssignment}
+  />
+
+)}
 
 
         {screen === "apartments" && (
