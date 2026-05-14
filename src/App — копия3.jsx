@@ -9,25 +9,17 @@ import ResidentWaterScreen from "./screens/ResidentWaterScreen";
 import AdminWaterScreen from "./screens/AdminWaterScreen";
 import DashboardScreen from "./screens/DashboardScreen";
 
-import {
-  useAuth,
-} from "./context/AuthContext";
-
 export default function App() {
-
-  const {
-    token,
-    me,
-    login,
-    logout,
-    loading,
-  } = useAuth();
 
   // =====================================
   // AUTH
   // =====================================
 
-  //---MOVED TO "./context/AuthContext"---
+  const [token, setToken] = useState(
+    localStorage.getItem("token")
+  );
+
+  const [me, setMe] = useState(null);
 
   // =====================================
   // LOGIN
@@ -222,7 +214,38 @@ const createApartment = async () => {
   // LOAD USER
   // =====================================
 
-  //-----------MOVED TO ....--------------
+  useEffect(() => {
+
+    if (!token) return;
+
+    api("/api/me")
+      .then((d) => {
+
+        if (!d?.user) {
+          logout();
+          return;
+        }
+
+        setMe(d);
+
+        const roles = d.roles || [];
+
+        const hasResident =
+          roles.includes("resident") ||
+          roles.includes("owner");
+
+        const hasAdmin =
+          roles.includes("admin");
+
+        if (hasResident) {
+          setMode("resident");
+        } else if (hasAdmin) {
+          setMode("admin");
+        }
+
+      });
+
+  }, [token]);
 
   // =====================================
   // LOADERS
@@ -328,13 +351,51 @@ const createApartment = async () => {
   // LOGIN
   // =====================================
 
-  // ----------MOVED TO ...---------------
+  const login = async () => {
+
+    const res = await api(
+      "/api/login",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
+
+    if (!res?.token) {
+
+      alert(
+        res?.error || "Login failed"
+      );
+
+      return;
+    }
+
+    localStorage.setItem(
+      "token",
+      res.token
+    );
+
+    setToken(res.token);
+  };
 
   // =====================================
   // LOGOUT
   // =====================================
 
-  // ----------MOVED TO ...---------------
+  const logout = () => {
+
+    localStorage.removeItem("token");
+
+    setToken(null);
+
+    setMe(null);
+
+    setScreen("dashboard");
+  };
 
   // =====================================
   // SUBMIT WATER
@@ -411,16 +472,6 @@ const removeAssignment = async (
   // LOGIN SCREEN
   // =====================================
 
-	if (loading) {
-
-	  return (
-		<div>
-		  Loading...
-		</div>
-	  );
-
-	}
-
   if (!token || !me) {
 
     return (
@@ -458,9 +509,7 @@ const removeAssignment = async (
           />
 
           <button
-            onClick={() =>
-              login(email, password)
-            }
+            onClick={login}
             style={buttonStyle}
           >
             Login

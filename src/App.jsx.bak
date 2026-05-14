@@ -1,3 +1,5 @@
+import { api } from "./services/api";
+
 import { useEffect, useState } from "react";
 import MenuButton from "./components/MenuButton";
 
@@ -7,20 +9,13 @@ import ResidentWaterScreen from "./screens/ResidentWaterScreen";
 import AdminWaterScreen from "./screens/AdminWaterScreen";
 import DashboardScreen from "./screens/DashboardScreen";
 
-const API =
-  "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
-
 export default function App() {
 
   // =====================================
   // AUTH
   // =====================================
 
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
-
-  const [me, setMe] = useState(null);
+  //---MOVED TO "./context/AuthContext"---
 
   // =====================================
   // LOGIN
@@ -91,32 +86,7 @@ export default function App() {
   const [dashboard, setDashboard] =
     useState(null);
 
-  // =====================================
-  // API
-  // =====================================
 
-  const api = async (
-    url,
-    options = {}
-  ) => {
-
-    const res = await fetch(API + url, {
-      ...options,
-
-      headers: {
-        "Content-Type": "application/json",
-
-        Authorization:
-          token
-            ? "Bearer " + token
-            : "",
-
-        ...(options.headers || {}),
-      },
-    });
-
-    return await res.json();
-  };
 
   // =========================
   // CRUD FUNCTIONS
@@ -240,38 +210,7 @@ const createApartment = async () => {
   // LOAD USER
   // =====================================
 
-  useEffect(() => {
-
-    if (!token) return;
-
-    api("/api/me")
-      .then((d) => {
-
-        if (!d?.user) {
-          logout();
-          return;
-        }
-
-        setMe(d);
-
-        const roles = d.roles || [];
-
-        const hasResident =
-          roles.includes("resident") ||
-          roles.includes("owner");
-
-        const hasAdmin =
-          roles.includes("admin");
-
-        if (hasResident) {
-          setMode("resident");
-        } else if (hasAdmin) {
-          setMode("admin");
-        }
-
-      });
-
-  }, [token]);
+  //-----------MOVED TO ....--------------
 
   // =====================================
   // LOADERS
@@ -834,16 +773,9 @@ import {
   buttonStyle,
   menuButton,
   activeButton,
-  cardStyle,
-  tableStyle,
-  dashboardGrid,
-  dashboardCard,
-  modalStyle,
-  modalContentStyle,
   divider,
   sidebarTitle,
   sidebarUser,
-  labelStyle,
   modeBlock,
   content,
   loginPage,
