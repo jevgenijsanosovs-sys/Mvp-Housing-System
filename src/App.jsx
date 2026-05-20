@@ -21,6 +21,8 @@ import useApartments from "./hooks/useApartments";
 
 import useWater from "./hooks/useWater";
 
+import useDashboard from "./hooks/useDashboard";
+
 const {
   apartments,
   showCreateApartment,
@@ -38,6 +40,11 @@ const {
   loadAdminWater,
   submitReading,
 } = useWater();
+
+const {
+  dashboard,
+  loadDashboard,
+} = useDashboard();
 
 export default function App() {
 
@@ -113,9 +120,6 @@ export default function App() {
     last_name: "",
   });
 
-  const [dashboard, setDashboard] =
-    useState(null);
-
   // =========================
   // CRUD FUNCTIONS
   // =========================
@@ -129,15 +133,6 @@ export default function App() {
   // =====================================
   // LOADERS
   // =====================================
-
-  const loadDashboard = async () => {
-
-    const d = await api(
-      "/api/admin/dashboard"
-    );
-
-    setDashboard(d);
-  };
 
   // =====================================
   // SCREEN LOADERS
