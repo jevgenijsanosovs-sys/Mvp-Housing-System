@@ -17,6 +17,18 @@ import {
   useUsers,
 } from "./hooks/useUsers";
 
+import useApartments from "./hooks/useApartments";
+
+const {
+  apartments,
+  showCreateApartment,
+  setShowCreateApartment,
+  newApartment,
+  setNewApartment,
+  loadApartments,
+  createApartment,
+} = useApartments();
+
 export default function App() {
 
   const {
@@ -91,23 +103,6 @@ export default function App() {
     last_name: "",
   });
 
-  const [showCreateApartment, setShowCreateApartment] =
-    useState(false);
-
-  const [newApartment, setNewApartment] = useState({
-    number: "",
-    section: "",
-    floor: "",
-    level_count: 1,
-    living_area: "",
-    non_living_area: "",
-    heated_area: "",
-    notes: "",
-  });
-
-  const [apartments, setApartments] =
-    useState([]);
-
   const [waterMeters, setWaterMeters] =
     useState([]);
 
@@ -117,51 +112,9 @@ export default function App() {
   const [dashboard, setDashboard] =
     useState(null);
 
-
-
   // =========================
   // CRUD FUNCTIONS
   // =========================
-
-
-
-const createApartment = async () => {
-
-  const res = await api(
-    "/api/admin/create-apartment",
-    {
-      method: "POST",
-
-      body: JSON.stringify(newApartment),
-    }
-  );
-
-  if (res.ok) {
-
-    alert("Apartment created");
-
-    setShowCreateApartment(false);
-
-    setNewApartment({
-      number: "",
-      section: "",
-      floor: "",
-      living_area: "",
-      heated_area: "",
-      level_count: 1,
-      notes: "",
-    });
-
-    loadApartments();
-
-  } else {
-
-    alert(
-      res.error || "Create failed"
-    );
-
-  }
-};
 
   // =====================================
   // LOAD USER
@@ -172,17 +125,6 @@ const createApartment = async () => {
   // =====================================
   // LOADERS
   // =====================================
-
-  const loadApartments = async () => {
-
-    const d = await api(
-      "/api/apartments/full"
-    );
-
-    setApartments(
-      Array.isArray(d) ? d : []
-    );
-  };
 
   const loadMyWater = async () => {
 
