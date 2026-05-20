@@ -19,6 +19,8 @@ import {
 
 import useApartments from "./hooks/useApartments";
 
+import useWater from "./hooks/useWater";
+
 const {
   apartments,
   showCreateApartment,
@@ -28,6 +30,14 @@ const {
   loadApartments,
   createApartment,
 } = useApartments();
+
+const {
+  waterMeters,
+  adminWater,
+  loadMyWater,
+  loadAdminWater,
+  submitReading,
+} = useWater();
 
 export default function App() {
 
@@ -103,12 +113,6 @@ export default function App() {
     last_name: "",
   });
 
-  const [waterMeters, setWaterMeters] =
-    useState([]);
-
-  const [adminWater, setAdminWater] =
-    useState([]);
-
   const [dashboard, setDashboard] =
     useState(null);
 
@@ -125,28 +129,6 @@ export default function App() {
   // =====================================
   // LOADERS
   // =====================================
-
-  const loadMyWater = async () => {
-
-    const d = await api(
-      "/api/my-water-meters"
-    );
-
-    setWaterMeters(
-      Array.isArray(d) ? d : []
-    );
-  };
-
-  const loadAdminWater = async () => {
-
-    const d = await api(
-      "/api/admin/water-readings"
-    );
-
-    setAdminWater(
-      Array.isArray(d) ? d : []
-    );
-  };
 
   const loadDashboard = async () => {
 
@@ -203,43 +185,6 @@ export default function App() {
   // =====================================
   // SUBMIT WATER
   // =====================================
-
-  const submitReading = async (
-    meterId,
-    value
-  ) => {
-
-    if (!value) {
-      alert("Enter value");
-      return;
-    }
-
-    const r = await api(
-      "/api/submit-water-reading",
-      {
-        method: "POST",
-
-        body: JSON.stringify({
-          meter_id: meterId,
-          reading_value: Number(value),
-        }),
-      }
-    );
-
-    if (r.ok) {
-
-      alert("Submitted");
-
-      loadMyWater();
-
-    } else {
-
-      alert(
-        r?.error || "Submit failed"
-      );
-
-    }
-  };
 
   // =====================================
   // LOGIN SCREEN

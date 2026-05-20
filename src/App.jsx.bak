@@ -9,7 +9,66 @@ import ResidentWaterScreen from "./screens/ResidentWaterScreen";
 import AdminWaterScreen from "./screens/AdminWaterScreen";
 import DashboardScreen from "./screens/DashboardScreen";
 
+import {
+  useAuth,
+} from "./context/AuthContext";
+
+import {
+  useUsers,
+} from "./hooks/useUsers";
+
+import useApartments from "./hooks/useApartments";
+
+const {
+  apartments,
+  showCreateApartment,
+  setShowCreateApartment,
+  newApartment,
+  setNewApartment,
+  loadApartments,
+  createApartment,
+} = useApartments();
+
 export default function App() {
+
+  const {
+    token,
+    me,
+    login,
+    logout,
+    loading,
+  } = useAuth();
+
+	const {
+	  users,
+	  loadUsers,
+	
+	  assignmentUser,
+	  setAssignmentUser,
+	
+	  assignmentApartmentId,
+	  setAssignmentApartmentId,
+	
+	  assignmentRelation,
+	  setAssignmentRelation,
+	
+	  userAssignments,
+	  setUserAssignments,
+	
+	  showCreateUser,
+	  setShowCreateUser,
+	
+	  newUser,
+	  setNewUser,
+	
+	  createUser,
+	
+	  loadUserAssignments,
+	
+	  addAssignment,
+	
+	  removeAssignment,
+	} = useUsers();
 
   // =====================================
   // AUTH
@@ -37,45 +96,12 @@ export default function App() {
   // DATA
   // =====================================
 
-  const [users, setUsers] = useState([]);
-  
-  const [assignmentUser, setAssignmentUser] =
-  useState(null);
-
-  const [assignmentApartmentId, setAssignmentApartmentId] =
-    useState("");
-
-  const [assignmentRelation, setAssignmentRelation] =
-    useState("owner");
-
-  const [userAssignments, setUserAssignments] =
-    useState([]);
-  
-  const [showCreateUser, setShowCreateUser] = useState(false);
-
   const [newUser, setNewUser] = useState({
     email: "",
     password: "",
     first_name: "",
     last_name: "",
   });
-
-  const [showCreateApartment, setShowCreateApartment] =
-    useState(false);
-
-  const [newApartment, setNewApartment] = useState({
-    number: "",
-    section: "",
-    floor: "",
-    level_count: 1,
-    living_area: "",
-    non_living_area: "",
-    heated_area: "",
-    notes: "",
-  });
-
-  const [apartments, setApartments] =
-    useState([]);
 
   const [waterMeters, setWaterMeters] =
     useState([]);
@@ -86,125 +112,9 @@ export default function App() {
   const [dashboard, setDashboard] =
     useState(null);
 
-
-
   // =========================
   // CRUD FUNCTIONS
   // =========================
-
-const createUser = async () => {
-
-  const res = await api(
-    "/api/admin/create-user",
-    {
-      method: "POST",
-
-      body: JSON.stringify(newUser),
-    }
-  );
-
-  if (res.ok) {
-
-    alert("User created");
-
-    setShowCreateUser(false);
-
-    setNewUser({
-      first_name: "",
-      last_name: "",
-      email: "",
-      password: "",
-    });
-
-    loadUsers();
-
-  } else {
-
-    alert(
-      res.error || "Create failed"
-    );
-
-  }
-};
-
-const addAssignment = async () => {
-
-  if (
-    !assignmentUser ||
-    !assignmentApartmentId
-  ) {
-    return;
-  }
-
-  const r = await api(
-    "/api/admin/add-user-apartment",
-    {
-      method: "POST",
-
-      body: JSON.stringify({
-        user_id: assignmentUser.id,
-        apartment_id:
-          assignmentApartmentId,
-        relation_type:
-          assignmentRelation,
-      }),
-    }
-  );
-
-  if (r.ok) {
-
-    await loadUserAssignments(
-      assignmentUser.id
-    );
-
-    alert("Assignment added");
-
-  } else {
-
-    alert(
-      r.error || "Assignment failed"
-    );
-
-  }
-};
-
-const createApartment = async () => {
-
-  const res = await api(
-    "/api/admin/create-apartment",
-    {
-      method: "POST",
-
-      body: JSON.stringify(newApartment),
-    }
-  );
-
-  if (res.ok) {
-
-    alert("Apartment created");
-
-    setShowCreateApartment(false);
-
-    setNewApartment({
-      number: "",
-      section: "",
-      floor: "",
-      living_area: "",
-      heated_area: "",
-      level_count: 1,
-      notes: "",
-    });
-
-    loadApartments();
-
-  } else {
-
-    alert(
-      res.error || "Create failed"
-    );
-
-  }
-};
 
   // =====================================
   // LOAD USER
@@ -215,40 +125,6 @@ const createApartment = async () => {
   // =====================================
   // LOADERS
   // =====================================
-
-  const loadUsers = async () => {
-
-    const d = await api(
-      "/api/admin/users"
-    );
-
-    setUsers(Array.isArray(d) ? d : []);
-  };
-
-  const loadUserAssignments = async (
-    userId
-  ) => {
-
-    const d = await api(
-      "/api/admin/user-apartments?user_id=" +
-      userId
-    );
-
-    setUserAssignments(
-      Array.isArray(d) ? d : []
-    );
-  };
-
-  const loadApartments = async () => {
-
-    const d = await api(
-      "/api/apartments/full"
-    );
-
-    setApartments(
-      Array.isArray(d) ? d : []
-    );
-  };
 
   const loadMyWater = async () => {
 
@@ -316,85 +192,17 @@ const createApartment = async () => {
   // LOGIN
   // =====================================
 
-  const login = async () => {
-
-    const res = await api(
-      "/api/login",
-      {
-        method: "POST",
-
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    );
-
-    if (!res?.token) {
-
-      alert(
-        res?.error || "Login failed"
-      );
-
-      return;
-    }
-
-    localStorage.setItem(
-      "token",
-      res.token
-    );
-
-    setToken(res.token);
-  };
+  // ----------MOVED TO ...---------------
 
   // =====================================
   // LOGOUT
   // =====================================
 
-  const logout = () => {
-
-    localStorage.removeItem("token");
-
-    setToken(null);
-
-    setMe(null);
-
-    setScreen("dashboard");
-  };
+  // ----------MOVED TO ...---------------
 
   // =====================================
   // SUBMIT WATER
   // =====================================
-
-const removeAssignment = async (
-  assignmentId
-) => {
-
-  const r = await api(
-    "/api/admin/remove-user-apartment",
-    {
-      method: "POST",
-
-      body: JSON.stringify({
-        assignment_id: assignmentId,
-      }),
-    }
-  );
-
-  if (r.ok) {
-
-    await loadUserAssignments(
-      assignmentUser.id
-    );
-
-  } else {
-
-    alert(
-      r.error || "Remove failed"
-    );
-
-  }
-};
 
   const submitReading = async (
     meterId,
@@ -437,6 +245,16 @@ const removeAssignment = async (
   // LOGIN SCREEN
   // =====================================
 
+	if (loading) {
+
+	  return (
+		<div>
+		  Loading...
+		</div>
+	  );
+
+	}
+
   if (!token || !me) {
 
     return (
@@ -474,7 +292,9 @@ const removeAssignment = async (
           />
 
           <button
-            onClick={login}
+            onClick={() =>
+              login(email, password)
+            }
             style={buttonStyle}
           >
             Login
