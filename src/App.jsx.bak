@@ -117,17 +117,6 @@ export default function App() {
   const [mode, setMode] = useState("resident");
 
   // =====================================
-  // DATA
-  // =====================================
-
-  const [newUser, setNewUser] = useState({
-    email: "",
-    password: "",
-    first_name: "",
-    last_name: "",
-  });
-
-  // =====================================
   // SCREEN LOADERS
   // =====================================
 
