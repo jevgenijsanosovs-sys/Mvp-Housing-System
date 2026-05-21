@@ -7,6 +7,8 @@ import {
   inputStyle,
 } from "../styles/theme";
 
+import Modal from "../components/Modal";
+
 export default function UsersScreen({
   users,
   loadApartments,
@@ -91,6 +93,8 @@ export default function UsersScreen({
 
       </table>
 
+{/* CREATE USER MODAL */}
+
 <Modal
   open={showCreateUser}
   title="Create User"
@@ -99,129 +103,189 @@ export default function UsersScreen({
   }
 >
 
-      {assignmentUser && (
+  <input
+    placeholder="First Name"
+    value={newUser.first_name}
+    onChange={(e) =>
+      setNewUser({
+        ...newUser,
+        first_name: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-        <div style={modalStyle}>
+  <input
+    placeholder="Last Name"
+    value={newUser.last_name}
+    onChange={(e) =>
+      setNewUser({
+        ...newUser,
+        last_name: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-          <div style={modalContentStyle}>
+  <input
+    placeholder="Email"
+    value={newUser.email}
+    onChange={(e) =>
+      setNewUser({
+        ...newUser,
+        email: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <h2>Assign Apartment</h2>
+  <input
+    placeholder="Password"
+    value={newUser.password}
+    onChange={(e) =>
+      setNewUser({
+        ...newUser,
+        password: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
 
-            <p>
-              User:
-              {" "}
-              {assignmentUser.first_name}
-              {" "}
-              {assignmentUser.last_name}
-            </p>
+  <button
+    onClick={createUser}
+    style={buttonStyle}
+  >
+    Create User
+  </button>
 
-            <select
-              value={assignmentApartmentId}
-              onChange={(e) =>
-                setAssignmentApartmentId(
-                  e.target.value
-                )
-              }
-              style={inputStyle}
-            >
+</Modal>
 
-              <option value="">
-                Select apartment
-              </option>
+{/* ASSIGNMENT MODAL */}
 
-              {apartments.map((a) => (
+{assignmentUser && (
 
-                <option
-                  key={a.id}
-                  value={a.id}
-                >
-                  Apartment #{a.number}
-                </option>
+  <div style={modalStyle}>
 
-              ))}
+    <div style={modalContentStyle}>
 
-            </select>
+      <h2>Assign Apartment</h2>
 
-            <select
-              value={assignmentRelation}
-              onChange={(e) =>
-                setAssignmentRelation(
-                  e.target.value
-                )
-              }
-              style={inputStyle}
-            >
+      <p>
+        User:
+        {" "}
+        {assignmentUser.first_name}
+        {" "}
+        {assignmentUser.last_name}
+      </p>
 
-              <option value="owner">
-                owner
-              </option>
+      <select
+        value={assignmentApartmentId}
+        onChange={(e) =>
+          setAssignmentApartmentId(
+            e.target.value
+          )
+        }
+        style={inputStyle}
+      >
 
-              <option value="resident">
-                resident
-              </option>
+        <option value="">
+          Select apartment
+        </option>
 
-            </select>
+        {apartments.map((a) => (
 
-            <button
-              onClick={addAssignment}
-              style={buttonStyle}
-            >
-              Save
-            </button>
+          <option
+            key={a.id}
+            value={a.id}
+          >
+            Apartment #{a.number}
+          </option>
 
-            <button
-              onClick={() => {
+        ))}
 
-                setAssignmentUser(null);
+      </select>
 
-                setAssignmentApartmentId("");
+      <select
+        value={assignmentRelation}
+        onChange={(e) =>
+          setAssignmentRelation(
+            e.target.value
+          )
+        }
+        style={inputStyle}
+      >
 
-                setUserAssignments([]);
+        <option value="owner">
+          owner
+        </option>
 
-              }}
-              style={menuButton}
-            >
-              Cancel
-            </button>
+        <option value="resident">
+          resident
+        </option>
 
-            <hr />
+      </select>
 
-            <h3>
-              Existing Assignments
-            </h3>
+      <button
+        onClick={addAssignment}
+        style={buttonStyle}
+      >
+        Save
+      </button>
 
-            {userAssignments.map((x) => (
+      <button
+        onClick={() => {
 
-              <div
-                key={x.id}
-                style={{
-                  marginBottom: 10,
-                }}
-              >
+          setAssignmentUser(null);
 
-                Apartment #{x.number}
-                {" "}
-                ({x.relation_type})
+          setAssignmentApartmentId("");
 
-                <button
-                  style={{
-                    marginLeft: 10,
-                  }}
-                  onClick={() =>
-                    removeAssignment(x.id)
-                  }
-                >
-                  Remove
-                </button>
+          setUserAssignments([]);
 
-              </div>
+        }}
+        style={menuButton}
+      >
+        Cancel
+      </button>
 
-            ))}
+      <hr />
 
-          </div>
+      <h3>
+        Existing Assignments
+      </h3>
+
+      {userAssignments.map((x) => (
+
+        <div
+          key={x.id}
+          style={{
+            marginBottom: 10,
+          }}
+        >
+
+          Apartment #{x.number}
+          {" "}
+          ({x.relation_type})
+
+          <button
+            style={{
+              marginLeft: 10,
+            }}
+            onClick={() =>
+              removeAssignment(x.id)
+            }
+          >
+            Remove
+          </button>
 
         </div>
-      )}
+
+      ))}
+
+    </div>
+
+  </div>
+
+)}
 
     </div>
   );

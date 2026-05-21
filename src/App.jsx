@@ -23,6 +23,12 @@ import useWater from "./hooks/useWater";
 
 import useDashboard from "./hooks/useDashboard";
 
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
 const {
   apartments,
   showCreateApartment,
@@ -55,6 +61,15 @@ export default function App() {
     logout,
     loading,
   } = useAuth();
+  
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  
+  const screen =
+    location.pathname === "/"
+      ? "dashboard"
+      : location.pathname.replace("/", "");
 
 	const {
 	  users,
@@ -87,11 +102,6 @@ export default function App() {
 	  removeAssignment,
 	} = useUsers();
 
-  // =====================================
-  // AUTH
-  // =====================================
-
-  //---MOVED TO "./context/AuthContext"---
 
   // =====================================
   // LOGIN
@@ -105,34 +115,6 @@ export default function App() {
   // =====================================
 
   const [mode, setMode] = useState("resident");
-
-  const [screen, setScreen] =
-    useState("dashboard");
-
-  // =====================================
-  // DATA
-  // =====================================
-
-  const [newUser, setNewUser] = useState({
-    email: "",
-    password: "",
-    first_name: "",
-    last_name: "",
-  });
-
-  // =========================
-  // CRUD FUNCTIONS
-  // =========================
-
-  // =====================================
-  // LOAD USER
-  // =====================================
-
-  //-----------MOVED TO ....--------------
-
-  // =====================================
-  // LOADERS
-  // =====================================
 
   // =====================================
   // SCREEN LOADERS
@@ -164,22 +146,6 @@ export default function App() {
     }
 
   }, [screen, mode]);
-
-  // =====================================
-  // LOGIN
-  // =====================================
-
-  // ----------MOVED TO ...---------------
-
-  // =====================================
-  // LOGOUT
-  // =====================================
-
-  // ----------MOVED TO ...---------------
-
-  // =====================================
-  // SUBMIT WATER
-  // =====================================
 
   // =====================================
   // LOGIN SCREEN
@@ -326,14 +292,14 @@ export default function App() {
             <MenuButton
               title="Dashboard"
               onClick={() =>
-                setScreen("dashboard")
+                navigate("/")
               }
             />
 
             <MenuButton
               title="Water Meters"
               onClick={() =>
-                setScreen("water")
+                navigate("/water")
               }
             />
 
@@ -369,28 +335,28 @@ export default function App() {
             <MenuButton
               title="Dashboard"
               onClick={() =>
-                setScreen("dashboard")
+                navigate("/")
               }
             />
 
             <MenuButton
               title="Users"
               onClick={() =>
-                setScreen("users")
+                navigate("/users")
               }
             />
 
             <MenuButton
               title="Apartments"
               onClick={() =>
-                setScreen("apartments")
+                navigate("/apartments")
               }
             />
 
             <MenuButton
               title="Water Readings"
               onClick={() =>
-                setScreen("water-admin")
+                navigare("/water-admin")
               }
             />
 
@@ -431,14 +397,6 @@ export default function App() {
 
         {/* DASHBOARD */}
 
-{screen === "dashboard" && (
-
-  <DashboardScreen
-    mode={mode}
-    dashboard={dashboard}
-  />
-
-)}
 
 {screen === "users" && (
 
@@ -518,10 +476,6 @@ export default function App() {
   );
 }
 
-// =====================================
-// COMPONENTS
-// =====================================
-// ----MOVED TO compnents---------------
 // =====================================
 // STYLES
 // =====================================
