@@ -19,7 +19,7 @@ export default function DashboardScreen({
       <p>
         Current mode:
         {" "}
-        {mode.toUpperCase()}
+        {mode?.toUpperCase() || "UNKNOWN"}
       </p>
 
       {mode === "resident" && (
