@@ -4,11 +4,11 @@ import {
 
 import App from "../App";
 
-import DashboardScreen from "../screens/DashboardScreen";
-import UsersScreen from "../screens/UsersScreen";
-import ApartmentsScreen from "../screens/ApartmentsScreen";
-import ResidentWaterScreen from "../screens/ResidentWaterScreen";
-import AdminWaterScreen from "../screens/AdminWaterScreen";
+import DashboardPage from "../pages/DashboardPage";
+import UsersPage from "../pages/UsersPage";
+import ApartmentsPage from "../pages/ApartmentsPage";
+import ResidentWaterPage from "../pages/ResidentWaterPage";
+import AdminWaterPage from "../pages/AdminWaterPage";
 
 export const router =
   createBrowserRouter([
@@ -20,37 +20,27 @@ export const router =
 
         {
           index: true,
-          element: (
-            <DashboardScreen />
-          ),
+          element: <DashboardPage />,
         },
 
         {
           path: "users",
-          element: (
-            <UsersScreen />
-          ),
+          element: <UsersPage />,
         },
 
         {
           path: "apartments",
-          element: (
-            <ApartmentsScreen />
-          ),
+          element: <ApartmentsPage />,
         },
 
         {
           path: "water",
-          element: (
-            <ResidentWaterScreen />
-          ),
+          element: <ResidentWaterPage />,
         },
 
         {
           path: "water-admin",
-          element: (
-            <AdminWaterScreen />
-          ),
+          element: <AdminWaterPage />,
         },
 
       ],
