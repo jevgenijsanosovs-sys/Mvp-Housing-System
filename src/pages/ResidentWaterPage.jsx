@@ -1,9 +1,20 @@
-import WaterCard from "../components/WaterCard";
+import { useEffect } from "react";
 
-export default function ResidentWaterScreen({
-  waterMeters,
-  submitReading,
-}) {
+import WaterCard from "../components/WaterCard";
+import useWater from "../hooks/useWater";
+
+export default function ResidentWaterPage() {
+
+  const {
+    waterMeters,
+    loadMyWater,
+    submitReading,
+  } = useWater();
+
+  useEffect(() => {
+    loadMyWater();
+  }, []);
+
   return (
     <div>
 

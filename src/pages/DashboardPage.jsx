@@ -1,60 +1,61 @@
+import { useEffect } from "react";
+
 import DashboardCard from "../components/DashboardCard";
+
+import useDashboard from "../hooks/useDashboard";
+import { useAuth } from "../context/AuthContext";
 
 import {
   cardStyle,
   dashboardGrid,
 } from "../styles/theme";
 
-export default function DashboardScreen({
-  mode,
-  dashboard,
-}) {
+export default function DashboardPage() {
+
+  const { me } = useAuth();
+
+  const {
+    dashboard,
+    loadDashboard,
+  } = useDashboard();
+
+  const roles = me?.roles || [];
+
+  const mode =
+    roles.includes("admin")
+      ? "admin"
+      : "resident";
+
+  useEffect(() => {
+
+    if (mode === "admin") {
+      loadDashboard();
+    }
+
+  }, []);
+
   return (
     <div>
 
-      <h1>
-        Welcome
-      </h1>
+      <h1>Welcome</h1>
 
       <p>
-        Current mode:
-        {" "}
-        {mode?.toUpperCase() || "UNKNOWN"}
+        Current mode: {mode}
       </p>
 
       {mode === "resident" && (
         <>
-
           <div style={cardStyle}>
-            <h3>
-              My Apartment
-            </h3>
-
-            <p>
-              Apartment info panel
-            </p>
+            <h3>My Apartment</h3>
           </div>
 
           <div style={cardStyle}>
-            <h3>
-              Announcements
-            </h3>
-
-            <p>
-              Building announcements
-            </p>
+            <h3>Announcements</h3>
           </div>
 
           <div style={cardStyle}>
-            <h3>
-              Water Meters
-            </h3>
-
-            <p>
-              Last submitted readings
-            </p>
+            <h3>Water Meters</h3>
           </div>
-
         </>
       )}
 
@@ -64,30 +65,22 @@ export default function DashboardScreen({
 
           <DashboardCard
             title="Apartments"
-            value={
-              dashboard?.apartments || 0
-            }
+            value={dashboard?.apartments || 0}
           />
 
           <DashboardCard
             title="Users"
-            value={
-              dashboard?.users || 0
-            }
+            value={dashboard?.users || 0}
           />
 
           <DashboardCard
             title="Meters"
-            value={
-              dashboard?.meters || 0
-            }
+            value={dashboard?.meters || 0}
           />
 
           <DashboardCard
             title="Readings"
-            value={
-              dashboard?.readings || 0
-            }
+            value={dashboard?.readings || 0}
           />
 
         </div>
