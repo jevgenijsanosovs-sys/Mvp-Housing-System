@@ -83,12 +83,6 @@ export function AuthProvider({
 
     setToken(res.token);
 
-	const meData =
-	  await api("/api/me");
-
-	setMe(meData);
-
-
     return true;
   };
 

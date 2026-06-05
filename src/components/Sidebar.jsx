@@ -27,6 +27,11 @@ export default function Sidebar() {
     me,
     logout,
   } = useAuth();
+  
+  if (!me) {
+    return null;
+  }
+  
 
   const navigate = useNavigate();
 
@@ -34,11 +39,7 @@ export default function Sidebar() {
     useState("resident");
 
   const roles = me?.roles || [];
-  /*TMP S1*/
-  <div style={{ color: "yellow" }}>
-    {JSON.stringify(me)}
-  </div>
-  /*TMP F1*/
+
 
   const hasResident =
     roles.includes("resident") ||
@@ -56,19 +57,6 @@ export default function Sidebar() {
       </h2>
 
       <div style={sidebarUser}>
-	  
-	  /*TMP S2*/
-		<div style={sidebarUser}>
-		  {me?.user?.first_name}
-		  {" "}
-		  {me?.user?.last_name}
-		</div>
-
-		<pre style={{ color: "yellow" }}>
-		  {JSON.stringify(me, null, 2)}
-		</pre>
-	  /*TMP F2*/
-	  
         {me?.user?.first_name}
         {" "}
         {me?.user?.last_name}

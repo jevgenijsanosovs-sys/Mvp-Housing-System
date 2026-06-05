@@ -4,33 +4,17 @@ import {
 
 import App from "../App";
 
-import LoginPage from "../pages/LoginPage";
-
 import DashboardPage from "../pages/DashboardPage";
 import UsersPage from "../pages/UsersPage";
 import ApartmentsPage from "../pages/ApartmentsPage";
 import ResidentWaterPage from "../pages/ResidentWaterPage";
 import AdminWaterPage from "../pages/AdminWaterPage";
 
-import ProtectedRoute
-  from "../routes/ProtectedRoute";
-
 export const router =
   createBrowserRouter([
-
-    {
-      path: "/login",
-      element: <LoginPage />,
-    },
-
     {
       path: "/",
-
-      element: (
-        <ProtectedRoute>
-          <App />
-        </ProtectedRoute>
-      ),
+      element: <App />,
 
       children: [
 
@@ -61,5 +45,4 @@ export const router =
 
       ],
     },
-
   ]);

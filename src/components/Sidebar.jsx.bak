@@ -35,6 +35,7 @@ export default function Sidebar() {
 
   const roles = me?.roles || [];
 
+
   const hasResident =
     roles.includes("resident") ||
     roles.includes("owner");
