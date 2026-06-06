@@ -1,22 +1,10 @@
-import { useEffect } from "react";
-
-import useWater from "../hooks/useWater";
-
 import {
   tableStyle,
 } from "../styles/theme";
 
-export default function AdminWaterPage() {
-
-  const {
-    adminWater,
-    loadAdminWater,
-  } = useWater();
-
-  useEffect(() => {
-    loadAdminWater();
-  }, []);
-
+export default function AdminWaterScreen({
+  adminWater,
+}) {
   return (
     <div>
 
@@ -43,11 +31,25 @@ export default function AdminWaterPage() {
 
             <tr key={i}>
 
-              <td>{r.apartment_number}</td>
-              <td>{r.type}</td>
-              <td>{r.serial_number}</td>
-              <td>{r.reading_value}</td>
-              <td>{r.reading_date}</td>
+              <td>
+                {r.apartment_number}
+              </td>
+
+              <td>
+                {r.type}
+              </td>
+
+              <td>
+                {r.serial_number}
+              </td>
+
+              <td>
+                {r.reading_value}
+              </td>
+
+              <td>
+                {r.reading_date}
+              </td>
 
               <td>
                 {r.first_name}
