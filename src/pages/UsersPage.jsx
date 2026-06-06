@@ -78,6 +78,7 @@ export default function UsersPage() {
             <th>First Name</th>
             <th>Last Name</th>
             <th>Email</th>
+            <th>Phone</th>
             <th>Assignments</th>
           </tr>
         </thead>
@@ -92,7 +93,7 @@ export default function UsersPage() {
               <td>{u.first_name}</td>
               <td>{u.last_name}</td>
               <td>{u.email}</td>
-
+              <td>{u.phone}</td>
               <td>
 
                 <button
@@ -162,6 +163,18 @@ export default function UsersPage() {
       setNewUser({
         ...newUser,
         email: e.target.value,
+      })
+    }
+    style={inputStyle}
+  />
+
+  <input
+    placeholder="Phone"
+    value={newUser.phone}
+    onChange={(e) =>
+      setNewUser({
+        ...newUser,
+        phone: e.target.value,
       })
     }
     style={inputStyle}
