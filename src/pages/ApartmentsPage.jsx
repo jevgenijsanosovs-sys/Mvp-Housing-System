@@ -36,6 +36,10 @@ export default function ApartmentsPage() {
 
   const [search,
     setSearch] = useState("");
+	
+	const [navigationSource,
+	  setNavigationSource] =
+	  useState("");
 
   useEffect(() => {
     loadApartments();
@@ -137,9 +141,21 @@ export default function ApartmentsPage() {
       <h1>Apartments</h1>
 
       <button
-        onClick={() =>
-          setShowCreateApartment(true)
-        }
+
+	onClick={() => {
+
+	  setSelectedSection(null);
+
+	  setSelectedFloor(null);
+
+	  setNavigationSource(
+		"search"
+	  );
+
+	  setSelectedApartment(a);
+
+	}}
+
         style={buttonStyle}
       >
         Add Apartment
@@ -171,9 +187,17 @@ export default function ApartmentsPage() {
               style={{
                 margin: 5,
               }}
-              onClick={() =>
-                setSelectedApartment(a)
-              }
+
+			onClick={() => {
+
+			  setNavigationSource(
+				"tree"
+			  );
+
+			  setSelectedApartment(a);
+
+			}}
+
             >
               Apt #{a.number}
             </button>
@@ -294,42 +318,100 @@ export default function ApartmentsPage() {
           }}
         >
 
-          <h2>
-            Apartment #
-            {selectedApartment.number}
-          </h2>
+			{navigationSource === "tree" && (
 
-          <table>
+			  <div
+				style={{
+				  color: "#666",
+				  marginBottom: 10,
+				  fontSize: 14,
+				}}
+			  >
+				Section
+				{" "}
+				{selectedApartment.section}
 
-            <tbody>
+				{" > "}
 
-              {Object.entries(
-                selectedApartment
-              )
-                .filter(
-                  ([key]) =>
-                    key !== "owners" &&
-                    key !== "residents"
-                )
-                .map(
-                  ([key, value]) => (
-                    <tr key={key}>
-                      <td>
-                        <strong>
-                          {key}
-                        </strong>
-                      </td>
+				Floor
+				{" "}
+				{selectedApartment.floor}
 
-                      <td>
-                        {String(value)}
-                      </td>
-                    </tr>
-                  )
-                )}
+				{" > "}
 
-            </tbody>
+				Apartment #
+				{selectedApartment.number}
+			  </div>
 
-          </table>
+			)}
+
+			{navigationSource === "search" && (
+
+			  <div
+				style={{
+				  color: "#666",
+				  marginBottom: 10,
+				  fontSize: 14,
+				}}
+			  >
+				Search Result
+				{" > "}
+				Apartment #
+				{selectedApartment.number}
+			  </div>
+
+			)}
+
+			<h2>
+			  Apartment #
+			  {selectedApartment.number}
+			</h2>
+
+			<div>
+
+			  {Object.entries(selectedApartment)
+				.filter(
+				  ([key]) =>
+					key !== "owners" &&
+					key !== "residents"
+				)
+				.map(([key, value]) => (
+
+				  <div
+					key={key}
+					style={{
+
+					display: "flex",
+					justifyContent:
+					  "space-between",
+					gap: 15,
+					flexWrap: "wrap",
+
+					  borderBottom:
+						"1px solid #eee",
+					  padding: "8px 0",
+					}}
+				  >
+
+					<strong>
+					  {key}
+					</strong>
+
+					<span
+					  style={{
+						textAlign: "right",
+						wordBreak:
+						  "break-word",
+					  }}
+					>
+					  {String(value ?? "")}
+					</span>
+
+				  </div>
+
+				))}
+
+			</div>
 
           <hr />
 
