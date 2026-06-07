@@ -1,15 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useApartments from "../hooks/useApartments";
 
-import InfoRow from "../components/InfoRow";
 import Modal from "../components/Modal";
 
 import {
   buttonStyle,
-  menuButton,
   cardStyle,
-  modalStyle,
-  modalContentStyle,
   inputStyle,
 } from "../styles/theme";
 
@@ -29,10 +25,111 @@ export default function ApartmentsPage() {
     loadApartments,
   } = useApartments();
 
+  const [selectedSection,
+    setSelectedSection] = useState(null);
+
+  const [selectedFloor,
+    setSelectedFloor] = useState(null);
+
+  const [selectedApartment,
+    setSelectedApartment] = useState(null);
+
+  const [search,
+    setSearch] = useState("");
+
   useEffect(() => {
     loadApartments();
   }, []);
 
+  // =========================
+  // SECTIONS
+  // =========================
+
+  const sections = useMemo(() => {
+
+    return [
+      ...new Set(
+        apartments.map(a => a.section)
+      ),
+    ].sort();
+
+  }, [apartments]);
+
+  // =========================
+  // FLOORS
+  // =========================
+
+  const floors = useMemo(() => {
+
+    return [
+      ...new Set(
+        apartments
+          .filter(
+            a =>
+              a.section === selectedSection
+          )
+          .map(a => a.floor)
+      ),
+    ].sort((a, b) => a - b);
+
+  }, [apartments, selectedSection]);
+
+  // =========================
+  // APARTMENTS ON FLOOR
+  // =========================
+
+  const floorApartments =
+    apartments
+      .filter(
+        a =>
+          a.section === selectedSection &&
+          a.floor === selectedFloor
+      )
+      .sort(
+        (a, b) =>
+          Number(a.number) -
+          Number(b.number)
+      );
+
+  // =========================
+  // SEARCH
+  // =========================
+
+  const searchResults =
+    apartments.filter((a) => {
+
+      const q =
+        search.toLowerCase();
+
+      if (!q) return false;
+
+      const owners =
+        (a.owners || [])
+          .map(o =>
+            `${o.first_name} ${o.last_name}`
+              .toLowerCase()
+          )
+          .join(" ");
+
+      const residents =
+        (a.residents || [])
+          .map(r =>
+            `${r.first_name} ${r.last_name}`
+              .toLowerCase()
+          )
+          .join(" ");
+
+      return (
+        String(a.number)
+          .toLowerCase()
+          .includes(q) ||
+
+        owners.includes(q) ||
+
+        residents.includes(q)
+      );
+
+    });
 
   return (
     <div>
@@ -48,182 +145,310 @@ export default function ApartmentsPage() {
         Add Apartment
       </button>
 
-      {apartments.map((a) => (
+      <hr />
+
+      <h2>Search Apartment</h2>
+
+      <input
+        placeholder="Apartment number, owner or resident"
+        value={search}
+        onChange={(e) =>
+          setSearch(e.target.value)
+        }
+        style={inputStyle}
+      />
+
+      {search && (
+
+        <div style={cardStyle}>
+
+          <h3>Search Results</h3>
+
+          {searchResults.map((a) => (
+
+            <button
+              key={a.id}
+              style={{
+                margin: 5,
+              }}
+              onClick={() =>
+                setSelectedApartment(a)
+              }
+            >
+              Apt #{a.number}
+            </button>
+
+          ))}
+
+          {searchResults.length === 0 && (
+            <p>No matches</p>
+          )}
+
+        </div>
+
+      )}
+
+      <hr />
+
+      <h2>Sections</h2>
+
+      {sections.map((section) => (
+
+        <button
+          key={section}
+          style={{
+            ...buttonStyle,
+            marginRight: 10,
+          }}
+          onClick={() => {
+
+            setSelectedSection(
+              section
+            );
+
+            setSelectedFloor(null);
+
+            setSelectedApartment(
+              null
+            );
+          }}
+        >
+          Section {section}
+        </button>
+
+      ))}
+
+      {selectedSection && (
+
+        <>
+          <hr />
+
+          <h2>
+            Floors of Section
+            {" "}
+            {selectedSection}
+          </h2>
+
+          {floors.map((floor) => (
+
+            <button
+              key={floor}
+              style={{
+                ...buttonStyle,
+                marginRight: 10,
+              }}
+              onClick={() => {
+
+                setSelectedFloor(
+                  floor
+                );
+
+                setSelectedApartment(
+                  null
+                );
+              }}
+            >
+              Floor {floor}
+            </button>
+
+          ))}
+        </>
+
+      )}
+
+      {selectedFloor !== null && (
+
+        <>
+          <hr />
+
+          <h2>
+            Apartments
+          </h2>
+
+          {floorApartments.map((a) => (
+
+            <button
+              key={a.id}
+              style={{
+                ...buttonStyle,
+                margin: 5,
+              }}
+              onClick={() =>
+                setSelectedApartment(a)
+              }
+            >
+              #{a.number}
+            </button>
+
+          ))}
+        </>
+
+      )}
+
+      {selectedApartment && (
 
         <div
-          key={a.id}
-          style={cardStyle}
+          style={{
+            ...cardStyle,
+            marginTop: 20,
+          }}
         >
 
-          <h3>
-            Apartment #{a.number}
-          </h3>
+          <h2>
+            Apartment #
+            {selectedApartment.number}
+          </h2>
 
-          <table
-            style={{
-              margin: "0 auto",
-            }}
-          >
+          <table>
+
             <tbody>
 
-              <InfoRow
-                label="Section"
-                value={a.section}
-              />
+              {Object.entries(
+                selectedApartment
+              )
+                .filter(
+                  ([key]) =>
+                    key !== "owners" &&
+                    key !== "residents"
+                )
+                .map(
+                  ([key, value]) => (
+                    <tr key={key}>
+                      <td>
+                        <strong>
+                          {key}
+                        </strong>
+                      </td>
 
-              <InfoRow
-                label="Floor"
-                value={a.floor}
-              />
-
-              <InfoRow
-                label="Levels"
-                value={a.level_count}
-              />
-
-              <InfoRow
-                label="Living Area"
-                value={a.living_area}
-              />
-
-              <InfoRow
-                label="Heated Area"
-                value={a.heated_area}
-              />
-
-              <InfoRow
-                label="Notes"
-                value={a.notes}
-              />
+                      <td>
+                        {String(value)}
+                      </td>
+                    </tr>
+                  )
+                )}
 
             </tbody>
+
           </table>
 
           <hr />
 
-          <strong>
-            Owners
-          </strong>
+          <h3>Owners</h3>
 
-          <ul>
-            {a.owners?.map((o) => (
-              <li key={o.id}>
-                {o.first_name}
+          {(selectedApartment.owners || [])
+            .map(o => (
+
+              <div key={o.id}>
+
+                <strong>
+                  {o.first_name}
+                  {" "}
+                  {o.last_name}
+                </strong>
+
+                <br />
+
+                Email:
                 {" "}
-                {o.last_name}
-              </li>
-            ))}
-          </ul>
+                {o.email}
 
-          <strong>
-            Residents
-          </strong>
+                <br />
 
-          <ul>
-            {a.residents?.map((r) => (
-              <li key={r.id}>
-                {r.first_name}
+                Phone:
                 {" "}
-                {r.last_name}
-              </li>
+                {o.phone || "-"}
+
+              </div>
+
             ))}
-          </ul>
+
+          <hr />
+
+          <h3>Residents</h3>
+
+          {(selectedApartment.residents || [])
+            .map(r => (
+
+              <div key={r.id}>
+
+                <strong>
+                  {r.first_name}
+                  {" "}
+                  {r.last_name}
+                </strong>
+
+                <br />
+
+                Email:
+                {" "}
+                {r.email}
+
+                <br />
+
+                Phone:
+                {" "}
+                {r.phone || "-"}
+
+              </div>
+
+            ))}
 
         </div>
 
-      ))}
+      )}
 
-<Modal
-  open={showCreateApartment}
-  title="Create Apartment"
-  onClose={() =>
-    setShowCreateApartment(false)
-  }
->
+      <Modal
+        open={showCreateApartment}
+        title="Create Apartment"
+        onClose={() =>
+          setShowCreateApartment(false)
+        }
+      >
 
-  <input
-    placeholder="Number"
-    value={newApartment.number}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        number: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
+        <input
+          placeholder="Number"
+          value={newApartment.number}
+          onChange={(e) =>
+            setNewApartment({
+              ...newApartment,
+              number: e.target.value,
+            })
+          }
+          style={inputStyle}
+        />
 
-  <input
-    placeholder="Section"
-    value={newApartment.section}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        section: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
+        <input
+          placeholder="Section"
+          value={newApartment.section}
+          onChange={(e) =>
+            setNewApartment({
+              ...newApartment,
+              section: e.target.value,
+            })
+          }
+          style={inputStyle}
+        />
 
-  <input
-    placeholder="Floor"
-    value={newApartment.floor}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        floor: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
+        <input
+          placeholder="Floor"
+          value={newApartment.floor}
+          onChange={(e) =>
+            setNewApartment({
+              ...newApartment,
+              floor: e.target.value,
+            })
+          }
+          style={inputStyle}
+        />
 
-  <input
-    placeholder="Levels"
-    value={newApartment.level_count}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        level_count: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
+        <button
+          onClick={createApartment}
+          style={buttonStyle}
+        >
+          Save Apartment
+        </button>
 
-  <input
-    placeholder="Living Area"
-    value={newApartment.living_area}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        living_area: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <textarea
-    placeholder="Notes"
-    value={newApartment.notes}
-    onChange={(e) =>
-      setNewApartment({
-        ...newApartment,
-        notes: e.target.value,
-      })
-    }
-    style={{
-      ...inputStyle,
-      minHeight: 100,
-    }}
-  />
-
-  <button
-    onClick={createApartment}
-    style={buttonStyle}
-  >
-    Save Apartment
-  </button>
-
-</Modal>
+      </Modal>
 
     </div>
   );
