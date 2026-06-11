@@ -32,7 +32,7 @@ notes: "",
 
 const loadApartments = async () => {
 
-
+```
 try {
 
   setLoading(true);
@@ -52,7 +52,7 @@ try {
   setLoading(false);
 
 }
-
+```
 
 };
 
@@ -62,7 +62,7 @@ try {
 
 const createApartment = async () => {
 
-
+```
 const res = await api(
   "/api/admin/create-apartment",
   {
@@ -104,13 +104,13 @@ if (res.ok) {
   );
 
 }
-
+```
 
 };
 
 return {
 
-
+```
 apartments,
 setApartments,
 
@@ -124,7 +124,7 @@ setNewApartment,
 
 loadApartments,
 createApartment,
-
+```
 
 };
 }

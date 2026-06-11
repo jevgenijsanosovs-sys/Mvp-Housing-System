@@ -39,19 +39,21 @@ function InfoField({
 
 export default function ApartmentsPage() {
 
-  const {
-    apartments,
+const {
+  apartments,
 
-    showCreateApartment,
-    setShowCreateApartment,
+  loading,
 
-    newApartment,
-    setNewApartment,
+  showCreateApartment,
+  setShowCreateApartment,
 
-    createApartment,
+  newApartment,
+  setNewApartment,
 
-    loadApartments,
-  } = useApartments();
+  createApartment,
+
+  loadApartments,
+} = useApartments();
 
   const [
     selectedSection,
@@ -82,6 +84,27 @@ export default function ApartmentsPage() {
     openOwners,
     setOpenOwners,
   ] = useState(true);
+
+	const [
+	  openSections,
+	  setOpenSections,
+	] = useState(true);
+
+	const [
+	  openFloors,
+	  setOpenFloors,
+	] = useState(false);
+
+	const [
+	  openApartmentList,
+	  setOpenApartmentList,
+	] = useState(false);
+
+	const [
+	  openApartmentCard,
+	  setOpenApartmentCard,
+	] = useState(false);
+
 
   const [
     openResidents,
@@ -186,6 +209,22 @@ export default function ApartmentsPage() {
         Apartments
       </h1>
 
+		{loading && (
+
+		  <div
+			style={{
+			  ...cardStyle,
+			  background: "#fff3cd",
+			  marginTop: 15,
+			}}
+		  >
+			Loading apartments...
+			<br />
+			Please wait.
+		  </div>
+
+		)}
+
       <button
         onClick={() =>
           setShowCreateApartment(true)
@@ -288,17 +327,21 @@ export default function ApartmentsPage() {
                 "tree"
               );
 
-              setSelectedSection(
-                section
-              );
+			setSelectedSection(section);
 
-              setSelectedFloor(
-                null
-              );
+			setSelectedFloor(null);
 
-              setSelectedApartment(
-                null
-              );
+			setSelectedApartment(null);
+
+			setOpenSections(false);
+
+			setOpenFloors(true);
+
+			setOpenApartmentList(false);
+
+			setOpenApartmentCard(false);
+
+
             }}
           >
             Section {section}
@@ -328,13 +371,16 @@ export default function ApartmentsPage() {
                 }}
                 onClick={() => {
 
-                  setSelectedFloor(
-                    floor
-                  );
+		setSelectedFloor(floor);
 
-                  setSelectedApartment(
-                    null
-                  );
+		setSelectedApartment(null);
+
+		setOpenFloors(false);
+
+		setOpenApartmentList(true);
+
+		setOpenApartmentCard(false);
+
                 }}
               >
                 Floor {floor}
@@ -371,9 +417,12 @@ export default function ApartmentsPage() {
                     "tree"
                   );
 
-                  setSelectedApartment(
-                    a
-                  );
+				setSelectedApartment(a);
+
+				setOpenApartmentList(false);
+
+				setOpenApartmentCard(true);
+
                 }}
               >
                 #{a.number}

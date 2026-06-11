@@ -9,6 +9,34 @@ import {
   inputStyle,
 } from "../styles/theme";
 
+function InfoField({
+  label,
+  value,
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 0",
+        borderBottom: "1px solid #eee",
+      }}
+    >
+      <strong>{label}</strong>
+
+      <span
+        style={{
+          textAlign: "right",
+        }}
+      >
+        {String(value ?? "")}
+      </span>
+    </div>
+  );
+}
+
 export default function ApartmentsPage() {
 
   const {
@@ -25,43 +53,56 @@ export default function ApartmentsPage() {
     loadApartments,
   } = useApartments();
 
-  const [selectedSection,
-    setSelectedSection] = useState(null);
+  const [
+    selectedSection,
+    setSelectedSection,
+  ] = useState(null);
 
-  const [selectedFloor,
-    setSelectedFloor] = useState(null);
+  const [
+    selectedFloor,
+    setSelectedFloor,
+  ] = useState(null);
 
-  const [selectedApartment,
-    setSelectedApartment] = useState(null);
+  const [
+    selectedApartment,
+    setSelectedApartment,
+  ] = useState(null);
 
-  const [search,
-    setSearch] = useState("");
-	
-	const [navigationSource,
-	  setNavigationSource] =
-	  useState("");
+  const [
+    navigationSource,
+    setNavigationSource,
+  ] = useState(null);
+
+  const [
+    search,
+    setSearch,
+  ] = useState("");
+
+  const [
+    openOwners,
+    setOpenOwners,
+  ] = useState(true);
+
+  const [
+    openResidents,
+    setOpenResidents,
+  ] = useState(true);
 
   useEffect(() => {
     loadApartments();
   }, []);
 
-  // =========================
-  // SECTIONS
-  // =========================
-
   const sections = useMemo(() => {
 
     return [
       ...new Set(
-        apartments.map(a => a.section)
+        apartments.map(
+          (a) => a.section
+        )
       ),
     ].sort();
 
   }, [apartments]);
-
-  // =========================
-  // FLOORS
-  // =========================
 
   const floors = useMemo(() => {
 
@@ -69,25 +110,31 @@ export default function ApartmentsPage() {
       ...new Set(
         apartments
           .filter(
-            a =>
-              a.section === selectedSection
+            (a) =>
+              a.section ===
+              selectedSection
           )
-          .map(a => a.floor)
+          .map(
+            (a) => a.floor
+          )
       ),
-    ].sort((a, b) => a - b);
+    ].sort(
+      (a, b) => a - b
+    );
 
-  }, [apartments, selectedSection]);
-
-  // =========================
-  // APARTMENTS ON FLOOR
-  // =========================
+  }, [
+    apartments,
+    selectedSection,
+  ]);
 
   const floorApartments =
     apartments
       .filter(
-        a =>
-          a.section === selectedSection &&
-          a.floor === selectedFloor
+        (a) =>
+          a.section ===
+            selectedSection &&
+          a.floor ===
+            selectedFloor
       )
       .sort(
         (a, b) =>
@@ -95,31 +142,31 @@ export default function ApartmentsPage() {
           Number(b.number)
       );
 
-  // =========================
-  // SEARCH
-  // =========================
-
   const searchResults =
     apartments.filter((a) => {
 
       const q =
         search.toLowerCase();
 
-      if (!q) return false;
+      if (!q) {
+        return false;
+      }
 
       const owners =
         (a.owners || [])
-          .map(o =>
-            `${o.first_name} ${o.last_name}`
-              .toLowerCase()
+          .map(
+            (o) =>
+              `${o.first_name} ${o.last_name}`
+                .toLowerCase()
           )
           .join(" ");
 
       const residents =
         (a.residents || [])
-          .map(r =>
-            `${r.first_name} ${r.last_name}`
-              .toLowerCase()
+          .map(
+            (r) =>
+              `${r.first_name} ${r.last_name}`
+                .toLowerCase()
           )
           .join(" ");
 
@@ -127,35 +174,22 @@ export default function ApartmentsPage() {
         String(a.number)
           .toLowerCase()
           .includes(q) ||
-
         owners.includes(q) ||
-
         residents.includes(q)
       );
-
     });
 
   return (
     <div>
 
-      <h1>Apartments</h1>
+      <h1>
+        Apartments
+      </h1>
 
       <button
-
-	onClick={() => {
-
-	  setSelectedSection(null);
-
-	  setSelectedFloor(null);
-
-	  setNavigationSource(
-		"search"
-	  );
-
-	  setSelectedApartment(a);
-
-	}}
-
+        onClick={() =>
+          setShowCreateApartment(true)
+        }
         style={buttonStyle}
       >
         Add Apartment
@@ -163,13 +197,17 @@ export default function ApartmentsPage() {
 
       <hr />
 
-      <h2>Search Apartment</h2>
+      <h2>
+        Search
+      </h2>
 
       <input
-        placeholder="Apartment number, owner or resident"
+        placeholder="Apartment, owner or resident"
         value={search}
         onChange={(e) =>
-          setSearch(e.target.value)
+          setSearch(
+            e.target.value
+          )
         }
         style={inputStyle}
       />
@@ -178,34 +216,48 @@ export default function ApartmentsPage() {
 
         <div style={cardStyle}>
 
-          <h3>Search Results</h3>
+          <h3>
+            Search Results
+          </h3>
 
-          {searchResults.map((a) => (
+          {searchResults.map(
+            (a) => (
 
-            <button
-              key={a.id}
-              style={{
-                margin: 5,
-              }}
+              <button
+                key={a.id}
+                style={{
+                  margin: 5,
+                }}
+                onClick={() => {
 
-			onClick={() => {
+                  setNavigationSource(
+                    "search"
+                  );
 
-			  setNavigationSource(
-				"tree"
-			  );
+                  setSelectedSection(
+                    null
+                  );
 
-			  setSelectedApartment(a);
+                  setSelectedFloor(
+                    null
+                  );
 
-			}}
+                  setSelectedApartment(
+                    a
+                  );
+                }}
+              >
+                Apt #{a.number}
+              </button>
 
-            >
-              Apt #{a.number}
-            </button>
+            )
+          )}
 
-          ))}
-
-          {searchResults.length === 0 && (
-            <p>No matches</p>
+          {searchResults.length ===
+            0 && (
+            <p>
+              No matches
+            </p>
           )}
 
         </div>
@@ -214,33 +266,46 @@ export default function ApartmentsPage() {
 
       <hr />
 
-      <h2>Sections</h2>
+      <h2>
+        Sections
+      </h2>
 
-      {sections.map((section) => (
+      {sections.map(
+        (section) => (
 
-        <button
-          key={section}
-          style={{
-            ...buttonStyle,
-            marginRight: 10,
-          }}
-          onClick={() => {
+          <button
+            key={section}
+            style={{
+              ...buttonStyle,
+              marginRight: 10,
+              marginBottom: 10,
+            }}
+            onClick={() => {
 
-            setSelectedSection(
-              section
-            );
+              setSearch("");
 
-            setSelectedFloor(null);
+              setNavigationSource(
+                "tree"
+              );
 
-            setSelectedApartment(
-              null
-            );
-          }}
-        >
-          Section {section}
-        </button>
+              setSelectedSection(
+                section
+              );
 
-      ))}
+              setSelectedFloor(
+                null
+              );
+
+              setSelectedApartment(
+                null
+              );
+            }}
+          >
+            Section {section}
+          </button>
+
+        )
+      )}
 
       {selectedSection && (
 
@@ -248,34 +313,36 @@ export default function ApartmentsPage() {
           <hr />
 
           <h2>
-            Floors of Section
-            {" "}
-            {selectedSection}
+            Floors
           </h2>
 
-          {floors.map((floor) => (
+          {floors.map(
+            (floor) => (
 
-            <button
-              key={floor}
-              style={{
-                ...buttonStyle,
-                marginRight: 10,
-              }}
-              onClick={() => {
+              <button
+                key={floor}
+                style={{
+                  ...buttonStyle,
+                  marginRight: 10,
+                  marginBottom: 10,
+                }}
+                onClick={() => {
 
-                setSelectedFloor(
-                  floor
-                );
+                  setSelectedFloor(
+                    floor
+                  );
 
-                setSelectedApartment(
-                  null
-                );
-              }}
-            >
-              Floor {floor}
-            </button>
+                  setSelectedApartment(
+                    null
+                  );
+                }}
+              >
+                Floor {floor}
+              </button>
 
-          ))}
+            )
+          )}
+
         </>
 
       )}
@@ -289,22 +356,32 @@ export default function ApartmentsPage() {
             Apartments
           </h2>
 
-          {floorApartments.map((a) => (
+          {floorApartments.map(
+            (a) => (
 
-            <button
-              key={a.id}
-              style={{
-                ...buttonStyle,
-                margin: 5,
-              }}
-              onClick={() =>
-                setSelectedApartment(a)
-              }
-            >
-              #{a.number}
-            </button>
+              <button
+                key={a.id}
+                style={{
+                  ...buttonStyle,
+                  margin: 5,
+                }}
+                onClick={() => {
 
-          ))}
+                  setNavigationSource(
+                    "tree"
+                  );
+
+                  setSelectedApartment(
+                    a
+                  );
+                }}
+              >
+                #{a.number}
+              </button>
+
+            )
+          )}
+
         </>
 
       )}
@@ -315,165 +392,252 @@ export default function ApartmentsPage() {
           style={{
             ...cardStyle,
             marginTop: 20,
+            maxWidth: 900,
           }}
         >
 
-			{navigationSource === "tree" && (
+          <h2>
+            Apartment #
+            {selectedApartment.number}
+          </h2>
 
-			  <div
-				style={{
-				  color: "#666",
-				  marginBottom: 10,
-				  fontSize: 14,
-				}}
-			  >
-				Section
-				{" "}
-				{selectedApartment.section}
+          {navigationSource ===
+            "tree" && (
+            <div
+              style={{
+                marginBottom: 20,
+                color: "#666",
+              }}
+            >
+              Section{" "}
+              {
+                selectedApartment.section
+              }
+              {" → "}
+              Floor{" "}
+              {
+                selectedApartment.floor
+              }
+              {" → "}
+              Apartment{" "}
+              {
+                selectedApartment.number
+              }
+            </div>
+          )}
 
-				{" > "}
+          <InfoField
+            label="Section"
+            value={
+              selectedApartment.section
+            }
+          />
 
-				Floor
-				{" "}
-				{selectedApartment.floor}
+          <InfoField
+            label="Floor"
+            value={
+              selectedApartment.floor
+            }
+          />
 
-				{" > "}
+          <InfoField
+            label="Living Area"
+            value={
+              selectedApartment.living_area
+            }
+          />
 
-				Apartment #
-				{selectedApartment.number}
-			  </div>
+          <InfoField
+            label="Non Living Area"
+            value={
+              selectedApartment.non_living_area
+            }
+          />
 
-			)}
+          <InfoField
+            label="Heated Area"
+            value={
+              selectedApartment.heated_area
+            }
+          />
 
-			{navigationSource === "search" && (
+          <InfoField
+            label="Residents Count"
+            value={
+              selectedApartment.residents_count
+            }
+          />
 
-			  <div
-				style={{
-				  color: "#666",
-				  marginBottom: 10,
-				  fontSize: 14,
-				}}
-			  >
-				Search Result
-				{" > "}
-				Apartment #
-				{selectedApartment.number}
-			  </div>
+          <InfoField
+            label="Levels"
+            value={
+              selectedApartment.level_count
+            }
+          />
 
-			)}
+          <InfoField
+            label="Rooms"
+            value={
+              selectedApartment.room_count
+            }
+          />
 
-			<h2>
-			  Apartment #
-			  {selectedApartment.number}
-			</h2>
+          <InfoField
+            label="Land Tax Area"
+            value={
+              selectedApartment.land_tax_area
+            }
+          />
 
-			<div>
+          <InfoField
+            label="Alternative Heating"
+            value={
+              selectedApartment.alternative_heating
+            }
+          />
 
-			  {Object.entries(selectedApartment)
-				.filter(
-				  ([key]) =>
-					key !== "owners" &&
-					key !== "residents"
-				)
-				.map(([key, value]) => (
+          <InfoField
+            label="Alternative Heating Area"
+            value={
+              selectedApartment.alternative_heating_area
+            }
+          />
 
-				  <div
-					key={key}
-					style={{
+          <InfoField
+            label="Hot Water Risers"
+            value={
+              selectedApartment.hot_water_riser_count
+            }
+          />
 
-					display: "flex",
-					justifyContent:
-					  "space-between",
-					gap: 15,
-					flexWrap: "wrap",
+          <InfoField
+            label="Created"
+            value={
+              selectedApartment.created_at
+            }
+          />
 
-					  borderBottom:
-						"1px solid #eee",
-					  padding: "8px 0",
-					}}
-				  >
+          <InfoField
+            label="Updated"
+            value={
+              selectedApartment.updated_at
+            }
+          />
 
-					<strong>
-					  {key}
-					</strong>
-
-					<span
-					  style={{
-						textAlign: "right",
-						wordBreak:
-						  "break-word",
-					  }}
-					>
-					  {String(value ?? "")}
-					</span>
-
-				  </div>
-
-				))}
-
-			</div>
+          <InfoField
+            label="Notes"
+            value={
+              selectedApartment.notes
+            }
+          />
 
           <hr />
 
-          <h3>Owners</h3>
+          <button
+            style={buttonStyle}
+            onClick={() =>
+              setOpenOwners(
+                !openOwners
+              )
+            }
+          >
+            Owners (
+            {
+              selectedApartment
+                .owners?.length
+            }
+            )
+          </button>
 
-          {(selectedApartment.owners || [])
-            .map(o => (
+          {openOwners && (
 
-              <div key={o.id}>
+            <>
+              {(selectedApartment.owners ||
+                []).map((o) => (
 
-                <strong>
-                  {o.first_name}
+                <div
+                  key={o.id}
+                  style={{
+                    marginTop: 10,
+                  }}
+                >
+                  <strong>
+                    {o.first_name}
+                    {" "}
+                    {o.last_name}
+                  </strong>
+
+                  <br />
+
+                  Email:
                   {" "}
-                  {o.last_name}
-                </strong>
+                  {o.email}
 
-                <br />
+                  <br />
 
-                Email:
-                {" "}
-                {o.email}
+                  Phone:
+                  {" "}
+                  {o.phone || "-"}
+                </div>
 
-                <br />
+              ))}
+            </>
 
-                Phone:
-                {" "}
-                {o.phone || "-"}
-
-              </div>
-
-            ))}
+          )}
 
           <hr />
 
-          <h3>Residents</h3>
+          <button
+            style={buttonStyle}
+            onClick={() =>
+              setOpenResidents(
+                !openResidents
+              )
+            }
+          >
+            Residents (
+            {
+              selectedApartment
+                .residents?.length
+            }
+            )
+          </button>
 
-          {(selectedApartment.residents || [])
-            .map(r => (
+          {openResidents && (
 
-              <div key={r.id}>
+            <>
+              {(selectedApartment.residents ||
+                []).map((r) => (
 
-                <strong>
-                  {r.first_name}
+                <div
+                  key={r.id}
+                  style={{
+                    marginTop: 10,
+                  }}
+                >
+                  <strong>
+                    {r.first_name}
+                    {" "}
+                    {r.last_name}
+                  </strong>
+
+                  <br />
+
+                  Email:
                   {" "}
-                  {r.last_name}
-                </strong>
+                  {r.email}
 
-                <br />
+                  <br />
 
-                Email:
-                {" "}
-                {r.email}
+                  Phone:
+                  {" "}
+                  {r.phone || "-"}
+                </div>
 
-                <br />
+              ))}
+            </>
 
-                Phone:
-                {" "}
-                {r.phone || "-"}
-
-              </div>
-
-            ))}
+          )}
 
         </div>
 
@@ -493,7 +657,8 @@ export default function ApartmentsPage() {
           onChange={(e) =>
             setNewApartment({
               ...newApartment,
-              number: e.target.value,
+              number:
+                e.target.value,
             })
           }
           style={inputStyle}
@@ -505,7 +670,8 @@ export default function ApartmentsPage() {
           onChange={(e) =>
             setNewApartment({
               ...newApartment,
-              section: e.target.value,
+              section:
+                e.target.value,
             })
           }
           style={inputStyle}
@@ -517,14 +683,17 @@ export default function ApartmentsPage() {
           onChange={(e) =>
             setNewApartment({
               ...newApartment,
-              floor: e.target.value,
+              floor:
+                e.target.value,
             })
           }
           style={inputStyle}
         />
 
         <button
-          onClick={createApartment}
+          onClick={
+            createApartment
+          }
           style={buttonStyle}
         >
           Save Apartment
