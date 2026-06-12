@@ -20,15 +20,19 @@ function InfoField({
         justifyContent: "space-between",
         alignItems: "center",
         gap: 10,
-        padding: "10px 0",
+        padding: "8px 0",
         borderBottom: "1px solid #eee",
       }}
     >
-      <strong>{label}</strong>
+      <strong>
+        {label}
+      </strong>
 
       <span
         style={{
           textAlign: "right",
+          maxWidth: "60%",
+          overflowWrap: "break-word",
         }}
       >
         {String(value ?? "")}
@@ -39,21 +43,20 @@ function InfoField({
 
 export default function ApartmentsPage() {
 
-const {
-  apartments,
+  const {
+    apartments,
+    loading,
 
-  loading,
+    showCreateApartment,
+    setShowCreateApartment,
 
-  showCreateApartment,
-  setShowCreateApartment,
+    newApartment,
+    setNewApartment,
 
-  newApartment,
-  setNewApartment,
+    createApartment,
 
-  createApartment,
-
-  loadApartments,
-} = useApartments();
+    loadApartments,
+  } = useApartments();
 
   const [
     selectedSection,
@@ -71,11 +74,6 @@ const {
   ] = useState(null);
 
   const [
-    navigationSource,
-    setNavigationSource,
-  ] = useState(null);
-
-  const [
     search,
     setSearch,
   ] = useState("");
@@ -85,35 +83,27 @@ const {
     setOpenOwners,
   ] = useState(true);
 
-	const [
-	  openSections,
-	  setOpenSections,
-	] = useState(true);
-
-	const [
-	  openFloors,
-	  setOpenFloors,
-	] = useState(false);
-
-	const [
-	  openApartmentList,
-	  setOpenApartmentList,
-	] = useState(false);
-
-	const [
-	  openApartmentCard,
-	  setOpenApartmentCard,
-	] = useState(false);
-
-
   const [
     openResidents,
     setOpenResidents,
   ] = useState(true);
 
+  // =========================
+  // MAIN ACCORDION
+  // =========================
+
+  const [
+    accordion,
+    setAccordion,
+  ] = useState("sections");
+
   useEffect(() => {
     loadApartments();
   }, []);
+
+  // =========================
+  // DATA
+  // =========================
 
   const sections = useMemo(() => {
 
@@ -161,8 +151,14 @@ const {
       )
       .sort(
         (a, b) =>
-          Number(a.number) -
-          Number(b.number)
+          String(a.number)
+            .localeCompare(
+              String(b.number),
+              undefined,
+              {
+                numeric: true,
+              }
+            )
       );
 
   const searchResults =
@@ -197,84 +193,197 @@ const {
         String(a.number)
           .toLowerCase()
           .includes(q) ||
+
         owners.includes(q) ||
+
         residents.includes(q)
       );
+
     });
 
   return (
-    <div>
 
-      <h1>
-        Apartments
-      </h1>
+  <div>
 
-		{loading && (
+    <h1>
+      Apartments
+    </h1>
 
-		  <div
-			style={{
-			  ...cardStyle,
-			  background: "#fff3cd",
-			  marginTop: 15,
-			}}
-		  >
-			Loading apartments...
-			<br />
-			Please wait.
-		  </div>
+    {loading && (
 
-		)}
-
-      <button
-        onClick={() =>
-          setShowCreateApartment(true)
-        }
-        style={buttonStyle}
+      <div
+        style={{
+          ...cardStyle,
+          background: "#fff3cd",
+          color: "#000",
+        }}
       >
-        Add Apartment
-      </button>
+        ⏳ Loading apartments...
+      </div>
 
-      <hr />
+    )}
 
-      <h2>
-        Search
-      </h2>
+    <button
+      onClick={() =>
+        setShowCreateApartment(true)
+      }
+      style={buttonStyle}
+    >
+      Add Apartment
+    </button>
 
-      <input
-        placeholder="Apartment, owner or resident"
-        value={search}
-        onChange={(e) =>
-          setSearch(
-            e.target.value
+    {/* SEARCH */}
+
+    <div
+      style={{
+        ...cardStyle,
+        marginTop: 15,
+      }}
+    >
+
+      <div
+        onClick={() =>
+          setAccordion(
+            accordion === "search"
+              ? null
+              : "search"
           )
         }
-        style={inputStyle}
-      />
+        style={{
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
+        {accordion === "search"
+          ? "▼"
+          : "►"} Search
+      </div>
 
-      {search && (
+      {accordion === "search" && (
 
-        <div style={cardStyle}>
+        <div
+          style={{
+            marginTop: 15,
+          }}
+        >
 
-          <h3>
-            Search Results
-          </h3>
+          <input
+            placeholder="Apartment, owner or resident"
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+            style={inputStyle}
+          />
 
-          {searchResults.map(
-            (a) => (
+          {search && (
+
+            <div
+              style={{
+                marginTop: 10,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+              }}
+            >
+
+              {searchResults.map(
+                (a) => (
+
+                  <button
+                    key={a.id}
+                    style={{
+                      ...buttonStyle,
+                      width: "auto",
+                      margin: 0,
+                    }}
+                    onClick={() => {
+
+                      setSelectedSection(
+                        null
+                      );
+
+                      setSelectedFloor(
+                        null
+                      );
+
+                      setSelectedApartment(
+                        a
+                      );
+
+                      setAccordion(
+                        "card"
+                      );
+
+                    }}
+                  >
+                    #{a.number}
+                  </button>
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+        </div>
+
+      )}
+
+    </div>
+
+    {/* SECTIONS */}
+
+    <div style={cardStyle}>
+
+      <div
+        onClick={() =>
+          setAccordion(
+            accordion === "sections"
+              ? null
+              : "sections"
+          )
+        }
+        style={{
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
+        {accordion === "sections"
+          ? "▼"
+          : "►"} Sections
+      </div>
+
+      {accordion === "sections" && (
+
+        <div
+          style={{
+            marginTop: 15,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+
+          {sections.map(
+            (section) => (
 
               <button
-                key={a.id}
+                key={section}
                 style={{
-                  margin: 5,
+                  ...buttonStyle,
+                  width: "auto",
+                  margin: 0,
                 }}
                 onClick={() => {
 
-                  setNavigationSource(
-                    "search"
-                  );
+                  setSearch("");
 
                   setSelectedSection(
-                    null
+                    section
                   );
 
                   setSelectedFloor(
@@ -282,474 +391,555 @@ const {
                   );
 
                   setSelectedApartment(
-                    a
+                    null
                   );
+
+                  setAccordion(
+                    "floors"
+                  );
+
                 }}
               >
-                Apt #{a.number}
+                {section}
               </button>
 
             )
-          )}
-
-          {searchResults.length ===
-            0 && (
-            <p>
-              No matches
-            </p>
           )}
 
         </div>
 
       )}
-
-      <hr />
-
-      <h2>
-        Sections
-      </h2>
-
-      {sections.map(
-        (section) => (
-
-          <button
-            key={section}
-            style={{
-              ...buttonStyle,
-              marginRight: 10,
-              marginBottom: 10,
-            }}
-            onClick={() => {
-
-              setSearch("");
-
-              setNavigationSource(
-                "tree"
-              );
-
-			setSelectedSection(section);
-
-			setSelectedFloor(null);
-
-			setSelectedApartment(null);
-
-			setOpenSections(false);
-
-			setOpenFloors(true);
-
-			setOpenApartmentList(false);
-
-			setOpenApartmentCard(false);
-
-
-            }}
-          >
-            Section {section}
-          </button>
-
-        )
-      )}
-
-      {selectedSection && (
-
-        <>
-          <hr />
-
-          <h2>
-            Floors
-          </h2>
-
-          {floors.map(
-            (floor) => (
-
-              <button
-                key={floor}
-                style={{
-                  ...buttonStyle,
-                  marginRight: 10,
-                  marginBottom: 10,
-                }}
-                onClick={() => {
-
-		setSelectedFloor(floor);
-
-		setSelectedApartment(null);
-
-		setOpenFloors(false);
-
-		setOpenApartmentList(true);
-
-		setOpenApartmentCard(false);
-
-                }}
-              >
-                Floor {floor}
-              </button>
-
-            )
-          )}
-
-        </>
-
-      )}
-
-      {selectedFloor !== null && (
-
-        <>
-          <hr />
-
-          <h2>
-            Apartments
-          </h2>
-
-          {floorApartments.map(
-            (a) => (
-
-              <button
-                key={a.id}
-                style={{
-                  ...buttonStyle,
-                  margin: 5,
-                }}
-                onClick={() => {
-
-                  setNavigationSource(
-                    "tree"
-                  );
-
-				setSelectedApartment(a);
-
-				setOpenApartmentList(false);
-
-				setOpenApartmentCard(true);
-
-                }}
-              >
-                #{a.number}
-              </button>
-
-            )
-          )}
-
-        </>
-
-      )}
-
-      {selectedApartment && (
-
-        <div
-          style={{
-            ...cardStyle,
-            marginTop: 20,
-            maxWidth: 900,
-          }}
-        >
-
-          <h2>
-            Apartment #
-            {selectedApartment.number}
-          </h2>
-
-          {navigationSource ===
-            "tree" && (
-            <div
-              style={{
-                marginBottom: 20,
-                color: "#666",
-              }}
-            >
-              Section{" "}
-              {
-                selectedApartment.section
-              }
-              {" → "}
-              Floor{" "}
-              {
-                selectedApartment.floor
-              }
-              {" → "}
-              Apartment{" "}
-              {
-                selectedApartment.number
-              }
-            </div>
-          )}
-
-          <InfoField
-            label="Section"
-            value={
-              selectedApartment.section
-            }
-          />
-
-          <InfoField
-            label="Floor"
-            value={
-              selectedApartment.floor
-            }
-          />
-
-          <InfoField
-            label="Living Area"
-            value={
-              selectedApartment.living_area
-            }
-          />
-
-          <InfoField
-            label="Non Living Area"
-            value={
-              selectedApartment.non_living_area
-            }
-          />
-
-          <InfoField
-            label="Heated Area"
-            value={
-              selectedApartment.heated_area
-            }
-          />
-
-          <InfoField
-            label="Residents Count"
-            value={
-              selectedApartment.residents_count
-            }
-          />
-
-          <InfoField
-            label="Levels"
-            value={
-              selectedApartment.level_count
-            }
-          />
-
-          <InfoField
-            label="Rooms"
-            value={
-              selectedApartment.room_count
-            }
-          />
-
-          <InfoField
-            label="Land Tax Area"
-            value={
-              selectedApartment.land_tax_area
-            }
-          />
-
-          <InfoField
-            label="Alternative Heating"
-            value={
-              selectedApartment.alternative_heating
-            }
-          />
-
-          <InfoField
-            label="Alternative Heating Area"
-            value={
-              selectedApartment.alternative_heating_area
-            }
-          />
-
-          <InfoField
-            label="Hot Water Risers"
-            value={
-              selectedApartment.hot_water_riser_count
-            }
-          />
-
-          <InfoField
-            label="Created"
-            value={
-              selectedApartment.created_at
-            }
-          />
-
-          <InfoField
-            label="Updated"
-            value={
-              selectedApartment.updated_at
-            }
-          />
-
-          <InfoField
-            label="Notes"
-            value={
-              selectedApartment.notes
-            }
-          />
-
-          <hr />
-
-          <button
-            style={buttonStyle}
-            onClick={() =>
-              setOpenOwners(
-                !openOwners
-              )
-            }
-          >
-            Owners (
-            {
-              selectedApartment
-                .owners?.length
-            }
-            )
-          </button>
-
-          {openOwners && (
-
-            <>
-              {(selectedApartment.owners ||
-                []).map((o) => (
-
-                <div
-                  key={o.id}
-                  style={{
-                    marginTop: 10,
-                  }}
-                >
-                  <strong>
-                    {o.first_name}
-                    {" "}
-                    {o.last_name}
-                  </strong>
-
-                  <br />
-
-                  Email:
-                  {" "}
-                  {o.email}
-
-                  <br />
-
-                  Phone:
-                  {" "}
-                  {o.phone || "-"}
-                </div>
-
-              ))}
-            </>
-
-          )}
-
-          <hr />
-
-          <button
-            style={buttonStyle}
-            onClick={() =>
-              setOpenResidents(
-                !openResidents
-              )
-            }
-          >
-            Residents (
-            {
-              selectedApartment
-                .residents?.length
-            }
-            )
-          </button>
-
-          {openResidents && (
-
-            <>
-              {(selectedApartment.residents ||
-                []).map((r) => (
-
-                <div
-                  key={r.id}
-                  style={{
-                    marginTop: 10,
-                  }}
-                >
-                  <strong>
-                    {r.first_name}
-                    {" "}
-                    {r.last_name}
-                  </strong>
-
-                  <br />
-
-                  Email:
-                  {" "}
-                  {r.email}
-
-                  <br />
-
-                  Phone:
-                  {" "}
-                  {r.phone || "-"}
-                </div>
-
-              ))}
-            </>
-
-          )}
-
-        </div>
-
-      )}
-
-      <Modal
-        open={showCreateApartment}
-        title="Create Apartment"
-        onClose={() =>
-          setShowCreateApartment(false)
-        }
-      >
-
-        <input
-          placeholder="Number"
-          value={newApartment.number}
-          onChange={(e) =>
-            setNewApartment({
-              ...newApartment,
-              number:
-                e.target.value,
-            })
-          }
-          style={inputStyle}
-        />
-
-        <input
-          placeholder="Section"
-          value={newApartment.section}
-          onChange={(e) =>
-            setNewApartment({
-              ...newApartment,
-              section:
-                e.target.value,
-            })
-          }
-          style={inputStyle}
-        />
-
-        <input
-          placeholder="Floor"
-          value={newApartment.floor}
-          onChange={(e) =>
-            setNewApartment({
-              ...newApartment,
-              floor:
-                e.target.value,
-            })
-          }
-          style={inputStyle}
-        />
-
-        <button
-          onClick={
-            createApartment
-          }
-          style={buttonStyle}
-        >
-          Save Apartment
-        </button>
-
-      </Modal>
 
     </div>
-  );
+
+    {/* FLOORS */}
+
+    {selectedSection && (
+
+      <div style={cardStyle}>
+
+        <div
+          onClick={() =>
+            setAccordion(
+              accordion === "floors"
+                ? null
+                : "floors"
+            )
+          }
+          style={{
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          {accordion === "floors"
+            ? "▼"
+            : "►"} Floors
+        </div>
+
+        {accordion === "floors" && (
+
+          <div
+            style={{
+              marginTop: 15,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+
+            {floors.map(
+              (floor) => (
+
+                <button
+                  key={floor}
+                  style={{
+                    ...buttonStyle,
+                    width: "auto",
+                    margin: 0,
+                  }}
+                  onClick={() => {
+
+                    setSelectedFloor(
+                      floor
+                    );
+
+                    setSelectedApartment(
+                      null
+                    );
+
+                    setAccordion(
+                      "apartments"
+                    );
+
+                  }}
+                >
+                  {floor}
+                </button>
+
+              )
+            )}
+
+          </div>
+
+        )}
+
+      </div>
+
+    )}
+
+    {/* APARTMENTS */}
+
+    {selectedFloor !== null && (
+
+      <div style={cardStyle}>
+
+        <div
+          onClick={() =>
+            setAccordion(
+              accordion === "apartments"
+                ? null
+                : "apartments"
+            )
+          }
+          style={{
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          {accordion === "apartments"
+            ? "▼"
+            : "►"} Apartments
+        </div>
+
+        {accordion === "apartments" && (
+
+          <div
+            style={{
+              marginTop: 15,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+
+            {floorApartments.map(
+              (a) => (
+
+                <button
+                  key={a.id}
+                  style={{
+                    ...buttonStyle,
+                    width: "auto",
+                    margin: 0,
+                  }}
+                  onClick={() => {
+
+                    setSelectedApartment(
+                      a
+                    );
+
+                    setAccordion(
+                      "card"
+                    );
+
+                  }}
+                >
+                  #{a.number}
+                </button>
+
+              )
+            )}
+
+          </div>
+
+        )}
+
+      </div>
+
+    )}
+
+    {selectedApartment && (
+
+      <div style={cardStyle}>
+
+        <div
+          onClick={() =>
+            setAccordion(
+              accordion === "card"
+                ? null
+                : "card"
+            )
+          }
+          style={{
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          {accordion === "card"
+            ? "▼"
+            : "►"} Apartment #{selectedApartment.number}
+        </div>
+
+        {accordion === "card" && (
+
+          <>
+
+            <div
+              style={{
+                marginTop: 15,
+                background: "#f8fafc",
+                borderRadius: 12,
+                padding: 15,
+              }}
+            >
+
+              <h3>
+                General Information
+              </h3>
+
+              <InfoField
+                label="Number"
+                value={selectedApartment.number}
+              />
+
+              <InfoField
+                label="Section"
+                value={selectedApartment.section}
+              />
+
+              <InfoField
+                label="Floor"
+                value={selectedApartment.floor}
+              />
+
+              <InfoField
+                label="Rooms"
+                value={selectedApartment.room_count}
+              />
+
+              <InfoField
+                label="Residents"
+                value={selectedApartment.residents_count}
+              />
+
+              <InfoField
+                label="Levels"
+                value={selectedApartment.level_count}
+              />
+
+            </div>
+
+            <div
+              style={{
+                marginTop: 15,
+                background: "#f8fafc",
+                borderRadius: 12,
+                padding: 15,
+              }}
+            >
+
+              <h3>
+                Areas
+              </h3>
+
+              <InfoField
+                label="Living Area"
+                value={selectedApartment.living_area}
+              />
+
+              <InfoField
+                label="Non Living Area"
+                value={selectedApartment.non_living_area}
+              />
+
+              <InfoField
+                label="Heated Area"
+                value={selectedApartment.heated_area}
+              />
+
+              <InfoField
+                label="Land Tax Area"
+                value={selectedApartment.land_tax_area}
+              />
+
+              <InfoField
+                label="Alternative Heating Area"
+                value={
+                  selectedApartment.alternative_heating_area
+                }
+              />
+
+            </div>
+
+            <div
+              style={{
+                marginTop: 15,
+                background: "#f8fafc",
+                borderRadius: 12,
+                padding: 15,
+              }}
+            >
+
+              <h3>
+                Technical
+              </h3>
+
+              <InfoField
+                label="Alternative Heating"
+                value={
+                  selectedApartment.alternative_heating
+                    ? "Yes"
+                    : "No"
+                }
+              />
+
+              <InfoField
+                label="Hot Water Risers"
+                value={
+                  selectedApartment.hot_water_riser_count
+                }
+              />
+
+              <InfoField
+                label="Created"
+                value={
+                  selectedApartment.created_at
+                }
+              />
+
+              <InfoField
+                label="Updated"
+                value={
+                  selectedApartment.updated_at
+                }
+              />
+
+              <InfoField
+                label="Notes"
+                value={
+                  selectedApartment.notes
+                }
+              />
+
+            </div>
+
+            {/* OWNERS */}
+
+            <div
+              style={{
+                marginTop: 15,
+                background: "#f8fafc",
+                borderRadius: 12,
+                padding: 15,
+              }}
+            >
+
+              <div
+                onClick={() =>
+                  setOpenOwners(
+                    !openOwners
+                  )
+                }
+                style={{
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                {openOwners
+                  ? "▼"
+                  : "►"} Owners
+              </div>
+
+              {openOwners && (
+
+                <div
+                  style={{
+                    marginTop: 10,
+                  }}
+                >
+
+                  {(selectedApartment.owners || [])
+                    .map((o) => (
+
+                      <div
+                        key={o.id}
+                        style={{
+                          borderBottom:
+                            "1px solid #ddd",
+                          padding:
+                            "10px 0",
+                        }}
+                      >
+
+                        <strong>
+                          {o.first_name}
+                          {" "}
+                          {o.last_name}
+                        </strong>
+
+                        <br />
+
+                        Email:
+                        {" "}
+                        {o.email || "-"}
+
+                        <br />
+
+                        Phone:
+                        {" "}
+                        {o.phone || "-"}
+
+                      </div>
+
+                    ))}
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* RESIDENTS */}
+
+            <div
+              style={{
+                marginTop: 15,
+                background: "#f8fafc",
+                borderRadius: 12,
+                padding: 15,
+              }}
+            >
+
+              <div
+                onClick={() =>
+                  setOpenResidents(
+                    !openResidents
+                  )
+                }
+                style={{
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                {openResidents
+                  ? "▼"
+                  : "►"} Residents
+              </div>
+
+              {openResidents && (
+
+                <div
+                  style={{
+                    marginTop: 10,
+                  }}
+                >
+
+                  {(selectedApartment.residents || [])
+                    .map((r) => (
+
+                      <div
+                        key={r.id}
+                        style={{
+                          borderBottom:
+                            "1px solid #ddd",
+                          padding:
+                            "10px 0",
+                        }}
+                      >
+
+                        <strong>
+                          {r.first_name}
+                          {" "}
+                          {r.last_name}
+                        </strong>
+
+                        <br />
+
+                        Email:
+                        {" "}
+                        {r.email || "-"}
+
+                        <br />
+
+                        Phone:
+                        {" "}
+                        {r.phone || "-"}
+
+                      </div>
+
+                    ))}
+
+                </div>
+
+              )}
+
+            </div>
+
+          </>
+
+        )}
+
+      </div>
+
+    )}
+
+    <Modal
+      open={showCreateApartment}
+      title="Create Apartment"
+      onClose={() =>
+        setShowCreateApartment(false)
+      }
+    >
+
+      <input
+        placeholder="Number"
+        value={newApartment.number}
+        onChange={(e) =>
+          setNewApartment({
+            ...newApartment,
+            number: e.target.value,
+          })
+        }
+        style={inputStyle}
+      />
+
+      <input
+        placeholder="Section"
+        value={newApartment.section}
+        onChange={(e) =>
+          setNewApartment({
+            ...newApartment,
+            section: e.target.value,
+          })
+        }
+        style={inputStyle}
+      />
+
+      <input
+        placeholder="Floor"
+        value={newApartment.floor}
+        onChange={(e) =>
+          setNewApartment({
+            ...newApartment,
+            floor: e.target.value,
+          })
+        }
+        style={inputStyle}
+      />
+
+      <button
+        onClick={createApartment}
+        style={buttonStyle}
+      >
+        Save Apartment
+      </button>
+
+    </Modal>
+
+  </div>
+
+);
+
 }
+
+
