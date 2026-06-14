@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   useNavigate,
 } from "react-router-dom";
@@ -9,6 +7,10 @@ import MenuButton from "./MenuButton";
 import {
   useAuth,
 } from "../context/AuthContext";
+
+import {
+  useMode,
+} from "../context/ModeContext";
 
 import {
   sidebar,
@@ -27,19 +29,21 @@ export default function Sidebar() {
     me,
     logout,
   } = useAuth();
-  
+
+  const {
+    mode,
+    setMode,
+  } = useMode();
+
+  const navigate =
+    useNavigate();
+
   if (!me) {
     return null;
   }
-  
 
-  const navigate = useNavigate();
-
-  const [mode, setMode] =
-    useState("resident");
-
-  const roles = me?.roles || [];
-
+  const roles =
+    me?.roles || [];
 
   const hasResident =
     roles.includes("resident") ||
@@ -62,7 +66,7 @@ export default function Sidebar() {
         {me?.user?.last_name}
       </div>
 
-      {/* MODES */}
+      {/* MODE SWITCH */}
 
       <div style={modeBlock}>
 
@@ -104,7 +108,7 @@ export default function Sidebar() {
 
       <hr style={divider} />
 
-      {/* RESIDENT */}
+      {/* RESIDENT MENU */}
 
       {mode === "resident" && (
 
@@ -128,7 +132,7 @@ export default function Sidebar() {
 
       )}
 
-      {/* ADMIN */}
+      {/* ADMIN MENU */}
 
       {mode === "admin" && (
 
