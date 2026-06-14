@@ -22,7 +22,7 @@ export default function DashboardPage() {
   const roles = me?.roles || [];
 
   const mode =
-    roles.includes("admin")
+    const { mode } = useMode();
       ? "admin"
       : "resident";
 
