@@ -1,188 +1,230 @@
 import {
-  useNavigate,
+useNavigate,
 } from "react-router-dom";
 
 import MenuButton from "./MenuButton";
 
 import {
-  useAuth,
+useAuth,
 } from "../context/AuthContext";
 
 import {
-  useMode,
+useMode,
 } from "../context/ModeContext";
 
 import {
-  sidebar,
-  buttonStyle,
-  menuButton,
-  activeButton,
-  divider,
-  sidebarTitle,
-  sidebarUser,
-  modeBlock,
+sidebar,
+buttonStyle,
+menuButton,
+activeButton,
+divider,
+sidebarTitle,
+sidebarUser,
+modeBlock,
 } from "../styles/theme";
 
-export default function Sidebar() {
+export default function Sidebar({
 
-  const {
-    me,
-    logout,
-  } = useAuth();
+isMobile = false,
 
-  const {
-    mode,
-    setMode,
-  } = useMode();
+sidebarOpen = false,
 
-  const navigate =
-    useNavigate();
+setSidebarOpen = () => {},
 
-  if (!me) {
-    return null;
-  }
+}) {
 
-  const roles =
-    me?.roles || [];
+const {
+me,
+logout,
+} = useAuth();
 
-  const hasResident =
-    roles.includes("resident") ||
-    roles.includes("owner");
+const {
+mode,
+setMode,
+} = useMode();
 
-  const hasAdmin =
-    roles.includes("admin");
+const navigate =
+useNavigate();
 
-  return (
+if (!me) {
+return null;
+}
 
-    <div style={sidebar}>
+const roles =
+me?.roles || [];
 
-      <h2 style={sidebarTitle}>
-        MVX System
-      </h2>
+const hasResident =
+roles.includes("resident") ||
+roles.includes("owner");
 
-      <div style={sidebarUser}>
-        {me?.user?.first_name}
-        {" "}
-        {me?.user?.last_name}
-      </div>
+const hasAdmin =
+roles.includes("admin");
 
-      {/* MODE SWITCH */}
+const go = (path) => {
 
-      <div style={modeBlock}>
 
-        {hasResident && (
+navigate(path);
 
-          <button
-            style={
-              mode === "resident"
-                ? activeButton
-                : menuButton
-            }
-            onClick={() =>
-              setMode("resident")
-            }
-          >
-            Resident Mode
-          </button>
+if (isMobile) {
+  setSidebarOpen(false);
+}
 
-        )}
 
-        {hasAdmin && (
+};
 
-          <button
-            style={
-              mode === "admin"
-                ? activeButton
-                : menuButton
-            }
-            onClick={() =>
-              setMode("admin")
-            }
-          >
-            Admin Mode
-          </button>
+const sidebarStyle = {
 
-        )}
 
-      </div>
+...sidebar,
 
-      <hr style={divider} />
+...(isMobile
+  ? {
+      position: "fixed",
 
-      {/* RESIDENT MENU */}
+      top: 0,
+      left: sidebarOpen
+        ? 0
+        : -280,
 
-      {mode === "resident" && (
+      height: "100vh",
 
-        <>
+      zIndex: 1800,
 
-          <MenuButton
-            title="Dashboard"
-            onClick={() =>
-              navigate("/")
-            }
-          />
+      transition:
+        "left 0.25s ease",
+    }
+  : {}),
 
-          <MenuButton
-            title="Water Meters"
-            onClick={() =>
-              navigate("/water")
-            }
-          />
 
-        </>
+};
 
-      )}
+return (
 
-      {/* ADMIN MENU */}
 
-      {mode === "admin" && (
+<div style={sidebarStyle}>
 
-        <>
+  <h2 style={sidebarTitle}>
+    MVX System
+  </h2>
 
-          <MenuButton
-            title="Dashboard"
-            onClick={() =>
-              navigate("/")
-            }
-          />
+  <div style={sidebarUser}>
+    {me?.user?.first_name}
+    {" "}
+    {me?.user?.last_name}
+  </div>
 
-          <MenuButton
-            title="Users"
-            onClick={() =>
-              navigate("/users")
-            }
-          />
+  <div style={modeBlock}>
 
-          <MenuButton
-            title="Apartments"
-            onClick={() =>
-              navigate("/apartments")
-            }
-          />
-
-          <MenuButton
-            title="Water Readings"
-            onClick={() =>
-              navigate("/water-admin")
-            }
-          />
-
-        </>
-
-      )}
-
-      <div style={{ flex: 1 }} />
-
-      <hr style={divider} />
+    {hasResident && (
 
       <button
-        onClick={logout}
-        style={buttonStyle}
+        style={
+          mode === "resident"
+            ? activeButton
+            : menuButton
+        }
+        onClick={() =>
+          setMode("resident")
+        }
       >
-        Logout
+        Resident Mode
       </button>
 
-    </div>
+    )}
 
-  );
+    {hasAdmin && (
+
+      <button
+        style={
+          mode === "admin"
+            ? activeButton
+            : menuButton
+        }
+        onClick={() =>
+          setMode("admin")
+        }
+      >
+        Admin Mode
+      </button>
+
+    )}
+
+  </div>
+
+  <hr style={divider} />
+
+  {mode === "resident" && (
+
+    <>
+
+      <MenuButton
+        title="Dashboard"
+        onClick={() =>
+          go("/")
+        }
+      />
+
+      <MenuButton
+        title="Water Meters"
+        onClick={() =>
+          go("/water")
+        }
+      />
+
+    </>
+
+  )}
+
+  {mode === "admin" && (
+
+    <>
+
+      <MenuButton
+        title="Dashboard"
+        onClick={() =>
+          go("/")
+        }
+      />
+
+      <MenuButton
+        title="Users"
+        onClick={() =>
+          go("/users")
+        }
+      />
+
+      <MenuButton
+        title="Apartments"
+        onClick={() =>
+          go("/apartments")
+        }
+      />
+
+      <MenuButton
+        title="Water Readings"
+        onClick={() =>
+          go("/water-admin")
+        }
+      />
+
+    </>
+
+  )}
+
+  <div style={{ flex: 1 }} />
+
+  <hr style={divider} />
+
+  <button
+    onClick={logout}
+    style={buttonStyle}
+  >
+    Logout
+  </button>
+
+</div>
+
+
+);
 
 }
