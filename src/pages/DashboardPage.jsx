@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
 import DashboardCard from "../components/DashboardCard";
-
 import useDashboard from "../hooks/useDashboard";
-import { useAuth } from "../context/AuthContext";
+
+import { useMode } from "../context/ModeContext";
 
 import {
   cardStyle,
@@ -12,19 +12,12 @@ import {
 
 export default function DashboardPage() {
 
-  const { me } = useAuth();
+  const { mode } = useMode();
 
   const {
     dashboard,
     loadDashboard,
   } = useDashboard();
-
-  const roles = me?.roles || [];
-
-  const mode =
-    const { mode } = useMode();
-      ? "admin"
-      : "resident";
 
   useEffect(() => {
 
@@ -32,7 +25,7 @@ export default function DashboardPage() {
       loadDashboard();
     }
 
-  }, []);
+  }, [mode]);
 
   return (
     <div>
@@ -84,6 +77,7 @@ export default function DashboardPage() {
           />
 
         </div>
+
       )}
 
     </div>
