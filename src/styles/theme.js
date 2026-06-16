@@ -5,7 +5,7 @@ const layout = {
 };
 
 const sidebar = {
-  width: 280,
+  width: 260,
   background: "#111827",
   color: "white",
   padding: 20,
