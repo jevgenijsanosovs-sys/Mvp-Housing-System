@@ -57,7 +57,7 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
-{
+
   return (
     <div>
 
@@ -330,5 +330,4 @@ export default function UsersPage() {
 
     </div>
   );
-}
 }
