@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-
+import { useState } from "react";
 import { useUsers } from "../hooks/useUsers";
 import useApartments from "../hooks/useApartments";
 
@@ -17,6 +17,12 @@ import Modal from "../components/Modal";
 
 export default function UsersPage() {
 
+  const [selectedUser, setSelectedUser] =
+    useState(null);
+  
+  const isMobile =
+    window.innerWidth < 768;
+  
   const {
     users,
     loadUsers,
@@ -70,58 +76,157 @@ export default function UsersPage() {
         Add User
       </button>
 
-      <table style={tableStyle}>
+{!isMobile ? (
 
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Assignments</th>
-          </tr>
-        </thead>
+  <table style={tableStyle}>
 
-        <tbody>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Assignments</th>
+      </tr>
+    </thead>
 
-          {users.map((u) => (
+    <tbody>
 
-            <tr key={u.id}>
+      {users.map((u) => (
 
-              <td>{u.id}</td>
-              <td>{u.first_name}</td>
-              <td>{u.last_name}</td>
-              <td>{u.email}</td>
-              <td>{u.phone}</td>
-              <td>
+        <tr key={u.id}>
 
-                <button
-                  style={menuButton}
-                  onClick={async () => {
+          <td>{u.id}</td>
+          <td>{u.first_name}</td>
+          <td>{u.last_name}</td>
+          <td>{u.email}</td>
+          <td>{u.phone}</td>
 
-                    await loadApartments();
+          <td>
 
-                    setAssignmentUser(u);
+            <button
+              style={menuButton}
+              onClick={async () => {
 
-                    await loadUserAssignments(
-                      u.id
-                    );
-                  }}
-                >
-                  Assign Apartment
-                </button>
+                await loadApartments();
 
-              </td>
+                setAssignmentUser(u);
 
-            </tr>
+                await loadUserAssignments(
+                  u.id
+                );
 
-          ))}
+              }}
+            >
+              Assign Apartment
+            </button>
 
-        </tbody>
+          </td>
 
-      </table>
+        </tr>
 
+      ))}
+
+    </tbody>
+
+  </table>
+
+) : (
+
+  <div>
+
+    {users.map((u) => (
+
+      <div
+        key={u.id}
+        onClick={() =>
+          setSelectedUser(u)
+        }
+        style={{
+          background: "white",
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 12,
+          textAlign: "left",
+          cursor: "pointer",
+        }}
+      >
+
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+          }}
+        >
+          {u.first_name}
+          {" "}
+          {u.last_name}
+        </div>
+
+        <div
+          style={{
+            marginTop: 6,
+            color: "#6b7280",
+          }}
+        >
+          {u.email}
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+
+)}
+
+<Modal
+  open={!!selectedUser}
+  title="User Information"
+  onClose={() =>
+    setSelectedUser(null)
+  }
+>
+
+  {selectedUser && (
+
+    <div
+      style={{
+        textAlign: "left",
+      }}
+    >
+
+      <p>
+        <b>First Name:</b>
+        {" "}
+        {selectedUser.first_name}
+      </p>
+
+      <p>
+        <b>Last Name:</b>
+        {" "}
+        {selectedUser.last_name}
+      </p>
+
+      <p>
+        <b>Email:</b>
+        {" "}
+        {selectedUser.email}
+      </p>
+
+      <p>
+        <b>Phone:</b>
+        {" "}
+        {selectedUser.phone}
+      </p>
+
+    </div>
+
+  )}
+
+</Modal>
+      
 {/* CREATE USER MODAL */}
 
 <Modal
