@@ -86,7 +86,7 @@ const sidebarStyle = {
         ? 0
         : -320,
 
-      height: "80vh",
+      height: "90vh",
       overflowY: "auto",
 
       zIndex: 1800,
