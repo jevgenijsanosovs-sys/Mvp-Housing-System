@@ -106,6 +106,7 @@ return (
 
   <h2 style={sidebarTitle}>
     MVX System
+    <br></br>
     DzĪKS IRLAVA 20
   </h2>
 
