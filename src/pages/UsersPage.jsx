@@ -319,28 +319,15 @@ export default function UsersPage() {
         {selectedUser.phone}
       </p>
 
-      <div style={{ marginBottom: 12 }}>
-        <strong>Owner</strong>
+      <p>
+        <b>Owner:</b>
+        {selectedUser.owner_apartments}
+      </p>
+      <p>
+        <b>Resident:</b>
+        {selectedUser.resident_apartments}
+      </p>
       
-        <div style={{ marginTop: 6 }}>
-          <ApartmentChips
-            apartments={selectedUser.owner_apartments}
-          />
-        </div>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <strong>Resident</strong>
-      
-        <div style={{ marginTop: 6 }}>
-          <ApartmentChips
-            apartments={selectedUser.resident_apartments}
-          />
-        </div>
-      </div>
-      
-
-
     </div>
 
   )}
