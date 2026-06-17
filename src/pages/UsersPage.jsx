@@ -171,7 +171,21 @@ export default function UsersPage() {
             fontSize: 14,
           }}
         >
-          Apartments: {u.apartment_numbers || "—"}
+          {u.owner_apartments && (
+            <div>
+              Owner: {u.owner_apartments}
+            </div>
+          )}
+        
+          {u.resident_apartments && (
+            <div>
+              Resident: {u.resident_apartments}
+            </div>
+          )}
+        
+          {!u.owner_apartments &&
+            !u.resident_apartments &&
+            "No apartments"}
         </div>
 
         <button
@@ -246,10 +260,16 @@ export default function UsersPage() {
       </p>
 
       <p>
-        <b>Apartments:</b>
+        <b>Owner:</b>
         {" "}
-        {selectedUser.apartment_numbers || "—"}
-      </p>      
+        {selectedUser.owner_apartments || "—"}
+      </p>
+      
+      <p>
+        <b>Resident:</b>
+        {" "}
+        {selectedUser.resident_apartments || "—"}
+      </p>    
 
     </div>
 
