@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useUsers } from "../hooks/useUsers";
 import useApartments from "../hooks/useApartments";
-
+import { useNavigate } from "react-router-dom";
 import {
   buttonStyle,
   menuButton,
@@ -67,7 +67,7 @@ export default function UsersPage() {
     navigate(`/apartments?number=${aptNumber}`);
   };
 
-  import { useNavigate } from "react-router-dom";  
+   
   const navigate = useNavigate();
 
   const ApartmentChips = ({ apartments }) => {
@@ -246,7 +246,6 @@ export default function UsersPage() {
           {!u.owner_apartments &&
             !u.resident_apartments &&
             "No apartments"}
-        </div>
 
         <button
           style={{
@@ -270,9 +269,9 @@ export default function UsersPage() {
         >
           Assign Apartment
         </button>
-        
-      </div>
 
+
+        </div>
     ))}
 
   </div>
