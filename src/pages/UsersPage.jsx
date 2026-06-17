@@ -63,7 +63,44 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
+  const openApartment = (aptNumber) => {
+    navigate(`/apartments?number=${aptNumber}`);
+  };
 
+  import { useNavigate } from "react-router-dom";  
+  const navigate = useNavigate();
+
+  const ApartmentChips = ({ apartments }) => {
+    if (!apartments) return null;
+  
+    return (
+      <>
+        {apartments
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean)
+          .map((apt) => (
+            <button
+              key={apt}
+              onClick={() => openApartment(apt)}
+              style={{
+                marginRight: 6,
+                marginBottom: 6,
+                padding: "4px 10px",
+                borderRadius: 999,
+                border: "1px solid #d1d5db",
+                background: "#f3f4f6",
+                cursor: "pointer",
+                fontSize: 13,
+              }}
+            >
+              {apt}
+            </button>
+          ))}
+      </>
+    );
+  };
+  
   return (
     <div>
 
@@ -166,22 +203,45 @@ export default function UsersPage() {
 
         <div
           style={{
-            marginTop: 6,
-            color: "#6b7280",
+            marginTop: 8,
             fontSize: 14,
           }}
         >
           {u.owner_apartments && (
-            <div>
-              Owner: {u.owner_apartments}
-            </div>
+            <>
+              <div
+                style={{
+                  color: "#6b7280",
+                  marginBottom: 4,
+                }}
+              >
+                Owner
+              </div>
+        
+              <ApartmentChips
+                apartments={u.owner_apartments}
+              />
+            </>
           )}
         
           {u.resident_apartments && (
-            <div>
-              Resident: {u.resident_apartments}
-            </div>
+            <>
+              <div
+                style={{
+                  color: "#6b7280",
+                  marginTop: 8,
+                  marginBottom: 4,
+                }}
+              >
+                Resident
+              </div>
+        
+              <ApartmentChips
+                apartments={u.resident_apartments}
+              />
+            </>
           )}
+        </div>
         
           {!u.owner_apartments &&
             !u.resident_apartments &&
@@ -259,17 +319,27 @@ export default function UsersPage() {
         {selectedUser.phone}
       </p>
 
-      <p>
-        <b>Owner:</b>
-        {" "}
-        {selectedUser.owner_apartments || "—"}
-      </p>
+      <div style={{ marginBottom: 12 }}>
+        <strong>Owner</strong>
       
-      <p>
-        <b>Resident:</b>
-        {" "}
-        {selectedUser.resident_apartments || "—"}
-      </p>    
+        <div style={{ marginTop: 6 }}>
+          <ApartmentChips
+            apartments={selectedUser.owner_apartments}
+          />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <strong>Resident</strong>
+      
+        <div style={{ marginTop: 6 }}>
+          <ApartmentChips
+            apartments={selectedUser.resident_apartments}
+          />
+        </div>
+      </div>
+      
+
 
     </div>
 
