@@ -168,11 +168,35 @@ export default function UsersPage() {
           style={{
             marginTop: 6,
             color: "#6b7280",
+            fontSize: 14,
           }}
         >
-          {u.email}
+          Apartments: {u.apartment_numbers || "—"}
         </div>
 
+        <button
+          style={{
+            ...menuButton,
+            marginTop: 12,
+            width: "100%",
+          }}
+          onClick={async (e) => {
+        
+            e.stopPropagation();
+        
+            await loadApartments();
+        
+            setAssignmentUser(u);
+        
+            await loadUserAssignments(
+              u.id
+            );
+        
+          }}
+        >
+          Assign Apartment
+        </button>
+        
       </div>
 
     ))}
@@ -220,6 +244,12 @@ export default function UsersPage() {
         {" "}
         {selectedUser.phone}
       </p>
+
+      <p>
+        <b>Apartments:</b>
+        {" "}
+        {selectedUser.apartment_numbers || "—"}
+      </p>      
 
     </div>
 
