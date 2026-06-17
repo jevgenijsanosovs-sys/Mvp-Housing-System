@@ -106,10 +106,10 @@ return (
 
   <h2 style={sidebarTitle}>
     MVX System
+    <br></br>
+    <b>DzĪKS IRLAVA 20</b>
   </h2>
-  <h3 style={sidebarTitle}>    
-    DzĪKS IRLAVA 20
-  </h3>
+
 
   <div style={sidebarUser}>
     {me?.user?.first_name}
