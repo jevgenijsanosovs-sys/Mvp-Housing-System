@@ -112,6 +112,7 @@ return (
 
 
   <div style={sidebarUser}>
+    User: 
     {me?.user?.first_name}
     {" "}
     {me?.user?.last_name}
