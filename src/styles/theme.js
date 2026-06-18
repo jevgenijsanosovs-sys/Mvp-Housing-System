@@ -9,8 +9,16 @@ const sidebar = {
   background: "#111827",
   color: "white",
   padding: 20,
+
   display: "flex",
   flexDirection: "column",
+
+  height: "100vh",
+  position: "sticky",
+  top: 0,
+
+  overflow: "hidden",
+  boxSizing: "border-box",
 };
 
 const sidebarTitle = {
