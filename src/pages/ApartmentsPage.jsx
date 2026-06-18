@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import useApartments from "../hooks/useApartments";
 
 import Modal from "../components/Modal";
@@ -43,6 +45,11 @@ function InfoField({
 
 export default function ApartmentsPage() {
 
+  const [searchParams] = useSearchParams();
+  
+  const apartmentNumber =
+    searchParams.get("number");
+  
   const {
     apartments,
     loading,
@@ -100,6 +107,43 @@ export default function ApartmentsPage() {
   useEffect(() => {
     loadApartments();
   }, []);
+  
+  useEffect(() => {
+  
+    if (
+      !apartmentNumber ||
+      apartments.length === 0
+    ) {
+      return;
+    }
+  
+    const apartment =
+      apartments.find(
+        (a) =>
+          String(a.number) ===
+          String(apartmentNumber)
+      );
+  
+    if (!apartment) {
+      return;
+    }
+  
+    setSelectedApartment(apartment);
+  
+    setSelectedSection(
+      apartment.section
+    );
+  
+    setSelectedFloor(
+      apartment.floor
+    );
+  
+    setAccordion("card");
+  
+  }, [
+    apartmentNumber,
+    apartments,
+  ]);
 
   // =========================
   // DATA
