@@ -22,6 +22,9 @@ export default function UsersPage() {
   
   const isMobile =
     window.innerWidth < 768;
+
+  const [search, setSearch] =
+  useState("");
   
   const {
     users,
@@ -70,6 +73,25 @@ export default function UsersPage() {
    
   const navigate = useNavigate();
 
+  const filteredUsers = users.filter(
+    (u) => {
+  
+      const text = `
+        ${u.first_name || ""}
+        ${u.last_name || ""}
+        ${u.email || ""}
+        ${u.phone || ""}
+        ${u.owner_apartments || ""}
+        ${u.resident_apartments || ""}
+      `
+        .toLowerCase();
+  
+      return text.includes(
+        search.toLowerCase()
+      );
+    }
+  );
+  
   const ApartmentChips = ({ apartments }) => {
     if (!apartments) return null;
   
@@ -104,14 +126,66 @@ export default function UsersPage() {
   return (
     <div>
 
-      <h1>Users</h1>
+<div
+  style={{
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+    background: "#f3f4f6",
+    paddingBottom: 12,
+    marginBottom: 20,
+  }}
+>
 
-      <button
-        onClick={() => setShowCreateUser(true)}
-        style={buttonStyle}
-      >
-        Add User
-      </button>
+  <div
+    style={{
+      display: "flex",
+      gap: 10,
+      alignItems: "center",
+      flexWrap: "wrap",
+    }}
+  >
+
+    <h1
+      style={{
+        margin: 0,
+      }}
+    >
+      Users
+    </h1>
+
+    <input
+      placeholder="Search..."
+      value={search}
+      onChange={(e) =>
+        setSearch(e.target.value)
+      }
+      style={{
+        flex: 1,
+        minWidth: 180,
+        padding: 10,
+        borderRadius: 10,
+        border: "1px solid #ccc",
+      }}
+    />
+
+    <button
+      onClick={() =>
+        setShowCreateUser(true)
+      }
+      style={{
+        padding: "10px 16px",
+        borderRadius: 10,
+        border: "none",
+        cursor: "pointer",
+      }}
+    >
+      Add User
+    </button>
+
+  </div>
+
+</div>
 
 {!isMobile ? (
 
@@ -124,22 +198,57 @@ export default function UsersPage() {
         <th>Last Name</th>
         <th>Email</th>
         <th>Phone</th>
+        <th>Apartments</th>
         <th>Assignments</th>
       </tr>
     </thead>
 
     <tbody>
 
-      {users.map((u) => (
+      {filteredUsers.map((u) => (
 
         <tr key={u.id}>
 
           <td>{u.id}</td>
           <td>{u.first_name}</td>
           <td>{u.last_name}</td>
-          <td>{u.email}</td>
-          <td>{u.phone}</td>
 
+          <td>
+          
+            <a
+              href={`mailto:${u.email}`}
+            >
+              {u.email}
+            </a>
+          
+          </td>
+          
+          <td>
+          
+            <a
+              href={`tel:${u.phone}`}
+            >
+              {u.phone}
+            </a>
+          
+          </td>
+          
+          <td>
+          
+            {u.owner_apartments && (
+              <ApartmentChips
+                apartments={u.owner_apartments}
+              />
+            )}
+          
+            {u.resident_apartments && (
+              <ApartmentChips
+                apartments={u.resident_apartments}
+              />
+            )}
+          
+          </td>
+          
           <td>
 
             <button
@@ -173,7 +282,7 @@ export default function UsersPage() {
 
   <div>
 
-    {users.map((u) => (
+    {filteredUsers.map((u) => (
 
       <div
         key={u.id}
@@ -309,13 +418,31 @@ export default function UsersPage() {
       <p>
         <b>Email:</b>
         {" "}
-        {selectedUser.email}
+        <a
+          href={`mailto:${selectedUser.email}`}
+        >
+          {selectedUser.email}
+        </a>
       </p>
 
       <p>
         <b>Phone:</b>
         {" "}
-        {selectedUser.phone}
+        <a
+          href={`tel:${selectedUser.phone}`}
+        >
+          {selectedUser.phone}
+        </a>
+      
+        {" | "}
+      
+        <a
+          href={`https://wa.me/${selectedUser.phone.replace(/\D/g,"")}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          WhatsApp
+        </a>
       </p>
 
       <p>
