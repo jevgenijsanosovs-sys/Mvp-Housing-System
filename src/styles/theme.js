@@ -125,7 +125,19 @@ const dashboardGrid = {
 const dashboardCard = {
   background: "white",
   borderRadius: 20,
-  padding: 30,
+  padding: 28,
+  border: "1px solid #e5e7eb",
+
+  boxShadow:
+    "0 10px 25px rgba(0,0,0,0.05)",
+
+  transition: "all 0.2s ease",
+
+  minHeight: 130,
+
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
 };
 
 const modalStyle = {
