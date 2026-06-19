@@ -5,13 +5,28 @@ export default function DashboardCard({
   value,
 }) {
   return (
-    <div style={dashboardCard}>
-      <h3>{title}</h3>
+    <div
+      style={dashboardCard}
+    >
+      <div
+        style={{
+          fontSize: 14,
+          color: "#6b7280",
+          marginBottom: 12,
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
+      >
+        {title}
+      </div>
 
       <div
         style={{
-          fontSize: 36,
-          fontWeight: "bold",
+          fontSize: 42,
+          fontWeight: 700,
+          color: "#111827",
+          lineHeight: 1,
         }}
       >
         {value}
