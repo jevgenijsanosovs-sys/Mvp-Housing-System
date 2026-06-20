@@ -24,6 +24,8 @@ export default function DashboardPage() {
     }
   }, [mode]);
 
+  console.log("dashboard", dashboard);
+
   return (
     <div>
 
