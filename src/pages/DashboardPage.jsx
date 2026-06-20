@@ -138,7 +138,7 @@ export default function DashboardPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {dashboard?.apartments || 0}
+                  {dashboard?.stats?.apartments || 0}
                 </div>
               </div>
 
@@ -158,7 +158,7 @@ export default function DashboardPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {dashboard?.users || 0}
+                  {dashboard?.stats?.users || 0}
                 </div>
               </div>
 
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {dashboard?.meters || 0}
+                  {dashboard?.stats?.meters || 0}
                 </div>
               </div>
 
@@ -198,7 +198,7 @@ export default function DashboardPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {dashboard?.readings || 0}
+                  {dashboard?.stats?.readings || 0}
                 </div>
               </div>
             </div>
