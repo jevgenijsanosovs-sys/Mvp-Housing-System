@@ -73,28 +73,28 @@ export default function DashboardPage() {
             <DashboardCard
               title="Apartments"
               value={
-                dashboard?.apartments || 0
+                dashboard?.stats?.apartments || 0
               }
             />
 
             <DashboardCard
               title="Residents"
               value={
-                dashboard?.users || 0
+                dashboard?.stats?.users || 0
               }
             />
 
             <DashboardCard
               title="Water Meters"
               value={
-                dashboard?.meters || 0
+                dashboard?.stats?.meters || 0
               }
             />
 
             <DashboardCard
               title="Readings"
               value={
-                dashboard?.readings || 0
+                dashboard?.stats?.readings || 0
               }
             />
           </div>
