@@ -1,14 +1,10 @@
 import { useEffect } from "react";
 
-import DashboardCard from "../components/DashboardCard";
 import useDashboard from "../hooks/useDashboard";
 
 import { useMode } from "../context/ModeContext";
 
-import {
-  cardStyle,
-  dashboardGrid,
-} from "../styles/theme";
+import { cardStyle } from "../styles/theme";
 
 export default function DashboardPage() {
   const { mode } = useMode();
@@ -69,35 +65,6 @@ export default function DashboardPage() {
 
       {mode === "admin" && (
         <>
-          <div style={dashboardGrid}>
-            <DashboardCard
-              title="Apartments"
-              value={
-                dashboard?.stats?.apartments || 0
-              }
-            />
-
-            <DashboardCard
-              title="Residents"
-              value={
-                dashboard?.stats?.users || 0
-              }
-            />
-
-            <DashboardCard
-              title="Water Meters"
-              value={
-                dashboard?.stats?.meters || 0
-              }
-            />
-
-            <DashboardCard
-              title="Readings"
-              value={
-                dashboard?.stats?.readings || 0
-              }
-            />
-          </div>
 
           <div
             style={{
@@ -113,96 +80,116 @@ export default function DashboardPage() {
               Building Summary
             </h2>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit,minmax(220px,1fr))",
-                gap: 20,
-                marginTop: 20,
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    color: "#6b7280",
-                    fontSize: 14,
-                  }}
-                >
-                  Total Apartments
-                </div>
+            <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: 20,
+            }}
+          >
+            <tbody>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Apartments
+                </td>
+                <td>
+                  <strong>
+                    {dashboard?.stats?.apartments || 0}
+                  </strong>
+                </td>
+              </tr>
 
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                  }}
-                >
-                  {dashboard?.stats?.apartments || 0}
-                </div>
-              </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Residents
+                </td>
+                <td>
+                  <strong>
+                    {dashboard?.stats?.users || 0}
+                  </strong>
+                </td>
+              </tr>
 
-              <div>
-                <div
-                  style={{
-                    color: "#6b7280",
-                    fontSize: 14,
-                  }}
-                >
-                  Registered Residents
-                </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Living Area
+                </td>
+                <td>—</td>
+              </tr>
 
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                  }}
-                >
-                  {dashboard?.stats?.users || 0}
-                </div>
-              </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Non Living Area
+                </td>
+                <td>—</td>
+              </tr>
 
-              <div>
-                <div
-                  style={{
-                    color: "#6b7280",
-                    fontSize: 14,
-                  }}
-                >
-                  Installed Meters
-                </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Heated Area
+                </td>
+                <td>—</td>
+              </tr>
 
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                  }}
-                >
-                  {dashboard?.stats?.meters || 0}
-                </div>
-              </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Land Tax Area
+                </td>
+                <td>—</td>
+              </tr>
 
-              <div>
-                <div
-                  style={{
-                    color: "#6b7280",
-                    fontSize: 14,
-                  }}
-                >
-                  Submitted Readings
-                </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Alternative Heating Area
+                </td>
+                <td>—</td>
+              </tr>
 
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                  }}
-                >
-                  {dashboard?.stats?.readings || 0}
-                </div>
-              </div>
+              <tr>
+                <td style={{ padding: "10px 0" }}>
+                  Water Readings (last month)
+                </td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(350px,1fr))",
+              gap: 20,
+              marginTop: 20,
+            }}
+          >
+            <div style={cardStyle}>
+              <h3>Announcements</h3>
+              <p>No announcements</p>
+            </div>
+
+            <div style={cardStyle}>
+              <h3>Repair Tickets</h3>
+              <p>No open tickets</p>
+            </div>
+
+            <div style={cardStyle}>
+              <h3>Projects</h3>
+              <p>No active projects</p>
+            </div>
+
+            <div style={cardStyle}>
+              <h3>Water Monitoring</h3>
+              <p>Monitoring module coming soon</p>
+            </div>
+
+            <div style={cardStyle}>
+              <h3>Recent Activity</h3>
+              <p>No recent activity</p>
             </div>
           </div>
+
         </>
       )}
     </div>
