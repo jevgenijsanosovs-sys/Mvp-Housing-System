@@ -6,6 +6,8 @@ import { useMode } from "../context/ModeContext";
 
 import { cardStyle } from "../styles/theme";
 
+import useApartments from "../hooks/useApartments";
+
 export default function DashboardPage() {
   const { mode } = useMode();
 
@@ -14,13 +16,38 @@ export default function DashboardPage() {
     loadDashboard,
   } = useDashboard();
 
+  const {
+  apartments,
+  loadApartments,
+} = useApartments();
+
   useEffect(() => {
     if (mode === "admin") {
       loadDashboard();
+      loadApartments();
     }
   }, [mode]);
 
   console.log("dashboard", dashboard);
+
+  const livingArea = apartments.reduce(
+    (sum, a) =>
+      sum + Number(a.living_area || 0),
+    0
+  );
+
+  const nonLivingArea = apartments.reduce(
+    (sum, a) =>
+      sum + Number(a.non_living_area || 0),
+    0
+  );
+
+  const heatedArea = apartments.reduce(
+    (sum, a) =>
+      sum + Number(a.heated_area || 0),
+    0
+  );
+
 
   return (
     <div>
@@ -114,21 +141,33 @@ export default function DashboardPage() {
                 <td style={{ padding: "10px 0" }}>
                   Living Area
                 </td>
-                <td>—</td>
+                <td>
+                  <strong>
+                    {livingArea.toFixed(2)}
+                  </strong>
+                </td>
               </tr>
 
               <tr>
                 <td style={{ padding: "10px 0" }}>
                   Non Living Area
                 </td>
-                <td>—</td>
+                <td>
+                  <strong>
+                    {nonLivingArea.toFixed(2)}
+                  </strong>
+                </td>
               </tr>
 
               <tr>
                 <td style={{ padding: "10px 0" }}>
                   Heated Area
                 </td>
-                <td>—</td>
+                <td>
+                  <strong>
+                    {heatedArea.toFixed(2)}
+                  </strong>
+                </td>
               </tr>
 
               <tr>
