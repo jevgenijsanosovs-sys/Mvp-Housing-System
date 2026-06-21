@@ -143,7 +143,7 @@ export default function DashboardPage() {
                 </td>
                 <td>
                   <strong>
-                    {livingArea.toFixed(2)}
+                    {livingArea.toFixed(2)} ㎡
                   </strong>
                 </td>
               </tr>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
                 </td>
                 <td>
                   <strong>
-                    {nonLivingArea.toFixed(2)}
+                    {nonLivingArea.toFixed(2)} ㎡
                   </strong>
                 </td>
               </tr>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
                 </td>
                 <td>
                   <strong>
-                    {heatedArea.toFixed(2)}
+                    {heatedArea.toFixed(2)} ㎡
                   </strong>
                 </td>
               </tr>
