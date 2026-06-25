@@ -104,6 +104,23 @@ export default function useWater() {
       }
     );
 
+
+    
+    if (r.ok) {
+
+      alert("Submitted");
+
+      loadMyWater();
+
+    } else {
+
+      alert(
+        r?.error || "Submit failed"
+      );
+
+    }
+  };
+
     // =====================================
     // DEACTIVATE WATER METER
     // =====================================
@@ -140,22 +157,8 @@ export default function useWater() {
         }
     };
 
-    
-    if (r.ok) {
 
-      alert("Submitted");
-
-      loadMyWater();
-
-    } else {
-
-      alert(
-        r?.error || "Submit failed"
-      );
-
-    }
-  };
-
+  
   return {
   
     waterMeters,
