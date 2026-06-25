@@ -18,6 +18,16 @@ export default function useWater() {
     useState([]);
 
   // =====================================
+  // ADMIN WATER METERS
+  // =====================================
+  
+  const [
+    adminWaterMeters,
+    setAdminWaterMeters
+  ] = useState([]);
+
+  
+  // =====================================
   // LOAD RESIDENT WATER
   // =====================================
 
@@ -48,6 +58,25 @@ export default function useWater() {
   };
 
   // =====================================
+  // LOAD ADMIN WATER METERS
+  // =====================================
+  
+  const loadAdminWaterMeters =
+    async () => {
+  
+      const d = await api(
+        "/api/admin/water-meters"
+      );
+  
+      setAdminWaterMeters(
+        Array.isArray(d)
+          ? d
+          : []
+      );
+  };
+
+  
+  // =====================================
   // SUBMIT READING
   // =====================================
 
@@ -75,6 +104,43 @@ export default function useWater() {
       }
     );
 
+    // =====================================
+    // DEACTIVATE WATER METER
+    // =====================================
+    
+    const deactivateMeter =
+      async (
+        meterId,
+        reason = "replacement"
+      ) => {
+    
+        const r = await api(
+          "/api/admin/deactivate-water-meter",
+          {
+            method: "POST",
+    
+            body: JSON.stringify({
+              meter_id: meterId,
+              reason,
+            }),
+          }
+        );
+    
+        if (r.ok) {
+    
+          loadAdminWaterMeters();
+    
+        } else {
+    
+          alert(
+            r?.error ||
+            "Deactivate failed"
+          );
+    
+        }
+    };
+
+    
     if (r.ok) {
 
       alert("Submitted");
@@ -91,13 +157,16 @@ export default function useWater() {
   };
 
   return {
-
+  
     waterMeters,
     adminWater,
-
+    adminWaterMeters,
+  
     loadMyWater,
     loadAdminWater,
-
+    loadAdminWaterMeters,
+  
     submitReading,
+    deactivateMeter,
   };
 }
