@@ -55,13 +55,14 @@ export default function LoginPage() {
           padding: 30,
           border: "1px solid #ccc",
           borderRadius: 10,
+          justify-content: center;
         }}
       >
 
         <h1>
-          MVX Housing System
+          <p style="line-height: 1.5;">MVX Housing System
           <br></br>
-          DzĪKS IRLAVA 20
+          DzĪKS IRLAVA 20</p>
         </h1>
 
         <input
