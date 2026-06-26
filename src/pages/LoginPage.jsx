@@ -60,7 +60,7 @@ export default function LoginPage() {
       >
 
         <h1>
-          <p style="line-height: 1.5;">MVX Housing System
+          <p style="line-height: 1.5">MVX Housing System
           <br></br>
           DzĪKS IRLAVA 20</p>
         </h1>
