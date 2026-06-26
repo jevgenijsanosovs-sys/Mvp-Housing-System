@@ -59,7 +59,7 @@ export default function LoginPage() {
       >
 
         <h1>
-          MVP Housing System
+          MVX Housing System
         </h1>
 
         <input
