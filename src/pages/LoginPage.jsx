@@ -60,10 +60,10 @@ export default function LoginPage() {
       >
 
         <h1 style={{ lineHeight: 1.2, textAlign: "center" }}>
-          <div>MVX Housing System</div>
           <div style={{ fontSize: "0.8em" }}>
-          DzĪKS IRLAVA 20
+            MVX Housing System
           </div>
+          <div>DzĪKS IRLAVA 20</div>
         </h1>
 
         <input
