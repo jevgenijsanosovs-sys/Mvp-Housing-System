@@ -55,11 +55,11 @@ export default function LoginPage() {
           padding: 30,
           border: "1px solid #ccc",
           borderRadius: 10,
-          justifyContent: "center",
+          
         }}
       >
 
-        <h1 style={{ lineHeight: 1.5 }}>
+        <h1 style={{ lineHeight: 1.2 }}>
           MVX Housing System
           <br />
           DzĪKS IRLAVA 20
