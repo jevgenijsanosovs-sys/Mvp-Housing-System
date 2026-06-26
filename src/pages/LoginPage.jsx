@@ -55,14 +55,14 @@ export default function LoginPage() {
           padding: 30,
           border: "1px solid #ccc",
           borderRadius: 10,
-          justify-content: center,
+          justifyContent: "center",
         }}
       >
 
-        <h1>
-          <p style="line-height: 1.5">MVX Housing System
-          <br></br>
-          DzĪKS IRLAVA 20</p>
+        <h1 style={{ lineHeight: 1.5 }}>
+          MVX Housing System
+          <br />
+          DzĪKS IRLAVA 20
         </h1>
 
         <input
