@@ -61,7 +61,7 @@ export default function LoginPage() {
 
         <h1 style={{ lineHeight: 1.2, textAlign: "center" }}>
           <div style={{ fontSize: "0.8em" }}>
-            MVX Housing System
+            MVX System
           </div>
           <div>DzĪKS IRLAVA 20</div>
         </h1>
