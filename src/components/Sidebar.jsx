@@ -94,7 +94,7 @@ export default function Sidebar({
         <h2 style={sidebarTitle}>
           <div style={{ fontSize: "0.8em" }}>
             MVX Housing System
-          </div>>
+          </div>
           <div>DzĪKS IRLAVA 20</div>
         </h2>
 
