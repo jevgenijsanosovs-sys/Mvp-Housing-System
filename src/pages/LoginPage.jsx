@@ -55,7 +55,7 @@ export default function LoginPage() {
           padding: 30,
           border: "1px solid #ccc",
           borderRadius: 10,
-          justify-content: center;
+          justify-content: center,
         }}
       >
 
