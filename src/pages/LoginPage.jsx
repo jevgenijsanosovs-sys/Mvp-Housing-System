@@ -59,7 +59,7 @@ export default function LoginPage() {
         }}
       >
 
-        <h1 style={{ lineHeight: 1.0, textAlign: "center" }}>
+        <h1 style={{ lineHeight: 1.1, textAlign: "center" }}>
           MVX Housing System
           <br />
           DzĪKS IRLAVA 20
