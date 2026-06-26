@@ -60,6 +60,8 @@ export default function LoginPage() {
 
         <h1>
           MVX Housing System
+          <br></br>
+          DzĪKS IRLAVA 20
         </h1>
 
         <input
