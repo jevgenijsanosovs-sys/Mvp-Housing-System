@@ -184,6 +184,14 @@ export default function Sidebar({
                 go("/water-admin")
               }
             />
+
+            <MenuButton
+              title="Water Meters"
+              onClick={() =>
+                go("/water-meters")
+              }
+            />
+            
           </>
         )}
       </div>
