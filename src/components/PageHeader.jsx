@@ -12,41 +12,27 @@ export default function PageHeader({
 
     <div
       style={{
-
         position: "sticky",
-
         top: 0,
-
         zIndex: 100,
-
         background: "white",
-
         paddingBottom: 16,
-
         marginBottom: 20,
-
       }}
     >
 
       <div
         style={{
-
           display: "flex",
-
-          justifyContent:
-            "space-between",
-
+          justifyContent: "space-between",
           alignItems: "center",
-
           flexWrap: "wrap",
-
           gap: 12,
-
         }}
       >
 
         <div>
-        
+
           <h1
             style={{
               margin: 0,
@@ -54,9 +40,9 @@ export default function PageHeader({
           >
             {title}
           </h1>
-        
+
           {subtitle && (
-        
+
             <div
               style={{
                 marginTop: 4,
@@ -66,24 +52,19 @@ export default function PageHeader({
             >
               {subtitle}
             </div>
-        
+
           )}
-        
+
         </div>
+
         <div
           style={{
-
             display: "flex",
-
             gap: 10,
-
             flexWrap: "wrap",
-
           }}
         >
-
           {children}
-
         </div>
 
       </div>
