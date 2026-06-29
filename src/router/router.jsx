@@ -10,7 +10,7 @@ import DashboardPage from "../pages/DashboardPage";
 import UsersPage from "../pages/UsersPage";
 import ApartmentsPage from "../pages/ApartmentsPage";
 import ResidentWaterPage from "../pages/ResidentWaterPage";
-import AdminWaterPage from "../pages/AdminWaterPage";
+import WaterReadingsPage from "../pages/WaterReadingsPage";
 import AdminWaterMetersPage
   from "../pages/AdminWaterMetersPage";
 import ProtectedRoute
@@ -56,8 +56,10 @@ export const router =
         },
 
         {
-          path: "water-admin",
-          element: <AdminWaterPage />,
+          
+        {
+          path: "water-readings",
+          element: <WaterReadingsPage />,
         },
 
         {
