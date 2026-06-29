@@ -4,9 +4,27 @@ export default function WaterMetersPage() {
 
     <div>
 
-      <h1>
-        Water Meter Management
-      </h1>
+      <PageHeader
+        title="Water Meter Management"
+      >
+      
+        <ActionButton
+          icon="🔄"
+          text="Refresh"
+        />
+      
+        <ActionButton
+          icon="➕"
+          text="Add Meter"
+        />
+      
+        <ActionButton
+          icon="🚫"
+          text="Deactivate"
+          variant="danger"
+        />
+      
+      </PageHeader>
 
       <p>
         Coming soon...
