@@ -180,9 +180,9 @@ export default function Sidebar({
             />
 
             <MenuButton
-              title="Water Readings"
+              title="Water Readings Log"
               onClick={() =>
-                go("/water-admin")
+                go("/water-readings")
               }
             />
 
