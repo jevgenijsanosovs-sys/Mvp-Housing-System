@@ -180,18 +180,19 @@ export default function Sidebar({
             />
 
             <MenuButton
+              title="Water Meter Management"
+              onClick={() =>
+                go("/water-meters")
+              }
+            />
+            
+            <MenuButton
               title="Water Readings Log"
               onClick={() =>
                 go("/water-readings")
               }
             />
 
-            <MenuButton
-              title="Water Meters"
-              onClick={() =>
-                go("/water-meters")
-              }
-            />
             
           </>
         )}
