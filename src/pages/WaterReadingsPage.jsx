@@ -6,7 +6,7 @@ import {
   tableStyle,
 } from "../styles/theme";
 
-export default function AdminWaterPage() {
+export default function WaterReadingsPage() {
 
   const {
     adminWater,
