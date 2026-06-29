@@ -21,7 +21,7 @@ export default function WaterReadingsPage() {
     <div>
 
       <h1>
-        Water Readings
+        Water Readings Log
       </h1>
 
       <table style={tableStyle}>
@@ -47,7 +47,7 @@ export default function WaterReadingsPage() {
               <td>{r.type}</td>
               <td>{r.serial_number}</td>
               <td>{r.reading_value}</td>
-              <td>{r.reading_date}</td>
+              <td>{formatDate(r.reading_date)}</td>
 
               <td>
                 {r.first_name}
