@@ -58,8 +58,6 @@ export const router =
         },
 
         {
-          
-        {
           path: "water-readings",
           element: <WaterReadingsPage />,
         },
@@ -69,10 +67,6 @@ export const router =
           element: <AdminWaterMetersPage />,
         },
 
-        {
-          path: "water-meters",
-          element: <WaterMetersPage />,
-        },
         
       ],
     },
