@@ -11,6 +11,8 @@ import UsersPage from "../pages/UsersPage";
 import ApartmentsPage from "../pages/ApartmentsPage";
 import ResidentWaterPage from "../pages/ResidentWaterPage";
 import WaterReadingsPage from "../pages/WaterReadingsPage";
+import WaterMetersPage
+  from "../pages/WaterMetersPage";
 import AdminWaterMetersPage
   from "../pages/AdminWaterMetersPage";
 import ProtectedRoute
@@ -65,6 +67,11 @@ export const router =
         {
           path: "water-meters",
           element: <AdminWaterMetersPage />,
+        },
+
+        {
+          path: "water-meters",
+          element: <WaterMetersPage />,
         },
         
       ],
