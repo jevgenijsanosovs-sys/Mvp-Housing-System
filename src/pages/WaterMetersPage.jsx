@@ -47,19 +47,59 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-      <pre>
+      <table style={{ width: "100%" }}>
       
-      {JSON.stringify(
+        <thead>
       
-        adminWaterMeters,
+          <tr>
       
-        null,
+            <th>Apartment</th>
       
-        2
+            <th>Type</th>
       
-      )}
+            <th>Serial Number</th>
       
-      </pre>
+            <th>Installed</th>
+      
+            <th>Status</th>
+      
+          </tr>
+      
+        </thead>
+      
+        <tbody>
+      
+          {adminWaterMeters.map((meter) => (
+      
+            <tr key={meter.id}>
+      
+              <td>{meter.apartment_number}</td>
+      
+              <td>{meter.type}</td>
+      
+              <td>{meter.serial_number}</td>
+      
+              <td>
+                {meter.installed_at
+                  ? meter.installed_at.slice(0, 10)
+                  : ""}
+              </td>
+      
+              <td>
+      
+                {meter.active
+                  ? "Active"
+                  : "Inactive"}
+      
+              </td>
+      
+            </tr>
+      
+          ))}
+      
+        </tbody>
+      
+      </table>
     </div>
 
   );
