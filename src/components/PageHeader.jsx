@@ -15,7 +15,7 @@ export default function PageHeader({
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "white",
+        background: "inherit",
         paddingBottom: 16,
         marginBottom: 20,
       }}
