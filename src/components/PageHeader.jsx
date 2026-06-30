@@ -20,9 +20,9 @@ export default function PageHeader({
 
   return (
 
-        <div style={pageHeader}>
-        
-        <div style={pageHeaderRow}>
+    <div style={pageHeader}>
+
+      <div style={pageHeaderRow}>
 
         <div>
 
@@ -51,7 +51,9 @@ export default function PageHeader({
         </div>
 
         <div style={pageHeaderButtons}>
+
           {children}
+
         </div>
 
       </div>
