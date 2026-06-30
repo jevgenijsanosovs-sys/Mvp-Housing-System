@@ -180,3 +180,47 @@ export {
   modalStyle,
   modalContentStyle,
 };
+
+// ======================================
+// PAGE HEADER
+// ======================================
+
+export const pageHeader = {
+
+  position: "sticky",
+
+  top: 0,
+
+  zIndex: 100,
+
+  background: "inherit",
+
+  paddingBottom: 16,
+
+  marginBottom: 20,
+
+};
+
+export const pageHeaderRow = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  gap: 16,
+
+  flexWrap: "wrap",
+
+};
+
+export const pageHeaderButtons = {
+
+  display: "flex",
+
+  gap: 10,
+
+  flexWrap: "wrap",
+
+};
