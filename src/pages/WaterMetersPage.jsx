@@ -5,6 +5,10 @@ import ActionButton from "../components/ActionButton";
 
 import useWater from "../hooks/useWater";
 
+import {
+  tableStyle,
+} from "../styles/theme";
+
 export default function WaterMetersPage() {
 
   const {
@@ -47,7 +51,7 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-      <table style={{ width: "100%" }}>
+      <table style={tableStyle}>
       
         <thead>
       
@@ -87,9 +91,18 @@ export default function WaterMetersPage() {
       
               <td>
       
+              <span
+                style={{
+                  color: meter.active
+                    ? "#16a34a"
+                    : "#9ca3af",
+                  fontWeight: 600,
+                }}
+              >
                 {meter.active
                   ? "Active"
                   : "Inactive"}
+              </span>
       
               </td>
       
