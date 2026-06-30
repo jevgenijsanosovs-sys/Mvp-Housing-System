@@ -1,3 +1,11 @@
+import {
+
+  actionButton,
+
+  dangerButton,
+
+} from "../styles/theme";
+
 export default function ActionButton({
 
   text,
@@ -10,29 +18,14 @@ export default function ActionButton({
 
 }) {
 
-  const style = {
+const style =
 
-    padding: "10px 16px",
+  variant === "danger"
 
-    borderRadius: 8,
+    ? dangerButton
 
-    border: "none",
-
-    cursor: "pointer",
-
-    fontWeight: 600,
-
-    whiteSpace: "nowrap",
-
-    background:
-      variant === "danger"
-        ? "#dc2626"
-        : "#2563eb",
-
-    color: "white",
-
-  };
-
+    : actionButton;
+  
   return (
 
     <button
