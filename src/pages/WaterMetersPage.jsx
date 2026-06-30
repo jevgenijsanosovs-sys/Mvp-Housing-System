@@ -12,17 +12,17 @@ export default function WaterMetersPage() {
       >
       
         <ActionButton
-          icon="🔄"
+
           text="Refresh"
         />
       
         <ActionButton
-          icon="➕"
+
           text="Add Meter"
         />
       
         <ActionButton
-          icon="🚫"
+
           text="Deactivate"
           variant="danger"
         />
