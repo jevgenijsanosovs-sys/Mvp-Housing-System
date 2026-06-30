@@ -1,7 +1,25 @@
+import { useEffect } from "react";
+
 import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
 
+import useWater from "../hooks/useWater";
+
 export default function WaterMetersPage() {
+
+  const {
+
+    adminWaterMeters,
+
+    loadAdminWaterMeters,
+
+  } = useWater();
+
+  useEffect(() => {
+
+    loadAdminWaterMeters();
+
+  }, []);
 
   return (
 
@@ -12,8 +30,8 @@ export default function WaterMetersPage() {
       >
       
         <ActionButton
-
           text="Refresh"
+          onClick={loadAdminWaterMeters}
         />
       
         <ActionButton
@@ -29,10 +47,19 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-      <p>
-        Coming soon...
-      </p>
-
+      <pre>
+      
+      {JSON.stringify(
+      
+        adminWaterMeters,
+      
+        null,
+      
+        2
+      
+      )}
+      
+      </pre>
     </div>
 
   );
