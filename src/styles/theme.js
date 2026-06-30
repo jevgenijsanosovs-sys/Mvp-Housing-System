@@ -224,3 +224,35 @@ export const pageHeaderButtons = {
   flexWrap: "wrap",
 
 };
+
+// ======================================
+// ACTION BUTTON
+// ======================================
+
+export const actionButton = {
+
+  padding: "10px 16px",
+
+  borderRadius: 8,
+
+  border: "none",
+
+  cursor: "pointer",
+
+  fontWeight: 600,
+
+  whiteSpace: "nowrap",
+
+  background: "#2563eb",
+
+  color: "white",
+
+};
+
+export const dangerButton = {
+
+  ...actionButton,
+
+  background: "#dc2626",
+
+};
