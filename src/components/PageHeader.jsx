@@ -1,3 +1,13 @@
+import {
+
+  pageHeader,
+
+  pageHeaderRow,
+
+  pageHeaderButtons,
+
+} from "../styles/theme";
+
 export default function PageHeader({
 
   title,
@@ -10,26 +20,9 @@ export default function PageHeader({
 
   return (
 
-    <div
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        background: "inherit",
-        paddingBottom: 16,
-        marginBottom: 20,
-      }}
-    >
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
+        <div style={pageHeader}>
+        
+        <div style={pageHeaderRow}>
 
         <div>
 
@@ -57,13 +50,7 @@ export default function PageHeader({
 
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={pageHeaderButtons}>
           {children}
         </div>
 
