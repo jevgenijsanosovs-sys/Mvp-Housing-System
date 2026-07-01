@@ -6,7 +6,17 @@ import ActionButton from "../components/ActionButton";
 import useWater from "../hooks/useWater";
 
 import {
-  tableStyle,
+
+  modernTable,
+
+  modernTh,
+
+  modernTd,
+
+  statusActive,
+
+  statusInactive,
+
 } from "../styles/theme";
 
 export default function WaterMetersPage() {
@@ -51,21 +61,21 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-      <table style={tableStyle}>
+     <table style={modernTable}>
       
         <thead>
       
           <tr>
       
-            <th>Apartment</th>
+            <<th style={modernTh}>th>Apartment</th>
       
-            <th>Type</th>
+            <th style={modernTh}>Type</th>
       
-            <th>Serial Number</th>
+            <th style={modernTh}>Serial Number</th>
       
-            <th>Installed</th>
+            <th style={modernTh}>Installed</th>
       
-            <th>Status</th>
+            <th style={modernTh}>Status</th>
       
           </tr>
       
@@ -77,28 +87,31 @@ export default function WaterMetersPage() {
       
             <tr key={meter.id}>
       
-              <td>{meter.apartment_number}</td>
+              <td style={modernTd}>{meter.apartment_number}</td>
       
-              <td>{meter.type}</td>
+              <td style={modernTd}>
+                {meter.type === "hot"
+                  ? "🔴 Hot"
+                  : "🔵 Cold"}
+              </td>
       
-              <td>{meter.serial_number}</td>
+              <td style={modernTd}>{meter.serial_number}</td>
       
-              <td>
+              <td style={modernTd}>
                 {meter.installed_at
                   ? meter.installed_at.slice(0, 10)
                   : ""}
               </td>
       
-              <td>
+              <td style={modernTd}>
       
-              <span
-                style={{
-                  color: meter.active
-                    ? "#16a34a"
-                    : "#9ca3af",
-                  fontWeight: 600,
-                }}
-              >
+                <span
+                style={
+                meter.active
+                ? statusActive
+                : statusInactive
+                }
+                >
                 {meter.active
                   ? "Active"
                   : "Inactive"}
