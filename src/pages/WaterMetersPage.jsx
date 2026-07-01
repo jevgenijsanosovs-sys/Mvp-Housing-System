@@ -23,22 +23,6 @@ import {
 
 } from "../styles/theme";
 
-const rowStyle = {
-  transition: "background 0.2s",
-};
-
-export const modernTable = {
-
-  width: "100%",
-
-  borderCollapse: "separate",
-
-  borderSpacing: 0,
-
-  background: "#f8fafc",
-
-};
-
 export default function WaterMetersPage() {
 
   const {
@@ -88,7 +72,7 @@ export default function WaterMetersPage() {
       
           <tr>
       
-            <th style={modernTh}>th>Apartment</th>
+            <th style={modernTh}>Apartment</th>
       
             <th style={modernTh}>Type</th>
       
