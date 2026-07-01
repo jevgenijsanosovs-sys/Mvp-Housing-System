@@ -1,31 +1,22 @@
 import {
-
   actionButton,
-
   dangerButton,
-
 } from "../styles/theme";
 
 export default function ActionButton({
 
   text,
-
   icon,
-
   onClick,
-
   variant = "primary",
 
 }) {
 
-const style =
+  const style =
+    variant === "danger"
+      ? dangerButton
+      : actionButton;
 
-  variant === "danger"
-
-    ? dangerButton
-
-    : actionButton;
-  
   return (
 
     <button
@@ -33,7 +24,13 @@ const style =
       onClick={onClick}
     >
 
-      {icon} {text}
+      {icon && (
+        <span style={{ marginRight: 6 }}>
+          {icon}
+        </span>
+      )}
+
+      {text}
 
     </button>
 
