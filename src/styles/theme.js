@@ -368,7 +368,9 @@ export const tableContainer = {
 
   borderRadius: 18,
 
-  overflow: "hidden",
+  overflowX: "auto",
+
+  overflowY: "hidden",
 
   border: "1px solid #e5e7eb",
 
