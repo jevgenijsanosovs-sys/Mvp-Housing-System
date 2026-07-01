@@ -256,3 +256,94 @@ export const dangerButton = {
   background: "#dc2626",
 
 };
+
+// ========================================
+// MODERN TABLE
+// ========================================
+
+export const modernTable = {
+
+  width: "100%",
+
+  borderCollapse: "separate",
+
+  borderSpacing: 0,
+
+  background: "#ffffff",
+
+  borderRadius: 16,
+
+  overflow: "hidden",
+
+  boxShadow:
+    "0 6px 24px rgba(15,23,42,.08)",
+
+};
+
+export const modernTh = {
+
+  background: "#ffffff",
+
+  padding: "18px 22px",
+
+  textAlign: "left",
+
+  fontWeight: 700,
+
+  fontSize: 16,
+
+  color: "#374151",
+
+  borderBottom:
+    "1px solid #e5e7eb",
+
+};
+
+export const modernTd = {
+
+  padding: "16px 22px",
+
+  borderBottom:
+    "1px solid #f1f5f9",
+
+  color: "#374151",
+
+  fontSize: 15,
+
+};
+
+export const statusActive = {
+
+  display: "inline-block",
+
+  padding: "6px 14px",
+
+  borderRadius: 999,
+
+  background: "#dcfce7",
+
+  color: "#15803d",
+
+  fontWeight: 600,
+
+  fontSize: 14,
+
+};
+
+export const statusInactive = {
+
+  display: "inline-block",
+
+  padding: "6px 14px",
+
+  borderRadius: 999,
+
+  background: "#f3f4f6",
+
+  color: "#6b7280",
+
+  fontWeight: 600,
+
+  fontSize: 14,
+
+};
