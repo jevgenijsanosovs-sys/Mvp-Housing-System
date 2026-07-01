@@ -231,21 +231,33 @@ export const pageHeaderButtons = {
 
 export const actionButton = {
 
-  padding: "10px 16px",
+  height: 42,
 
-  borderRadius: 8,
+  padding: "0 18px",
+
+  display: "flex",
+
+  alignItems: "center",
+
+  justifyContent: "center",
+
+  gap: 8,
 
   border: "none",
 
+  borderRadius: 10,
+
   cursor: "pointer",
-
-  fontWeight: 600,
-
-  whiteSpace: "nowrap",
 
   background: "#2563eb",
 
-  color: "white",
+  color: "#fff",
+
+  fontWeight: 600,
+
+  fontSize: 14,
+
+  transition: "0.15s",
 
 };
 
@@ -282,17 +294,19 @@ export const modernTable = {
 
 export const modernTh = {
 
-  background: "#ffffff",
+  background: "#f8fafc",
 
-  padding: "18px 22px",
+  padding: "18px 20px",
 
   textAlign: "left",
 
+  color: "#475569",
+
   fontWeight: 700,
 
-  fontSize: 16,
+  fontSize: 14,
 
-  color: "#374151",
+  letterSpacing: ".03em",
 
   borderBottom:
     "1px solid #e5e7eb",
@@ -301,14 +315,14 @@ export const modernTh = {
 
 export const modernTd = {
 
-  padding: "16px 22px",
+  padding: "18px 20px",
+
+  fontSize: 15,
+
+  color: "#334155",
 
   borderBottom:
     "1px solid #f1f5f9",
-
-  color: "#374151",
-
-  fontSize: 15,
 
 };
 
@@ -350,20 +364,19 @@ export const statusInactive = {
 
 export const tableContainer = {
 
-  background: "#ffffff",
+  background: "#fff",
 
   borderRadius: 18,
 
   overflow: "hidden",
 
+  border: "1px solid #e5e7eb",
+
   boxShadow:
-    "0 10px 30px rgba(0,0,0,.06)",
+    "0 8px 30px rgba(15,23,42,.06)",
+
+  marginTop: 20,
 
 };
 
-export const modernTr = {
 
-  transition:
-    "background-color .15s",
-
-};
