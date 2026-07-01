@@ -90,10 +90,23 @@ export default function WaterMetersPage() {
       
           {adminWaterMeters.map((meter) => (
       
-            <tr
-              key={meter.id}
-              style={modernTr}
-            >
+        <tr
+          key={meter.id}
+        
+          style={modernTr}
+        
+          onMouseEnter={(e) => {
+            if (window.innerWidth >= 768)
+              e.currentTarget.style.background =
+                "#f8fafc";
+          }}
+        
+          onMouseLeave={(e) => {
+            if (window.innerWidth >= 768)
+              e.currentTarget.style.background =
+                "#ffffff";
+          }}
+        >
       
               <td style={modernTd}>{meter.apartment_number}</td>
       
