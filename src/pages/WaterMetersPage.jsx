@@ -23,6 +23,12 @@ import {
 
 } from "../styles/theme";
 
+import ResponsiveTable
+  from "../components/ResponsiveTable";
+
+import WaterMeterCard
+  from "../components/WaterMeterCard";
+
 export default function WaterMetersPage() {
 
   const {
@@ -65,89 +71,133 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-     <div style={tableContainer}>
-       <table style={modernTable}>
+      <ResponsiveTable
       
-        <thead>
+      desktop={
       
-          <tr>
+      <div style={tableContainer}>
       
-            <th style={modernTh}>Apartment</th>
+      <table style={modernTable}>
       
-            <th style={modernTh}>Type</th>
+      <thead>
       
-            <th style={modernTh}>Serial Number</th>
+      <tr>
       
-            <th style={modernTh}>Installed</th>
+      <th style={modernTh}>
+      Apartment
+      </th>
       
-            <th style={modernTh}>Status</th>
+      <th style={modernTh}>
+      Type
+      </th>
       
-          </tr>
+      <th style={modernTh}>
+      Serial Number
+      </th>
       
-        </thead>
+      <th style={modernTh}>
+      Installed
+      </th>
       
-        <tbody>
+      <th style={modernTh}>
+      Status
+      </th>
       
-          {adminWaterMeters.map((meter) => (
+      </tr>
       
-        <tr
-          key={meter.id}
-        
-          style={modernTr}
-        
-          onMouseEnter={(e) => {
-            if (window.innerWidth >= 768)
-              e.currentTarget.style.background =
-                "#f8fafc";
-          }}
-        
-          onMouseLeave={(e) => {
-            if (window.innerWidth >= 768)
-              e.currentTarget.style.background =
-                "#ffffff";
-          }}
-        >
+      </thead>
       
-              <td style={modernTd}>{meter.apartment_number}</td>
+      <tbody>
       
-              <td style={modernTd}>
-                {meter.type === "hot"
-                  ? "🔴 Hot"
-                  : "🔵 Cold"}
-              </td>
+      {adminWaterMeters.map((meter)=>(
       
-              <td style={modernTd}>{meter.serial_number}</td>
+      <tr key={meter.id}>
       
-              <td style={modernTd}>
-                {meter.installed_at
-                  ? meter.installed_at.slice(0, 10)
-                  : ""}
-              </td>
+      <td style={modernTd}>
+      {meter.apartment_number}
+      </td>
       
-              <td style={modernTd}>
+      <td style={modernTd}>
       
-                <span
-                style={
-                meter.active
-                ? statusActive
-                : statusInactive
-                }
-                >
-                {meter.active
-                  ? "Active"
-                  : "Inactive"}
-              </span>
+      {meter.type==="hot"
       
-              </td>
+      ?"🔴 Hot"
       
-            </tr>
+      :"🔵 Cold"}
       
-          ))}
+      </td>
       
-        </tbody>
+      <td style={modernTd}>
+      {meter.serial_number}
+      </td>
+      
+      <td style={modernTd}>
+      
+      {meter.installed_at?.slice(0,10)}
+      
+      </td>
+      
+      <td style={modernTd}>
+      
+      <span
+      
+      style={
+      
+      meter.active
+      
+      ?statusActive
+      
+      :statusInactive
+      
+      }
+      
+      >
+      
+      {meter.active
+      
+      ?"Active"
+      
+      :"Inactive"}
+      
+      </span>
+      
+      </td>
+      
+      </tr>
+      
+      ))}
+      
+      </tbody>
       
       </table>
-     </div>
+      
+      </div>
+      
+      }
+      
+      mobile={
+      
+      <div>
+      
+      {adminWaterMeters.map(
+      
+      meter=>
+      
+      <WaterMeterCard
+      
+      key={meter.id}
+      
+      meter={meter}
+      
+      />
+      
+      )}
+      
+      </div>
+      
+      }
+      
+      />
     </div>
 
   );
