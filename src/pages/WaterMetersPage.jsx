@@ -7,17 +7,37 @@ import useWater from "../hooks/useWater";
 
 import {
 
+  tableContainer,
+  
   modernTable,
 
   modernTh,
 
   modernTd,
 
+  modernTr,
+
   statusActive,
 
   statusInactive,
 
 } from "../styles/theme";
+
+const rowStyle = {
+  transition: "background 0.2s",
+};
+
+export const modernTable = {
+
+  width: "100%",
+
+  borderCollapse: "separate",
+
+  borderSpacing: 0,
+
+  background: "#f8fafc",
+
+};
 
 export default function WaterMetersPage() {
 
@@ -61,13 +81,14 @@ export default function WaterMetersPage() {
       
       </PageHeader>
 
-     <table style={modernTable}>
+     <div style={tableContainer}>
+       <table style={modernTable}>
       
         <thead>
       
           <tr>
       
-            <<th style={modernTh}>th>Apartment</th>
+            <th style={modernTh}>th>Apartment</th>
       
             <th style={modernTh}>Type</th>
       
@@ -85,7 +106,10 @@ export default function WaterMetersPage() {
       
           {adminWaterMeters.map((meter) => (
       
-            <tr key={meter.id}>
+            <tr
+              key={meter.id}
+              style={modernTr}
+            >
       
               <td style={modernTd}>{meter.apartment_number}</td>
       
@@ -126,6 +150,7 @@ export default function WaterMetersPage() {
         </tbody>
       
       </table>
+     </div>
     </div>
 
   );
