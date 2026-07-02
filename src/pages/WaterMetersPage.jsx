@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
+import WaterMeterCard from "../components/WaterMeterCard";
+import WaterMeterTable from "../components/WaterMeterTable";
 
 import useWater from "../hooks/useWater";
 
