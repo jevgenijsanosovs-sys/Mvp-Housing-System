@@ -2,35 +2,21 @@ import { useEffect } from "react";
 
 import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
-import WaterMeterCard from "../components/WaterMeterCard";
+import ResponsiveTable from "../components/ResponsiveTable";
 import WaterMeterTable from "../components/WaterMeterTable";
+import WaterMeterCard from "../components/WaterMeterCard";
 
 import useWater from "../hooks/useWater";
-
-import {
-
-} from "../styles/theme";
-
-import ResponsiveTable
-  from "../components/ResponsiveTable";
-
-import WaterMeterCard
-  from "../components/WaterMeterCard";
 
 export default function WaterMetersPage() {
 
   const {
-
     adminWaterMeters,
-
     loadAdminWaterMeters,
-
   } = useWater();
 
   useEffect(() => {
-
     loadAdminWaterMeters();
-
   }, []);
 
   return (
@@ -40,152 +26,52 @@ export default function WaterMetersPage() {
       <PageHeader
         title="Water Meter Management"
       >
-      
+
         <ActionButton
           text="Refresh"
           onClick={loadAdminWaterMeters}
         />
-      
-        <ActionButton
 
+        <ActionButton
           text="Add Meter"
         />
-      
-        <ActionButton
 
+        <ActionButton
           text="Deactivate"
           variant="danger"
         />
-      
+
       </PageHeader>
 
       <ResponsiveTable
-      
-      desktop={
-      
-      <div style={tableContainer}>
-      
-      <table style={modernTable}>
-      
-      <thead>
-      
-      <tr>
-      
-      <th style={modernTh}>
-      Apartment
-      </th>
-      
-      <th style={modernTh}>
-      Type
-      </th>
-      
-      <th style={modernTh}>
-      Serial Number
-      </th>
-      
-      <th style={modernTh}>
-      Installed
-      </th>
-      
-      <th style={modernTh}>
-      Status
-      </th>
-      
-      </tr>
-      
-      </thead>
-      
-      <tbody>
-      
-      {adminWaterMeters.map((meter)=>(
-      
-      <tr key={meter.id}>
-      
-      <td style={modernTd}>
-      {meter.apartment_number}
-      </td>
-      
-      <td style={modernTd}>
-      
-      {meter.type==="hot"
-      
-      ?"🔴 Hot"
-      
-      :"🔵 Cold"}
-      
-      </td>
-      
-      <td style={modernTd}>
-      {meter.serial_number}
-      </td>
-      
-      <td style={modernTd}>
-      
-      {meter.installed_at?.slice(0,10)}
-      
-      </td>
-      
-      <td style={modernTd}>
-      
-      <span
-      
-      style={
-      
-      meter.active
-      
-      ?statusActive
-      
-      :statusInactive
-      
-      }
-      
-      >
-      
-      {meter.active
-      
-      ?"Active"
-      
-      :"Inactive"}
-      
-      </span>
-      
-      </td>
-      
-      </tr>
-      
-      ))}
-      
-      </tbody>
-      
-      </table>
-      
-      </div>
-      
-      }
-      
-      mobile={
-      
-      <div>
-      
-      {adminWaterMeters.map(
-      
-      meter=>
-      
-      <WaterMeterCard
-      
-      key={meter.id}
-      
-      meter={meter}
-      
+
+        desktop={
+
+          <WaterMeterTable
+            meters={adminWaterMeters}
+          />
+
+        }
+
+        mobile={
+
+          <div>
+
+            {adminWaterMeters.map((meter) => (
+
+              <WaterMeterCard
+                key={meter.id}
+                meter={meter}
+              />
+
+            ))}
+
+          </div>
+
+        }
+
       />
-      
-      )}
-      
-      </div>
-      
-      }
-      
-      />
+
     </div>
 
   );
