@@ -1,5 +1,7 @@
 import TableSection from "./TableSection";
 
+import Badge from "./ui/Badge";
+
 import {
 
   tableContainer,
@@ -103,27 +105,19 @@ export default function WaterMeterTable({
 
               <td style={modernTd}>
 
-                <span
-
-                  style={
-
+                <Badge
+                  color={
                     meter.active
-
-                      ? statusActive
-
-                      : statusInactive
-
+                      ? "green"
+                      : "gray"
                   }
-
                 >
-
+                
                   {meter.active
-
                     ? "Active"
-
                     : "Inactive"}
-
-                </span>
+                
+                </Badge>
 
               </td>
 
