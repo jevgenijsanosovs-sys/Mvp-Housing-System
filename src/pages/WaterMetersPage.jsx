@@ -9,20 +9,6 @@ import useWater from "../hooks/useWater";
 
 import {
 
-  tableContainer,
-  
-  modernTable,
-
-  modernTh,
-
-  modernTd,
-
-  modernTr,
-
-  statusActive,
-
-  statusInactive,
-
 } from "../styles/theme";
 
 import ResponsiveTable
