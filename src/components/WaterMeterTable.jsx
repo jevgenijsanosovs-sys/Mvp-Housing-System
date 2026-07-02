@@ -1,3 +1,5 @@
+import TableSection from "./TableSection";
+
 import {
 
   tableContainer,
@@ -26,6 +28,8 @@ export default function WaterMeterTable({
 
     <div style={tableContainer}>
 
+      <TableSection>
+      
       <table style={modernTable}>
 
         <thead>
@@ -126,6 +130,8 @@ export default function WaterMeterTable({
         </tbody>
 
       </table>
+
+      </TableSection>
 
     </div>
 
