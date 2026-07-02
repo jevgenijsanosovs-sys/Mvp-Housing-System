@@ -10,8 +10,6 @@ import {
 
   modernTd,
 
-  modernTr,
-
   statusActive,
 
   statusInactive,
@@ -26,9 +24,7 @@ export default function WaterMeterTable({
 
   return (
 
-    <div style={tableContainer}>
-
-      <TableSection>
+     <TableSection>
       
       <table style={modernTable}>
 
@@ -64,10 +60,18 @@ export default function WaterMeterTable({
 
           {meters.map((meter) => (
 
-            <tr
-              key={meter.id}
-              style={modernTr}
-            >
+          <tr
+            key={meter.id}
+            style={{
+              transition: "background-color .15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#f8fafc";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#ffffff";
+            }}
+          >
 
               <td style={modernTd}>
                 {meter.apartment_number}
@@ -131,9 +135,7 @@ export default function WaterMeterTable({
 
       </table>
 
-      </TableSection>
-
-    </div>
+    </TableSection>
 
   );
 
