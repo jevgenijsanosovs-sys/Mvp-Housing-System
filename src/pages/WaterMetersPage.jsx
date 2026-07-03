@@ -4,7 +4,11 @@ import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
 import ResponsiveTable from "../components/ResponsiveTable";
 import WaterMeterTable from "../components/WaterMeterTable";
-import WaterMeterCard from "../components/WaterMeterCard";
+import ApartmentWaterCard
+  from "../components/ApartmentWaterCard";
+
+import groupMetersByApartment
+  from "../utils/groupMetersByApartment";
 
 import useWater from "../hooks/useWater";
 
@@ -19,6 +23,11 @@ export default function WaterMetersPage() {
     loadAdminWaterMeters();
   }, []);
 
+  const apartments =
+    groupMetersByApartment(
+      adminWaterMeters
+    );
+  
   return (
 
     <div>
@@ -56,16 +65,19 @@ export default function WaterMetersPage() {
         mobile={
 
           <div>
-
-            {adminWaterMeters.map((meter) => (
-
-              <WaterMeterCard
-                key={meter.id}
-                meter={meter}
+          
+            {apartments.map((apartment) => (
+          
+              <ApartmentWaterCard
+          
+                key={apartment.number}
+          
+                apartment={apartment}
+          
               />
-
+          
             ))}
-
+          
           </div>
 
         }
