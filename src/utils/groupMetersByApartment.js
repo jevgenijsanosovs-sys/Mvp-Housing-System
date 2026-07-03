@@ -4,36 +4,61 @@ export default function groupMetersByApartment(meters) {
 
   meters.forEach((meter) => {
 
-    const apartment = meter.apartment_number;
+    const apartmentNumber = meter.apartment_number;
 
-    if (!apartments[apartment]) {
+    if (!apartments[apartmentNumber]) {
 
-      apartments[apartment] = {
+      apartments[apartmentNumber] = {
 
-        number: apartment,
+        number: apartmentNumber,
 
-        owner: "",
+        owner:
+          meter.owner_name ||
+          meter.resident_name ||
+          "",
 
-        risers: [
-
-          {
-
-            name: "General",
-
-            meters: [],
-
-          },
-
-        ],
+        risers: {},
 
       };
 
     }
 
-    apartments[apartment].risers[0].meters.push(meter);
+    const riserName =
+      meter.riser_name ||
+      "General";
+
+    if (
+      !apartments[apartmentNumber]
+        .risers[riserName]
+    ) {
+
+      apartments[apartmentNumber]
+        .risers[riserName] = [];
+
+    }
+
+    apartments[apartmentNumber]
+      .risers[riserName]
+      .push(meter);
 
   });
 
-  return Object.values(apartments);
+  return Object.values(apartments).map(
+    apartment => ({
+
+      ...apartment,
+
+      risers: Object.entries(
+        apartment.risers
+      ).map(([name, meters]) => ({
+
+        name,
+
+        meters,
+
+      })),
+
+    })
+  );
 
 }
