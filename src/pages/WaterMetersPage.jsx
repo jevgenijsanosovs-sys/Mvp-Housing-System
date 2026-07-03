@@ -1,4 +1,10 @@
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import SearchBox
+  from "../components/SearchBox";
 
 import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
@@ -27,6 +33,52 @@ export default function WaterMetersPage() {
     groupMetersByApartment(
       adminWaterMeters
     );
+
+  const [search, setSearch] =
+    useState("");
+
+  const filteredApartments =
+    apartments.filter((apartment) => {
+  
+      const text =
+        search.toLowerCase();
+  
+      if (
+        apartment.number
+          .toString()
+          .includes(text)
+      ) {
+  
+        return true;
+  
+      }
+  
+      if (
+        apartment.owner
+          ?.toLowerCase()
+          .includes(text)
+      ) {
+  
+        return true;
+  
+      }
+  
+      return apartment.risers.some(
+        (riser) =>
+  
+          riser.meters.some(
+            (meter) =>
+  
+              meter.serial_number
+                ?.toLowerCase()
+                .includes(text)
+  
+          )
+  
+      );
+  
+    });
+
   
   return (
 
@@ -41,6 +93,15 @@ export default function WaterMetersPage() {
           onClick={loadAdminWaterMeters}
         />
 
+      <SearchBox
+      
+        value={search}
+      
+        onChange={setSearch}
+      
+      />
+
+        
         <ActionButton
           text="Add Meter"
         />
@@ -66,7 +127,7 @@ export default function WaterMetersPage() {
 
           <div>
           
-            {apartments.map((apartment) => (
+            {filteredApartments.map((apartment) => (
           
               <ApartmentWaterCard
           
