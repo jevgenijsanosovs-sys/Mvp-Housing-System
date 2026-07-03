@@ -3,6 +3,30 @@ import {
   useState,
 } from "react";
 
+import { useState, useMemo } from "react";
+
+const [filter, setFilter] = useState({
+  type: "all",
+  status: "all",
+  riser: "all",
+});
+
+const filteredMeters = useMemo(() => {
+  return enrichedMeters.filter(meter => {
+
+    if (filter.type !== "all" && meter.type !== filter.type)
+      return false;
+
+    if (filter.status !== "all" && meter.status !== filter.status)
+      return false;
+
+    if (filter.riser !== "all" && meter.riser !== filter.riser)
+      return false;
+
+    return true;
+  });
+}, [enrichedMeters, filter]);
+
 import SearchBox
   from "../components/SearchBox";
 
@@ -79,6 +103,14 @@ export default function WaterMetersPage() {
   
     });
 
+    const enrichedMeters = filteredMeters.map(meter => ({
+      ...meter,
+    
+      riser: meter.riser || "Unknown",
+    
+      status: meter.active ? "active" : "inactive",
+    }));
+  
   
   return (
 
@@ -88,6 +120,38 @@ export default function WaterMetersPage() {
         title="Water Meter Management"
       >
 
+        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+        
+          <select
+            value={filter.type}
+            onChange={(e) =>
+              setFilter(prev => ({
+                ...prev,
+                type: e.target.value
+              }))
+            }
+          >
+            <option value="all">All Types</option>
+            <option value="hot">Hot</option>
+            <option value="cold">Cold</option>
+          </select>
+        
+          <select
+            value={filter.status}
+            onChange={(e) =>
+              setFilter(prev => ({
+                ...prev,
+                status: e.target.value
+              }))
+            }
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        
+        </div>
+        
         <ActionButton
           text="Refresh"
           onClick={loadAdminWaterMeters}
