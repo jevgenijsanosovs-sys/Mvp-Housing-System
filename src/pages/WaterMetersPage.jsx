@@ -279,54 +279,63 @@ const [
 
       </div>
 
-      <ResponsiveTable
-
-        desktop={
-
-          <WaterMeterTable
-            meters={filteredMeters}
-          />
-
-        }
-
-        mobile={
-
-          <div>
-
-            {apartments.map(
-
-              (apartment) => (
-
-                <ApartmentWaterCard
-                
-                  key={apartment.number}
-                
-                  apartment={apartment}
-                
-                  onOpen={()=>
-                
-                    setSelectedApartment(
-                
-                      apartment
-                
-                    )
-                
-                  }
-                
-                />
-
-              )
-
-            )}
-
-          </div>
-
-        }
-
+    <ResponsiveTable
+    
+      desktop={
+    
+        <WaterMeterTable
+          meters={filteredMeters}
+        />
+    
+      }
+    
+      mobile={
+    
+        <div>
+    
+          {apartments.map((apartment) => (
+    
+            <ApartmentWaterCard
+    
+              key={apartment.number}
+    
+              apartment={apartment}
+    
+              onOpen={() =>
+                setSelectedApartment(apartment)
+              }
+    
+            />
+    
+          ))}
+    
+        </div>
+    
+      }
+    
+    />
+    
+    <Drawer
+    
+      open={!!selectedApartment}
+    
+      title={`Apartment ${selectedApartment?.number ?? ""}`}
+    
+      onClose={() =>
+        setSelectedApartment(null)
+      }
+    
+    >
+    
+      <ApartmentPreview
+    
+        apartment={selectedApartment}
+    
       />
-
+    
+    </Drawer>
+    
     </div>
-
   );
 
 }
