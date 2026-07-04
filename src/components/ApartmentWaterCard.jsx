@@ -24,36 +24,31 @@ export default function ApartmentWaterCard({
       {/* HEADER */}
       <div style={{ marginBottom: 18 }}>
 
-        <div style={{ fontSize: 18, fontWeight: 700 }}>
           <button
           
             onClick={onOpen}
           
             style={{
           
-              border:"none",
+              border: "none",
           
-              background:"none",
+              background: "none",
           
-              padding:0,
+              padding: 0,
           
-              cursor:"pointer",
+              cursor: "pointer",
           
-              fontSize:20,
+              fontSize: 20,
           
-              fontWeight:700,
+              fontWeight: 700,
           
-              color:"#2563eb",
+              color: "#2563eb",
           
             }}
           
           >
           
-            Apartment
-          
-            {" "}
-          
-            {apartment.number}
+            Apartment {apartment.number}
           
           </button>
         </div>
