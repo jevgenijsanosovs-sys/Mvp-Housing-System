@@ -1,3 +1,9 @@
+import Drawer
+  from "../components/Drawer";
+
+import ApartmentPreview
+  from "../components/ApartmentPreview";
+
 import {
   useEffect,
   useMemo,
@@ -151,6 +157,16 @@ export default function WaterMetersPage() {
 
   }, [enrichedMeters, filter]);
 
+
+const [
+
+  selectedApartment,
+
+  setSelectedApartment,
+
+] = useState(null);
+
+  
   // =====================================
   // Apartments
   // =====================================
@@ -282,15 +298,21 @@ export default function WaterMetersPage() {
               (apartment) => (
 
                 <ApartmentWaterCard
-
-                  key={
-                    apartment.number
+                
+                  key={apartment.number}
+                
+                  apartment={apartment}
+                
+                  onOpen={()=>
+                
+                    setSelectedApartment(
+                
+                      apartment
+                
+                    )
+                
                   }
-
-                  apartment={
-                    apartment
-                  }
-
+                
                 />
 
               )
