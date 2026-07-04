@@ -121,6 +121,35 @@ export default function WaterMetersPage() {
         title="Water Meter Management"
       >
 
+        <div
+          style={{
+            marginBottom: 16,
+          }}
+        >
+        
+          <input
+            type="text"
+            placeholder="Search apartment, serial number, owner..."
+            value={filter.search}
+            onChange={(e) =>
+              setFilter((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }))
+            }
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "1px solid #d1d5db",
+              fontSize: 14,
+              boxSizing: "border-box",
+            }}
+          />
+        
+        </div>
+        
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
         
           <select
@@ -178,6 +207,9 @@ export default function WaterMetersPage() {
 
       </PageHeader>
 
+
+
+      
       <ResponsiveTable
 
         desktop={
