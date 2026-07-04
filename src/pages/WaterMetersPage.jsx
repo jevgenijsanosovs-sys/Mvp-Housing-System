@@ -15,6 +15,44 @@ const [filter, setFilter] = useState({
 const filteredMeters = useMemo(() => {
   return enrichedMeters.filter(meter => {
 
+  const search = filter.search
+    .trim()
+    .toLowerCase();
+  
+  if (search) {
+  
+    const apartment =
+      String(meter.apartment_number ?? "")
+        .toLowerCase();
+  
+    const serial =
+      String(meter.serial_number ?? "")
+        .toLowerCase();
+  
+    const owner =
+      String(meter.owner ?? "")
+        .toLowerCase();
+  
+    const resident =
+      String(meter.resident ?? "")
+        .toLowerCase();
+  
+    const riser =
+      String(meter.riser ?? "")
+        .toLowerCase();
+  
+    if (
+      !apartment.includes(search) &&
+      !serial.includes(search) &&
+      !owner.includes(search) &&
+      !resident.includes(search) &&
+      !riser.includes(search)
+    ) {
+      return false;
+    }
+  
+  }
+    
     if (filter.type !== "all" && meter.type !== filter.type)
       return false;
 
