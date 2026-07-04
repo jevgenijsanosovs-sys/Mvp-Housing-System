@@ -1,8 +1,8 @@
 import Drawer
   from "../components/Drawer";
 
-import ApartmentPreview
-  from "../components/ApartmentPreview";
+import ApartmentDetails
+  from "../components/ApartmentDetails";
 
 import {
   useEffect,
@@ -327,7 +327,7 @@ const [
     
     >
     
-      <ApartmentPreview
+      <ApartmentDetails
     
         apartment={selectedApartment}
     
