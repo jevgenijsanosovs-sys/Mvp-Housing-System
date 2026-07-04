@@ -6,6 +6,7 @@ import {
 import { useState, useMemo } from "react";
 
 const [filter, setFilter] = useState({
+  search: "",
   type: "all",
   status: "all",
   riser: "all",
