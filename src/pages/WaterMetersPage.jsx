@@ -1,80 +1,15 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
-import { useState, useMemo } from "react";
-
-const [filter, setFilter] = useState({
-  search: "",
-  type: "all",
-  status: "all",
-  riser: "all",
-});
-
-const filteredMeters = useMemo(() => {
-  return enrichedMeters.filter(meter => {
-
-  const search = filter.search
-    .trim()
-    .toLowerCase();
-  
-  if (search) {
-  
-    const apartment =
-      String(meter.apartment_number ?? "")
-        .toLowerCase();
-  
-    const serial =
-      String(meter.serial_number ?? "")
-        .toLowerCase();
-  
-    const owner =
-      String(meter.owner ?? "")
-        .toLowerCase();
-  
-    const resident =
-      String(meter.resident ?? "")
-        .toLowerCase();
-  
-    const riser =
-      String(meter.riser ?? "")
-        .toLowerCase();
-  
-    if (
-      !apartment.includes(search) &&
-      !serial.includes(search) &&
-      !owner.includes(search) &&
-      !resident.includes(search) &&
-      !riser.includes(search)
-    ) {
-      return false;
-    }
-  
-  }
-    
-    if (filter.type !== "all" && meter.type !== filter.type)
-      return false;
-
-    if (filter.status !== "all" && meter.status !== filter.status)
-      return false;
-
-    if (filter.riser !== "all" && meter.riser !== filter.riser)
-      return false;
-
-    return true;
-  });
-}, [enrichedMeters, filter]);
-
-import SearchBox
-  from "../components/SearchBox";
-
 import PageHeader from "../components/PageHeader";
 import ActionButton from "../components/ActionButton";
+import SearchBox from "../components/SearchBox";
 import ResponsiveTable from "../components/ResponsiveTable";
 import WaterMeterTable from "../components/WaterMeterTable";
-import ApartmentWaterCard
-  from "../components/ApartmentWaterCard";
+import ApartmentWaterCard from "../components/ApartmentWaterCard";
 
 import groupMetersByApartment
   from "../utils/groupMetersByApartment";
@@ -92,65 +27,143 @@ export default function WaterMetersPage() {
     loadAdminWaterMeters();
   }, []);
 
-  const apartments =
-    groupMetersByApartment(
-      adminWaterMeters
-    );
+  const [filter, setFilter] = useState({
+    search: "",
+    type: "all",
+    status: "all",
+    riser: "all",
+  });
 
-  const [search, setSearch] =
-    useState("");
+  // =====================================
+  // Normalize data
+  // =====================================
 
-  const filteredApartments =
-    apartments.filter((apartment) => {
-  
-      const text =
-        search.toLowerCase();
-  
-      if (
-        apartment.number
-          .toString()
-          .includes(text)
-      ) {
-  
-        return true;
-  
+  const enrichedMeters = useMemo(() => {
+
+    return adminWaterMeters.map((meter) => ({
+
+      ...meter,
+
+      riser:
+        meter.riser || "Unknown",
+
+      status:
+        meter.active
+          ? "active"
+          : "inactive",
+
+    }));
+
+  }, [adminWaterMeters]);
+
+  // =====================================
+  // Filtering
+  // =====================================
+
+  const filteredMeters = useMemo(() => {
+
+    return enrichedMeters.filter((meter) => {
+
+      const search =
+        filter.search
+          .trim()
+          .toLowerCase();
+
+      if (search) {
+
+        const apartment =
+          String(
+            meter.apartment_number ?? ""
+          ).toLowerCase();
+
+        const serial =
+          String(
+            meter.serial_number ?? ""
+          ).toLowerCase();
+
+        const owner =
+          String(
+            meter.owner ?? ""
+          ).toLowerCase();
+
+        const resident =
+          String(
+            meter.resident ?? ""
+          ).toLowerCase();
+
+        const riser =
+          String(
+            meter.riser ?? ""
+          ).toLowerCase();
+
+        if (
+
+          !apartment.includes(search) &&
+          !serial.includes(search) &&
+          !owner.includes(search) &&
+          !resident.includes(search) &&
+          !riser.includes(search)
+
+        ) {
+
+          return false;
+
+        }
+
       }
-  
+
       if (
-        apartment.owner
-          ?.toLowerCase()
-          .includes(text)
+
+        filter.type !== "all" &&
+        meter.type !== filter.type
+
       ) {
-  
-        return true;
-  
+
+        return false;
+
       }
-  
-      return apartment.risers.some(
-        (riser) =>
-  
-          riser.meters.some(
-            (meter) =>
-  
-              meter.serial_number
-                ?.toLowerCase()
-                .includes(text)
-  
-          )
-  
-      );
-  
+
+      if (
+
+        filter.status !== "all" &&
+        meter.status !== filter.status
+
+      ) {
+
+        return false;
+
+      }
+
+      if (
+
+        filter.riser !== "all" &&
+        meter.riser !== filter.riser
+
+      ) {
+
+        return false;
+
+      }
+
+      return true;
+
     });
 
-    const enrichedMeters = filteredMeters.map(meter => ({
-      ...meter,
-    
-      riser: meter.riser || "Unknown",
-    
-      status: meter.active ? "active" : "inactive",
-    }));
-  
-  
+  }, [enrichedMeters, filter]);
+
+  // =====================================
+  // Apartments
+  // =====================================
+
+  const apartments =
+    useMemo(() => {
+
+      return groupMetersByApartment(
+        filteredMeters
+      );
+
+    }, [filteredMeters]);
+
   return (
 
     <div>
@@ -159,81 +172,29 @@ export default function WaterMetersPage() {
         title="Water Meter Management"
       >
 
-        <div
-          style={{
-            marginBottom: 16,
-          }}
-        >
-        
-          <input
-            type="text"
-            placeholder="Search apartment, serial number, owner..."
-            value={filter.search}
-            onChange={(e) =>
-              setFilter((prev) => ({
-                ...prev,
-                search: e.target.value,
-              }))
-            }
-            style={{
-              width: "100%",
-              maxWidth: 420,
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid #d1d5db",
-              fontSize: 14,
-              boxSizing: "border-box",
-            }}
-          />
-        
-        </div>
-        
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-        
-          <select
-            value={filter.type}
-            onChange={(e) =>
-              setFilter(prev => ({
-                ...prev,
-                type: e.target.value
-              }))
-            }
-          >
-            <option value="all">All Types</option>
-            <option value="hot">Hot</option>
-            <option value="cold">Cold</option>
-          </select>
-        
-          <select
-            value={filter.status}
-            onChange={(e) =>
-              setFilter(prev => ({
-                ...prev,
-                status: e.target.value
-              }))
-            }
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        
-        </div>
-        
+        <SearchBox
+
+          value={filter.search}
+
+          onChange={(value) =>
+
+            setFilter((prev) => ({
+
+              ...prev,
+
+              search: value,
+
+            }))
+
+          }
+
+        />
+
         <ActionButton
           text="Refresh"
           onClick={loadAdminWaterMeters}
         />
 
-      <SearchBox
-      
-        value={search}
-      
-        onChange={setSearch}
-      
-      />
-
-        
         <ActionButton
           text="Add Meter"
         />
@@ -245,15 +206,69 @@ export default function WaterMetersPage() {
 
       </PageHeader>
 
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginBottom: 20,
+          flexWrap: "wrap",
+        }}
+      >
 
+        <select
+          value={filter.type}
+          onChange={(e) =>
+            setFilter((prev) => ({
+              ...prev,
+              type: e.target.value,
+            }))
+          }
+        >
+          <option value="all">
+            All Types
+          </option>
 
-      
+          <option value="hot">
+            Hot
+          </option>
+
+          <option value="cold">
+            Cold
+          </option>
+
+        </select>
+
+        <select
+          value={filter.status}
+          onChange={(e) =>
+            setFilter((prev) => ({
+              ...prev,
+              status: e.target.value,
+            }))
+          }
+        >
+          <option value="all">
+            All Status
+          </option>
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
       <ResponsiveTable
 
         desktop={
 
           <WaterMeterTable
-            meters={adminWaterMeters}
+            meters={filteredMeters}
           />
 
         }
@@ -261,19 +276,27 @@ export default function WaterMetersPage() {
         mobile={
 
           <div>
-          
-            {filteredApartments.map((apartment) => (
-          
-              <ApartmentWaterCard
-          
-                key={apartment.number}
-          
-                apartment={apartment}
-          
-              />
-          
-            ))}
-          
+
+            {apartments.map(
+
+              (apartment) => (
+
+                <ApartmentWaterCard
+
+                  key={
+                    apartment.number
+                  }
+
+                  apartment={
+                    apartment
+                  }
+
+                />
+
+              )
+
+            )}
+
           </div>
 
         }
