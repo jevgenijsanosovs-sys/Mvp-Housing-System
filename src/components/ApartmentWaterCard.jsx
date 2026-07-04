@@ -1,4 +1,12 @@
-export default function ApartmentWaterCard({ apartment }) {
+export default function ApartmentWaterCard({
+
+  apartment,
+
+  onOpen,
+
+}) 
+
+  {
 
   return (
 
@@ -17,7 +25,37 @@ export default function ApartmentWaterCard({ apartment }) {
       <div style={{ marginBottom: 18 }}>
 
         <div style={{ fontSize: 18, fontWeight: 700 }}>
-          Apartment {apartment.number}
+          <button
+          
+            onClick={onOpen}
+          
+            style={{
+          
+              border:"none",
+          
+              background:"none",
+          
+              padding:0,
+          
+              cursor:"pointer",
+          
+              fontSize:20,
+          
+              fontWeight:700,
+          
+              color:"#2563eb",
+          
+            }}
+          
+          >
+          
+            Apartment
+          
+            {" "}
+          
+            {apartment.number}
+          
+          </button>
         </div>
 
         <div style={{ color: "#64748b", fontSize: 14 }}>
