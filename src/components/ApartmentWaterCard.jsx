@@ -87,18 +87,90 @@ export default function ApartmentWaterCard({
 
             {riser.meters.map((meter) => (
 
+          <div
+            key={meter.id}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "12px 14px",
+              border: "1px solid #eef2f7",
+              borderRadius: 12,
+              background: "#fafafa",
+            }}
+          >
+          
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flex: 1,
+              }}
+            >
+          
               <div
-                key={meter.id}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "10px 12px",
-                  border: "1px solid #eef2f7",
-                  borderRadius: 12,
-                  background: "#fafafa",
+                  fontSize: 22,
                 }}
               >
+                {meter.type === "hot"
+                  ? "🔴"
+                  : "🔵"}
+              </div>
+          
+              <div>
+          
+                <div
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 14,
+                    color: "#334155",
+                  }}
+                >
+                  {meter.type === "hot"
+                    ? "Hot Water"
+                    : "Cold Water"}
+                </div>
+          
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#64748b",
+                  }}
+                >
+                  SN {meter.serial_number}
+                </div>
+          
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#94a3b8",
+                  }}
+                >
+                  Reading —
+                </div>
+          
+              </div>
+          
+            </div>
+          
+            <button
+              style={{
+                padding: "6px 12px",
+                borderRadius: 8,
+                border: "1px solid #2563eb",
+                background: "white",
+                color: "#2563eb",
+                fontSize: 12,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              History
+            </button>
+          
+          </div>
 
                 {/* LEFT */}
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
