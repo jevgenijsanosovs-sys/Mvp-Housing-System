@@ -1,9 +1,21 @@
+import {
+
+  useState,
+
+} from "react";
+
+import TabBar
+
+  from "./TabBar";
+
 export default function ApartmentDetails({
 
   apartment,
 
 }) {
 
+const [tab, setTab] = useState("General");
+  
   if (!apartment) {
 
     return null;
@@ -13,6 +25,41 @@ export default function ApartmentDetails({
   return (
 
     <div>
+
+     <h2
+  style={{
+    marginTop: 0,
+    marginBottom: 20,
+  }}
+>
+
+    Apartment {apartment?.number}
+  
+  </h2>
+  
+  <TabBar
+  
+    tabs={[
+  
+      "General",
+  
+      "Water",
+  
+      "Residents",
+  
+      "Documents",
+  
+      "Tasks",
+  
+      "History",
+  
+    ]}
+  
+    value={tab}
+  
+    onChange={setTab}
+  
+  /> 
 
       <h2
         style={{
