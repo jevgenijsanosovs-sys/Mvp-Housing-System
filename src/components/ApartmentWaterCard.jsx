@@ -93,7 +93,7 @@ export default function ApartmentWaterCard({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              padding: "12px 14px",
+              padding: "10px 12px",
               border: "1px solid #eef2f7",
               borderRadius: 12,
               background: "#fafafa",
@@ -104,7 +104,7 @@ export default function ApartmentWaterCard({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
+                gap: 10,
                 flex: 1,
               }}
             >
@@ -145,10 +145,38 @@ export default function ApartmentWaterCard({
                 <div
                   style={{
                     fontSize: 12,
+                    color: "#64748b",
+                    marginTop: 2,
+                  }}
+                >
+                
+                  Reading{" "}
+                
+                  <strong>
+                
+                    {meter.lastReading ??
+                
+                      "—"}
+                
+                  </strong>
+                
+                  {" "}
+                
+                  {meter.unit ?? "L"}
+                
+                </div>
+                
+                <div
+                  style={{
+                    fontSize: 11,
                     color: "#94a3b8",
                   }}
                 >
-                  Reading —
+                
+                  {meter.lastReadingDate ??
+                
+                    ""}
+                
                 </div>
           
               </div>
@@ -157,12 +185,12 @@ export default function ApartmentWaterCard({
           
             <button
               style={{
-                padding: "6px 12px",
-                borderRadius: 8,
+                padding: "5px 10px",
+                borderRadius: 6,
                 border: "1px solid #2563eb",
                 background: "white",
                 color: "#2563eb",
-                fontSize: 12,
+                fontSize: 11,
                 cursor: "pointer",
                 fontWeight: 600,
               }}
