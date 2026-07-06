@@ -1,3 +1,21 @@
+import {
+
+  apartmentCard,
+
+  apartmentTitle,
+
+  riserBlock,
+
+  riserTitle,
+
+  meterCard,
+
+  meterLeft,
+
+  meterHistoryButton,
+
+} from "../styles/theme";
+
 export default function ApartmentWaterCard({
 
   apartment,
@@ -8,16 +26,7 @@ export default function ApartmentWaterCard({
 
   return (
 
-    <div
-      style={{
-        background: "#ffffff",
-        border: "1px solid #e5e7eb",
-        borderRadius: 18,
-        padding: 20,
-        marginBottom: 24,
-        boxShadow: "0 6px 20px rgba(15,23,42,.06)",
-      }}
-    >
+    <div style={apartmentCard}>
 
       {/* Apartment */}
 
@@ -27,30 +36,13 @@ export default function ApartmentWaterCard({
         }}
       >
 
-        <button
-
-          onClick={onOpen}
-
-          style={{
-
-            border: "none",
-
-            background: "none",
-
-            padding: 0,
-
-            cursor: "pointer",
-
-            fontSize: 18,
-
-            fontWeight: 600,
-
-            color: "#2563eb",
-
-          }}
-
-        >
-
+      <button
+      
+        onClick={onOpen}
+      
+        style={apartmentTitle}
+      
+      >
           Apartment {apartment.number}
 
         </button>
@@ -61,35 +53,15 @@ export default function ApartmentWaterCard({
 
       {apartment.risers.map((riser) => (
 
-        <div
-
-          key={riser.name}
-
-          style={{
-
-            marginBottom: 18,
-
-            borderTop: "1px solid #f1f5f9",
-
-            paddingTop: 14,
-
-          }}
-
-        >
-
           <div
-
-            style={{
-
-              fontWeight: 700,
-
-              color: "#334155",
-
-              marginBottom: 10,
-
-            }}
-
+          
+            key={riser.name}
+          
+            style={riserBlock}
+          
           >
+
+          <div style={riserTitle}>
 
             {riser.name}
 
@@ -121,47 +93,13 @@ export default function ApartmentWaterCard({
 
                 }}
 
-                style={{
-
-                  display: "flex",
-
-                  justifyContent: "space-between",
-
-                  alignItems: "center",
-
-                  padding: "10px 12px",
-
-                  border: "1px solid #eef2f7",
-
-                  borderRadius: 12,
-
-                  background: "#fafafa",
-
-                  cursor: "pointer",
-
-                  transition: "0.15s",
-
-                }}
+                style={meterCard}
 
               >
 
                 {/* Left */}
 
-                <div
-
-                  style={{
-
-                    display: "flex",
-
-                    alignItems: "center",
-
-                    gap: 10,
-
-                    flex: 1,
-
-                  }}
-
-                >
+                  <div style={meterLeft}>
 
                   <div
 
@@ -279,26 +217,7 @@ export default function ApartmentWaterCard({
 
                   }}
 
-                  style={{
-
-                    padding: "5px 10px",
-
-                    borderRadius: 6,
-
-                    border: "1px solid #2563eb",
-
-                    background: "#ffffff",
-
-                    color: "#2563eb",
-
-                    fontSize: 11,
-
-                    cursor: "pointer",
-
-                    fontWeight: 600,
-
-                  }}
-
+                  style={meterHistoryButton}
                 >
 
                   History
