@@ -1,12 +1,6 @@
-import {
+import { useState } from "react";
 
-  useState,
-
-} from "react";
-
-import TabBar
-
-  from "./TabBar";
+import TabBar from "./TabBar";
 
 export default function ApartmentDetails({
 
@@ -14,8 +8,8 @@ export default function ApartmentDetails({
 
 }) {
 
-const [tab, setTab] = useState("General");
-  
+  const [tab, setTab] = useState("General");
+
   if (!apartment) {
 
     return null;
@@ -26,88 +20,139 @@ const [tab, setTab] = useState("General");
 
     <div>
 
-     <h2
-  style={{
-    marginTop: 0,
-    marginBottom: 20,
-  }}
->
-
-    Apartment {apartment?.number}
-  
-  </h2>
-  
-  <TabBar
-  
-    tabs={[
-  
-      "General",
-  
-      "Water",
-  
-      "Residents",
-  
-      "Documents",
-  
-      "Tasks",
-  
-      "History",
-  
-    ]}
-  
-    value={tab}
-  
-    onChange={setTab}
-  
-  /> 
-
       <h2
         style={{
           marginTop: 0,
-          marginBottom: 24,
+          marginBottom: 20,
         }}
       >
         Apartment {apartment.number}
       </h2>
 
-      <InfoRow
-        label="Owner"
-        value={
-          apartment.owner ||
-          "Not assigned"
-        }
+      <TabBar
+        tabs={[
+          "General",
+          "Water",
+          "Residents",
+          "Documents",
+          "Tasks",
+          "History",
+        ]}
+        value={tab}
+        onChange={setTab}
       />
 
-      <InfoRow
-        label="Resident"
-        value={
-          apartment.resident ||
-          "Not assigned"
-        }
-      />
+      {tab === "General" && (
 
-      <InfoRow
-        label="Area"
-        value={
-          apartment.area
-            ? `${apartment.area} m²`
-            : "-"
-        }
-      />
+        <>
 
-      <InfoRow
-        label="Floor"
-        value={
-          apartment.floor ?? "-"
-        }
-      />
+          <InfoRow
+            label="Owner"
+            value={
+              apartment.owner ||
+              "Not assigned"
+            }
+          />
 
-      <InfoRow
-        label="Entrance"
-        value={
-          apartment.entrance ?? "-"
-        }
-      />
+          <InfoRow
+            label="Resident"
+            value={
+              apartment.resident ||
+              "Not assigned"
+            }
+          />
+
+          <InfoRow
+            label="Area"
+            value={
+              apartment.area
+                ? `${apartment.area} m²`
+                : "-"
+            }
+          />
+
+          <InfoRow
+            label="Floor"
+            value={
+              apartment.floor ?? "-"
+            }
+          />
+
+          <InfoRow
+            label="Entrance"
+            value={
+              apartment.entrance ?? "-"
+            }
+          />
+
+        </>
+
+      )}
+
+      {tab === "Water" && (
+
+        <div
+          style={{
+            padding: "20px 0",
+            color: "#64748b",
+          }}
+        >
+          Water meters will appear here.
+        </div>
+
+      )}
+
+      {tab === "Residents" && (
+
+        <div
+          style={{
+            padding: "20px 0",
+            color: "#64748b",
+          }}
+        >
+          Residents will appear here.
+        </div>
+
+      )}
+
+      {tab === "Documents" && (
+
+        <div
+          style={{
+            padding: "20px 0",
+            color: "#64748b",
+          }}
+        >
+          Documents will appear here.
+        </div>
+
+      )}
+
+      {tab === "Tasks" && (
+
+        <div
+          style={{
+            padding: "20px 0",
+            color: "#64748b",
+          }}
+        >
+          Tasks will appear here.
+        </div>
+
+      )}
+
+      {tab === "History" && (
+
+        <div
+          style={{
+            padding: "20px 0",
+            color: "#64748b",
+          }}
+        >
+          History will appear here.
+        </div>
+
+      )}
 
     </div>
 
@@ -130,8 +175,7 @@ function InfoRow({
 
         display: "flex",
 
-        justifyContent:
-          "space-between",
+        justifyContent: "space-between",
 
         padding: "12px 0",
 
