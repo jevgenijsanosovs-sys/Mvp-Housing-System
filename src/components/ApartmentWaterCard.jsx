@@ -87,9 +87,37 @@ export default function ApartmentWaterCard({
 
             {riser.meters.map((meter) => (
 
-          <div
-            key={meter.id}
-            style={{
+            <div
+              key={meter.id}
+            
+              onClick={() => {
+            
+                console.log("Open meter", meter);
+            
+              }}
+            
+              style={{
+            
+                display: "flex",
+            
+                justifyContent: "space-between",
+            
+                alignItems: "center",
+            
+                padding: "10px 12px",
+            
+                border: "1px solid #eef2f7",
+            
+                borderRadius: 12,
+            
+                background: "#fafafa",
+            
+                cursor: "pointer",
+            
+                transition: "0.15s",
+            
+              }}
+            >
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -184,6 +212,13 @@ export default function ApartmentWaterCard({
             </div>
           
             <button
+              onClick={(e)=>{
+            
+                e.stopPropagation();
+            
+                console.log("History");
+            
+              }}
               style={{
                 padding: "5px 10px",
                 borderRadius: 6,
