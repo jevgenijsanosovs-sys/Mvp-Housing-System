@@ -2,6 +2,9 @@ import { useState } from "react";
 
 import TabBar from "./TabBar";
 
+import ApartmentGeneralTab
+  from "./ApartmentGeneralTab";
+
 export default function ApartmentDetails({
 
   apartment,
@@ -43,77 +46,40 @@ export default function ApartmentDetails({
       />
 
       {tab === "General" && (
-
-        <>
-
-          <InfoRow
-            label="Owner"
-            value={
-              apartment.owner ||
-              "Not assigned"
-            }
-          />
-
-          <InfoRow
-            label="Resident"
-            value={
-              apartment.resident ||
-              "Not assigned"
-            }
-          />
-
-          <InfoRow
-            label="Area"
-            value={
-              apartment.area
-                ? `${apartment.area} m²`
-                : "-"
-            }
-          />
-
-          <InfoRow
-            label="Floor"
-            value={
-              apartment.floor ?? "-"
-            }
-          />
-
-          <InfoRow
-            label="Entrance"
-            value={
-              apartment.entrance ?? "-"
-            }
-          />
-
-        </>
-
+      
+        <ApartmentGeneralTab
+      
+          apartment={apartment}
+      
+        />
+      
       )}
-
-      {tab === "Water" && (
-
-        <div
-          style={{
-            padding: "20px 0",
-            color: "#64748b",
-          }}
-        >
-          Water meters will appear here.
-        </div>
-
-      )}
-
-      {tab === "Residents" && (
-
-        <div
-          style={{
-            padding: "20px 0",
-            color: "#64748b",
-          }}
-        >
-          Residents will appear here.
-        </div>
-
-      )}
+      
+            {tab === "Water" && (
+      
+              <div
+                style={{
+                  padding: "20px 0",
+                  color: "#64748b",
+                }}
+              >
+                Water meters will appear here.
+              </div>
+      
+            )}
+      
+            {tab === "Residents" && (
+      
+              <div
+                style={{
+                  padding: "20px 0",
+                  color: "#64748b",
+                }}
+              >
+                Residents will appear here.
+              </div>
+      
+            )}
 
       {tab === "Documents" && (
 
@@ -157,16 +123,6 @@ export default function ApartmentDetails({
     </div>
 
   );
-
-}
-
-function InfoRow({
-
-  label,
-
-  value,
-
-}) {
 
   return (
 
