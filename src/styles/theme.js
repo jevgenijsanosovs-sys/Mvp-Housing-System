@@ -381,4 +381,115 @@ export const tableContainer = {
 
 };
 
+// ======================================
+// WATER CARDS
+// ======================================
 
+export const apartmentCard = {
+
+  background: "#ffffff",
+
+  border: "1px solid #e5e7eb",
+
+  borderRadius: 18,
+
+  padding: 20,
+
+  marginBottom: 24,
+
+  boxShadow:
+    "0 6px 20px rgba(15,23,42,.06)",
+
+};
+
+export const apartmentTitle = {
+
+  border: "none",
+
+  background: "none",
+
+  padding: 0,
+
+  cursor: "pointer",
+
+  fontSize: 18,
+
+  fontWeight: 600,
+
+  color: "#2563eb",
+
+};
+
+export const riserBlock = {
+
+  marginBottom: 18,
+
+  borderTop: "1px solid #f1f5f9",
+
+  paddingTop: 14,
+
+};
+
+export const riserTitle = {
+
+  fontWeight: 700,
+
+  color: "#334155",
+
+  marginBottom: 10,
+
+};
+
+export const meterCard = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  padding: "10px 12px",
+
+  border: "1px solid #eef2f7",
+
+  borderRadius: 12,
+
+  background: "#fafafa",
+
+  cursor: "pointer",
+
+  transition: "0.15s",
+
+};
+
+export const meterLeft = {
+
+  display: "flex",
+
+  alignItems: "center",
+
+  gap: 10,
+
+  flex: 1,
+
+};
+
+export const meterHistoryButton = {
+
+  padding: "5px 10px",
+
+  borderRadius: 6,
+
+  border: "1px solid #2563eb",
+
+  background: "#ffffff",
+
+  color: "#2563eb",
+
+  fontSize: 11,
+
+  cursor: "pointer",
+
+  fontWeight: 600,
+
+};
