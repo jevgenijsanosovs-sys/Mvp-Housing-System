@@ -1,18 +1,41 @@
-import { labelStyle } from "../styles/theme";
+function InfoRow({
 
-export default function InfoRow({
   label,
-  value,
-}) {
-  return (
-    <tr>
-      <td style={labelStyle}>
-        {label}:
-      </td>
 
-      <td>
+  value,
+
+}) {
+
+  return (
+
+    <div
+      style={{
+
+        display:"flex",
+
+        justifyContent:"space-between",
+
+        padding:"12px 0",
+
+        borderBottom:"1px solid #e5e7eb",
+
+      }}
+    >
+
+      <strong>
+
+        {label}
+
+      </strong>
+
+      <span>
+
         {value}
-      </td>
-    </tr>
+
+      </span>
+
+    </div>
+
   );
+
 }
