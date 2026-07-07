@@ -1,4 +1,5 @@
 import InfoRow from "./InfoRow";
+import SectionCard from "./SectionCard";
 
 export default function WaterMeterDetails({
 
@@ -16,106 +17,117 @@ export default function WaterMeterDetails({
 
     <div>
 
-      <h2
+      <div
+
         style={{
-          marginTop: 0,
-          marginBottom: 24,
+
+          fontSize: 22,
+
+          fontWeight: 700,
+
+          marginBottom: 20,
+
         }}
+
       >
 
         Water Meter
 
-      </h2>
+      </div>
 
-      <InfoRow
+      <SectionCard title="General">
 
-        label="Type"
+        <InfoRow
 
-        value={
+          label="Type"
 
-          meter.type === "hot"
+          value={
 
-            ? "Hot Water"
+            meter.type === "hot"
 
-            : "Cold Water"
+              ? "Hot Water"
 
-        }
+              : "Cold Water"
 
-      />
+          }
 
-      <InfoRow
+        />
 
-        label="Serial Number"
+        <InfoRow
 
-        value={
+          label="Serial Number"
 
-          meter.serial_number ||
+          value={
 
-          "-"
+            meter.serial_number ||
 
-        }
+            "-"
 
-      />
+          }
 
-      <InfoRow
+        />
 
-        label="Riser"
+        <InfoRow
 
-        value={
+          label="Riser"
 
-          meter.riser ||
+          value={
 
-          "-"
+            meter.riser ||
 
-        }
+            "-"
 
-      />
+          }
 
-      <InfoRow
+        />
 
-        label="Installed"
+        <InfoRow
 
-        value={
+          label="Installed"
 
-          meter.installed_at
+          value={
 
-            ? meter.installed_at.slice(0, 10)
+            meter.installed_at
 
-            : "-"
+              ? meter.installed_at.slice(0,10)
 
-        }
+              : "-"
 
-      />
+          }
 
-      <InfoRow
+        />
 
-        label="Status"
+        <InfoRow
 
-        value={
+          label="Status"
 
-          meter.active
+          value={
 
-            ? "Active"
+            meter.active
 
-            : "Inactive"
+              ? "Active"
 
-        }
+              : "Inactive"
 
-      />
+          }
 
-      <InfoRow
+        />
 
-        label="Current Reading"
+        <InfoRow
 
-        value={
+          label="Current Reading"
 
-          meter.lastReading ??
+          value={
 
-          "—"
+            meter.lastReading ??
 
-        }
+            "—"
 
-      />
+          }
+
+        />
+
+      </SectionCard>
 
     </div>
 
