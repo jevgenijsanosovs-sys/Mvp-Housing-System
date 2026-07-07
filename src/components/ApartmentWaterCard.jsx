@@ -16,6 +16,8 @@ import {
 
 } from "../styles/theme";
 
+import MeterRow from "./MeterRow";
+
 export default function ApartmentWaterCard({
 
   apartment,
@@ -82,150 +84,27 @@ export default function ApartmentWaterCard({
           >
 
             {riser.meters.map((meter) => (
-
-              <div
-
+            
+              <MeterRow
+            
                 key={meter.id}
-
-                onClick={() => {
-
+            
+                meter={meter}
+            
+                onOpen={(meter) => {
+            
                   console.log("Open meter", meter);
-
+            
                 }}
-
-                style={meterCard}
-
-              >
-
-                {/* Left */}
-
-                  <div style={meterLeft}>
-
-                  <div
-
-                    style={{
-
-                      fontSize: 22,
-
-                    }}
-
-                  >
-
-                    {meter.type === "hot"
-
-                      ? "🔴"
-
-                      : "🔵"}
-
-                  </div>
-
-                  <div>
-
-                    <div
-
-                      style={{
-
-                        fontWeight: 600,
-
-                        fontSize: 14,
-
-                        color: "#334155",
-
-                      }}
-
-                    >
-
-                      {meter.type === "hot"
-
-                        ? "Hot Water"
-
-                        : "Cold Water"}
-
-                    </div>
-
-                    <div
-
-                      style={{
-
-                        fontSize: 13,
-
-                        color: "#64748b",
-
-                      }}
-
-                    >
-
-                      SN {meter.serial_number}
-
-                    </div>
-
-                    <div
-
-                      style={{
-
-                        fontSize: 12,
-
-                        color: "#64748b",
-
-                        marginTop: 2,
-
-                      }}
-
-                    >
-
-                      Reading{" "}
-
-                      <strong>
-
-                        {meter.lastReading ?? "—"}
-
-                      </strong>{" "}
-
-                      {meter.unit ?? "L"}
-
-                    </div>
-
-                    <div
-
-                      style={{
-
-                        fontSize: 11,
-
-                        color: "#94a3b8",
-
-                      }}
-
-                    >
-
-                      {meter.lastReadingDate ?? ""}
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-                {/* Right */}
-
-                <button
-
-                  onClick={(e) => {
-
-                    e.stopPropagation();
-
-                    console.log("History", meter);
-
-                  }}
-
-                  style={meterHistoryButton}
-                >
-
-                  History
-
-                </button>
-
-              </div>
-
+            
+                onHistory={(meter) => {
+            
+                  console.log("History", meter);
+            
+                }}
+            
+              />
+            
             ))}
 
           </div>
