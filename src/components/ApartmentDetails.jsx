@@ -1,7 +1,8 @@
 import { useState } from "react";
 
-import InfoRow from "./InfoRow";
 import TabBar from "./TabBar";
+import InfoRow from "./InfoRow";
+import SectionCard from "./SectionCard";
 
 export default function ApartmentDetails({
 
@@ -22,20 +23,22 @@ export default function ApartmentDetails({
     <div>
 
       <div
+
         style={{
-          marginBottom: 20,
+
+          fontSize: 22,
+
+          fontWeight: 700,
+
+          color: "#2563eb",
+
+          marginBottom: 18,
+
         }}
+
       >
 
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#2563eb",
-          }}
-        >
-          Apartment {apartment.number}
-        </div>
+        Apartment {apartment.number}
 
       </div>
 
@@ -63,7 +66,7 @@ export default function ApartmentDetails({
 
       {tab === "Water" && (
 
-        <>
+        <SectionCard title="General">
 
           <InfoRow
 
@@ -115,7 +118,9 @@ export default function ApartmentDetails({
 
             value={
 
-              apartment.floor ?? "-"
+              apartment.floor ??
+
+              "-"
 
             }
 
@@ -127,33 +132,45 @@ export default function ApartmentDetails({
 
             value={
 
-              apartment.entrance ?? "-"
+              apartment.entrance ??
+
+              "-"
 
             }
 
           />
 
-        </>
+        </SectionCard>
 
       )}
 
       {tab !== "Water" && (
 
-        <div
-          style={{
-            padding: 40,
-            textAlign: "center",
-            color: "#64748b",
-          }}
-        >
+        <SectionCard>
 
-          {tab}
+          <div
 
-          {" "}
+            style={{
 
-          module will be implemented later.
+              padding: 40,
 
-        </div>
+              textAlign: "center",
+
+              color: "#64748b",
+
+            }}
+
+          >
+
+            {tab}
+
+            {" "}
+
+            module will be implemented later.
+
+          </div>
+
+        </SectionCard>
 
       )}
 
