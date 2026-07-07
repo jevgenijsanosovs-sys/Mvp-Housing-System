@@ -1,5 +1,6 @@
 import InfoRow from "./InfoRow";
 import SectionCard from "./SectionCard";
+import StatusBadge from "./StatusBadge";
 
 export default function WaterMeterDetails({
 
@@ -103,11 +104,11 @@ export default function WaterMeterDetails({
 
           value={
 
-            meter.active
+            <StatusBadge
 
-              ? "Active"
+              active={meter.active}
 
-              : "Inactive"
+            />
 
           }
 
