@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import TabBar from "./TabBar";
-import InfoRow from "./InfoRow";
+
 import SectionCard from "./SectionCard";
 import ApartmentWaterTab
   from "./apartment/ApartmentWaterTab";
@@ -75,50 +75,76 @@ export default function ApartmentDetails({
       )}
 
       {tab === "Residents" && (
-        <div>No residents data</div>
+      
+        <SectionCard>
+      
+          <div
+            style={{
+              padding: 40,
+              textAlign: "center",
+              color: "#64748b",
+            }}
+          >
+            No residents data
+          </div>
+      
+        </SectionCard>
+      
       )}
       
       {tab === "Documents" && (
-        <div>No documents</div>
+      
+        <SectionCard>
+      
+          <div
+            style={{
+              padding: 40,
+              textAlign: "center",
+              color: "#64748b",
+            }}
+          >
+            No documents
+          </div>
+      
+        </SectionCard>
+      
       )}
       
       {tab === "Tasks" && (
-        <div>No tasks</div>
-      )}
       
-      {tab === "History" && (
-        <div>No history</div>
-      )}
-      
-      {tab !== "Water" && (
-
         <SectionCard>
-
+      
           <div
-
             style={{
-
               padding: 40,
-
               textAlign: "center",
-
               color: "#64748b",
-
             }}
-
           >
-
-            {tab}
-
-            {" "}
-
-            module will be implemented later.
-
+            No tasks
           </div>
-
+      
         </SectionCard>
-
+      
       )}
+
+{tab === "History" && (
+
+  <SectionCard>
+
+    <div
+      style={{
+        padding: 40,
+        textAlign: "center",
+        color: "#64748b",
+      }}
+    >
+      No history
+    </div>
+
+  </SectionCard>
+
+)}
 
     </div>
 
