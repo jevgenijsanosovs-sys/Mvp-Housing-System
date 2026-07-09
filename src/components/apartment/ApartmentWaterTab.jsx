@@ -15,50 +15,73 @@ export default function ApartmentWaterTab({
           }}
         >
 
-          <h3
+          <div
             style={{
-              marginBottom: 12,
+              fontSize: 16,
+              fontWeight: 700,
               color: "#334155",
+              marginBottom: 12,
             }}
           >
             {riser.name}
-          </h3>
+          </div>
 
-          {riser.meters.map((meter) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
 
-            <div
-              key={meter.id}
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                padding: 14,
-                marginBottom: 10,
-                background: "#fff",
-              }}
-            >
+            {riser.meters.map((meter) => (
 
               <div
+                key={meter.id}
                 style={{
-                  fontWeight: 600,
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 12,
+                  padding: 14,
+                  background: "#ffffff",
+                  cursor: "pointer",
                 }}
               >
-                {meter.type === "hot"
-                  ? "🔴 Hot Water"
-                  : "🔵 Cold Water"}
+
+                <div
+                  style={{
+                    fontWeight: 600,
+                    marginBottom: 4,
+                  }}
+                >
+                  {meter.type === "hot"
+                    ? "🔴 Hot Water"
+                    : "🔵 Cold Water"}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: "#64748b",
+                  }}
+                >
+                  SN {meter.serial_number}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#94a3b8",
+                    marginTop: 4,
+                  }}
+                >
+                  Last reading: —
+                </div>
+
               </div>
 
-              <div
-                style={{
-                  color: "#64748b",
-                  fontSize: 14,
-                }}
-              >
-                SN {meter.serial_number}
-              </div>
+            ))}
 
-            </div>
-
-          ))}
+          </div>
 
         </div>
 
