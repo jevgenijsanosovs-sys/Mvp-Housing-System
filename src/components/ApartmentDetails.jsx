@@ -24,25 +24,6 @@ export default function ApartmentDetails({
 
     <div>
 
-      <div
-
-        style={{
-
-          fontSize: 22,
-
-          fontWeight: 700,
-
-          color: "#2563eb",
-
-          marginBottom: 18,
-
-        }}
-
-      >
-
-        Apartment {apartment.number}
-
-      </div>
 
       <TabBar
 
