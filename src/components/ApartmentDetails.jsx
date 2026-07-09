@@ -14,6 +14,11 @@ export default function ApartmentDetails({
 
   const [tab, setTab] = useState("Water");
 
+  const [
+  selectedMeter,
+  setSelectedMeter,
+] = useState(null);
+
   if (!apartment) {
 
     return null;
@@ -51,6 +56,7 @@ export default function ApartmentDetails({
       
         <ApartmentWaterTab
           apartment={apartment}
+          onOpenMeter={setSelectedMeter}
         />
       
       )}
