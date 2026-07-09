@@ -1,5 +1,6 @@
 export default function ApartmentWaterTab({
   apartment,
+  onOpenMeter,
 }) {
 
   return (
@@ -38,6 +39,7 @@ export default function ApartmentWaterTab({
 
               <div
                 key={meter.id}
+                onClick={() => onOpenMeter?.(meter)}
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: 12,
