@@ -3,6 +3,8 @@ import { useState } from "react";
 import TabBar from "./TabBar";
 import InfoRow from "./InfoRow";
 import SectionCard from "./SectionCard";
+import ApartmentWaterTab
+  from "./apartment/ApartmentWaterTab";
 
 export default function ApartmentDetails({
 
@@ -65,85 +67,29 @@ export default function ApartmentDetails({
       />
 
       {tab === "Water" && (
-
-        <SectionCard title="General">
-
-          <InfoRow
-
-            label="Owner"
-
-            value={
-
-              apartment.owner ||
-
-              "Not assigned"
-
-            }
-
-          />
-
-          <InfoRow
-
-            label="Resident"
-
-            value={
-
-              apartment.resident ||
-
-              "Not assigned"
-
-            }
-
-          />
-
-          <InfoRow
-
-            label="Area"
-
-            value={
-
-              apartment.area
-
-                ? `${apartment.area} m²`
-
-                : "-"
-
-            }
-
-          />
-
-          <InfoRow
-
-            label="Floor"
-
-            value={
-
-              apartment.floor ??
-
-              "-"
-
-            }
-
-          />
-
-          <InfoRow
-
-            label="Entrance"
-
-            value={
-
-              apartment.entrance ??
-
-              "-"
-
-            }
-
-          />
-
-        </SectionCard>
-
+      
+        <ApartmentWaterTab
+          apartment={apartment}
+        />
+      
       )}
 
+      {tab === "Residents" && (
+        <div>No residents data</div>
+      )}
+      
+      {tab === "Documents" && (
+        <div>No documents</div>
+      )}
+      
+      {tab === "Tasks" && (
+        <div>No tasks</div>
+      )}
+      
+      {tab === "History" && (
+        <div>No history</div>
+      )}
+      
       {tab !== "Water" && (
 
         <SectionCard>
