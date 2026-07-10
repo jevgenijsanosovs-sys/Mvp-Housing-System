@@ -39,7 +39,10 @@ export default function ApartmentWaterTab({
 
               <div
                 key={meter.id}
-                onClick={() => onOpenMeter?.(meter)}
+                onClick={() => {
+                  alert(`Meter ${meter.serial_number}`);
+                  onOpenMeter?.(meter);
+                }}
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: 12,
