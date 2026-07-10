@@ -136,6 +136,21 @@ export default function ApartmentDetails({
 
 )}
 
+      {selectedMeter && (
+        <div
+          style={{
+            background: "red",
+            color: "white",
+            padding: 10,
+            marginTop: 10,
+          }}
+        >
+          Selected meter:
+          {selectedMeter.serial_number}
+        </div>
+      )}
+
+      
       <Drawer
         open={!!selectedMeter}
         onClose={() =>
