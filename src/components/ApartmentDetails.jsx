@@ -59,6 +59,25 @@ export default function ApartmentDetails({
           apartment={apartment}
           onOpenMeter={setSelectedMeter}
         />
+
+        {selectedMeter && (
+        
+          <div
+            style={{
+              marginBottom: 20,
+              padding: 12,
+              borderRadius: 10,
+              background: "#dcfce7",
+              color: "#166534",
+              fontWeight: 600,
+            }}
+          >
+            Selected meter:{" "}
+            {selectedMeter.serial_number}
+          </div>
+        
+        )}
+
       
       )}
 
