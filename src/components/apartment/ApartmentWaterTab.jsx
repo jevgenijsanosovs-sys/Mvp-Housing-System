@@ -37,22 +37,22 @@ export default function ApartmentWaterTab({
 
             {riser.meters.map((meter) => (
 
-          <button
-            key={meter.id}
-            onClick={() => {
-              alert(`Meter ${meter.serial_number}`);
-              onOpenMeter?.(meter);
-            }}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
-              padding: 14,
-              background: "#ffffff",
-              cursor: "pointer",
-            }}
-          >
+              <button
+                key={meter.id}
+                onClick={() => {
+                  alert(`Meter ${meter.serial_number}`);
+                  onOpenMeter?.(meter);
+                }}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 12,
+                  padding: 14,
+                  background: "#ffffff",
+                  cursor: "pointer",
+                }}
+              >
                 <div
                   style={{
                     fontWeight: 600,
