@@ -37,7 +37,7 @@ export default function ApartmentWaterTab({
 
             {riser.meters.map((meter) => (
 
-              <button
+              <div
                 key={meter.id}
                 onClick={() => {
                   alert(`Meter ${meter.serial_number}`);
@@ -61,7 +61,7 @@ export default function ApartmentWaterTab({
                   {meter.type === "hot"
                     ? "🔴 Hot Water"
                     : "🔵 Cold Water"}
-                </>
+                </div>
 
                 <div
                   style={{
@@ -82,7 +82,7 @@ export default function ApartmentWaterTab({
                   Last reading: —
                 </div>
 
-              </button>
+              </div>
 
             ))}
 
