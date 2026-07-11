@@ -6,9 +6,6 @@ import SectionCard from "./SectionCard";
 import ApartmentWaterTab
   from "./apartment/ApartmentWaterTab";
 
-import Drawer from "./Drawer";
-import WaterMeterDetails from "./WaterMeterDetails";
-
 export default function ApartmentDetails({
 
   apartment,
@@ -136,39 +133,6 @@ export default function ApartmentDetails({
 
 )}
 
-      {selectedMeter && (
-        <div
-          style={{
-            background: "red",
-            color: "white",
-            padding: 10,
-            marginTop: 10,
-          }}
-        >
-          Selected meter:
-          {selectedMeter.serial_number}
-        </div>
-      )}
-
-      
-      <Drawer
-        open={!!selectedMeter}
-        onClose={() =>
-          setSelectedMeter(null)
-        }
-        title={
-          selectedMeter
-            ? selectedMeter.serial_number
-            : ""
-        }
-      >
-      
-        <WaterMeterDetails
-          meter={selectedMeter}
-        />
-      
-      </Drawer>
-      
     </div>
 
   );
