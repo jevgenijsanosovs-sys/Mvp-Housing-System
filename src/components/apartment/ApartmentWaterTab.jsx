@@ -2,20 +2,15 @@ export default function ApartmentWaterTab({
   apartment,
   onOpenMeter,
 }) {
-
   return (
-
     <div>
-
       {apartment.risers?.map((riser) => (
-
         <div
           key={riser.name}
           style={{
             marginBottom: 24,
           }}
         >
-
           <div
             style={{
               fontSize: 16,
@@ -24,7 +19,7 @@ export default function ApartmentWaterTab({
               marginBottom: 12,
             }}
           >
-            {riser.name} TEST-777
+            {riser.name}
           </div>
 
           <div
@@ -34,15 +29,11 @@ export default function ApartmentWaterTab({
               gap: 10,
             }}
           >
-
             {riser.meters.map((meter) => (
-
               <button
                 key={meter.id}
-                onClick={() => {
-                  alert(`Meter ${meter.serial_number}`);
-                  onOpenMeter?.(meter);
-                }}
+                type="button"
+                onClick={() => onOpenMeter?.(meter)}
                 style={{
                   width: "100%",
                   textAlign: "left",
@@ -51,12 +42,14 @@ export default function ApartmentWaterTab({
                   padding: 14,
                   background: "#ffffff",
                   cursor: "pointer",
+                  font: "inherit",
                 }}
               >
                 <div
                   style={{
                     fontWeight: 600,
                     marginBottom: 4,
+                    color: "#334155",
                   }}
                 >
                   {meter.type === "hot"
@@ -82,19 +75,11 @@ export default function ApartmentWaterTab({
                 >
                   Last reading: —
                 </div>
-
               </button>
-
             ))}
-
           </div>
-
         </div>
-
       ))}
-
     </div>
-
   );
-
 }
