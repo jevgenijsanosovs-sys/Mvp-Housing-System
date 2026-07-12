@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Drawer from "./Drawer";
+import WaterMeterDetails from "./WaterMeterDetails";
 
 import TabBar from "./TabBar";
 import SectionCard from "./SectionCard";
@@ -46,21 +48,6 @@ export default function ApartmentDetails({
             onOpenMeter={setSelectedMeter}
           />
 
-          {selectedMeter && (
-
-            <div
-              style={{
-                marginBottom: 20,
-                padding: 12,
-                borderRadius: 10,
-                background: "#dcfce7",
-                color: "#166534",
-                fontWeight: 600,
-              }}
-            >
-              Selected meter:{" "}
-              {selectedMeter.serial_number}
-            </div>
 
           )}
 
@@ -140,6 +127,24 @@ export default function ApartmentDetails({
 
       )}
 
+      <Drawer
+        open={!!selectedMeter}
+        onClose={() =>
+          setSelectedMeter(null)
+        }
+        title={
+          selectedMeter
+            ? selectedMeter.serial_number
+            : ""
+        }
+      >
+      
+        <WaterMeterDetails
+          meter={selectedMeter}
+        />
+      
+      </Drawer>
+      
     </div>
 
   );
