@@ -14,6 +14,38 @@ export default function WaterCard({
   const [value, setValue] =
     useState("");
 
+  const [
+    isSubmitting,
+    setIsSubmitting
+  ] = useState(false);
+
+  const handleSubmit =
+    async () => {
+
+      if (isSubmitting) {
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+
+        const success =
+          await onSubmit(
+            meter.id,
+            value
+          );
+
+        if (success) {
+          setValue("");
+        }
+
+      } finally {
+
+        setIsSubmitting(false);
+      }
+    };
+
   return (
     <div style={cardStyle}>
 
@@ -47,8 +79,13 @@ export default function WaterCard({
       </p>
 
       <input
+        type="number"
+        min="0"
+        step="0.001"
+        inputMode="decimal"
         placeholder="New reading"
         value={value}
+        disabled={isSubmitting}
         onChange={(e) =>
           setValue(e.target.value)
         }
@@ -56,12 +93,26 @@ export default function WaterCard({
       />
 
       <button
-        style={buttonStyle}
-        onClick={() =>
-          onSubmit(meter.id, value)
-        }
+        type="button"
+        style={{
+          ...buttonStyle,
+
+          opacity:
+            isSubmitting
+              ? 0.65
+              : 1,
+
+          cursor:
+            isSubmitting
+              ? "not-allowed"
+              : "pointer",
+        }}
+        disabled={isSubmitting}
+        onClick={handleSubmit}
       >
-        Submit
+        {isSubmitting
+          ? "Submitting..."
+          : "Submit"}
       </button>
 
     </div>
