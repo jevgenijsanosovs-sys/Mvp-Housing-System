@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-
-import TabBar from "./TabBar";
+import Drawer from "./Drawer";
 import SectionCard from "./SectionCard";
+import TabBar from "./TabBar";
 
 import ApartmentWaterTab
   from "./apartment/ApartmentWaterTab";
@@ -11,7 +11,8 @@ export default function ApartmentDetails({
   apartment,
 }) {
 
-  const [tab, setTab] = useState("Water");
+  const [tab, setTab] =
+    useState("Water");
 
   const [
     selectedMeter,
@@ -39,34 +40,12 @@ export default function ApartmentDetails({
       />
 
       {tab === "Water" && (
-      
-        <>
-      
-          <ApartmentWaterTab
-            apartment={apartment}
-            onOpenMeter={setSelectedMeter}
-          />
-      
-          {selectedMeter && (
-      
-            <div
-              style={{
-                marginTop: 20,
-                padding: 12,
-                borderRadius: 10,
-                background: "#dcfce7",
-                color: "#166534",
-                fontWeight: 600,
-              }}
-            >
-              Selected meter:{" "}
-              {selectedMeter.serial_number}
-            </div>
-      
-          )}
-      
-        </>
-      
+
+        <ApartmentWaterTab
+          apartment={apartment}
+          onOpenMeter={setSelectedMeter}
+        />
+
       )}
 
       {tab === "Residents" && (
@@ -141,6 +120,51 @@ export default function ApartmentDetails({
 
       )}
 
+      <Drawer
+        open={!!selectedMeter}
+        title={
+          selectedMeter
+            ? `Meter ${selectedMeter.serial_number}`
+            : "Water Meter"
+        }
+        onClose={() =>
+          setSelectedMeter(null)
+        }
+      >
+
+        {selectedMeter && (
+
+          <div>
+
+            <h2
+              style={{
+                marginTop: 0,
+              }}
+            >
+              Water Meter
+            </h2>
+
+            <p>
+              Serial Number:{" "}
+              <strong>
+                {selectedMeter.serial_number}
+              </strong>
+            </p>
+
+            <p>
+              Type:{" "}
+              <strong>
+                {selectedMeter.type === "hot"
+                  ? "Hot Water"
+                  : "Cold Water"}
+              </strong>
+            </p>
+
+          </div>
+
+        )}
+
+      </Drawer>
 
     </div>
 
