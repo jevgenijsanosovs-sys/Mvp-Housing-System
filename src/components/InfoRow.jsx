@@ -1,4 +1,4 @@
-function InfoRow({
+export default function InfoRow({
 
   label,
 
@@ -10,29 +10,16 @@ function InfoRow({
 
     <div
       style={{
-
         display:"flex",
-
         justifyContent:"space-between",
-
         padding:"12px 0",
-
         borderBottom:"1px solid #e5e7eb",
-
       }}
     >
 
-      <strong>
+      <strong>{label}</strong>
 
-        {label}
-
-      </strong>
-
-      <span>
-
-        {value}
-
-      </span>
+      <span>{value}</span>
 
     </div>
 
