@@ -65,24 +65,44 @@ export default function ResidentWaterPage() {
   return (
     <div>
 
-      <h1
+      <div
         style={{
           marginBottom: 24,
         }}
       >
-        Water Meters
-      </h1>
+
+        <h1
+          style={{
+            margin: 0,
+          }}
+        >
+          Water Readings
+        </h1>
+
+        <p
+          style={{
+            marginTop: 8,
+            marginBottom: 0,
+            color: "#6b7280",
+            lineHeight: 1.5,
+          }}
+        >
+          Submit the current values
+          shown on your water meters.
+        </p>
+
+      </div>
 
       {apartmentGroups.length === 0 ? (
 
         <div
           style={{
-            padding: 20,
+            padding: 24,
             border:
               "1px solid #e5e7eb",
-            borderRadius: 12,
-            color: "#6b7280",
+            borderRadius: 16,
             background: "#ffffff",
+            color: "#6b7280",
           }}
         >
           No water meters found.
@@ -99,46 +119,103 @@ export default function ResidentWaterPage() {
             <section
               key={apartmentNumber}
               style={{
-                marginBottom: 32,
+                marginBottom: 28,
+                padding: 20,
+                border:
+                  "1px solid #e5e7eb",
+                borderRadius: 18,
+                background: "#ffffff",
+                boxShadow:
+                  "0 4px 16px rgba(15, 23, 42, 0.05)",
               }}
             >
 
               <div
                 style={{
-                  marginBottom: 14,
-                  paddingBottom: 10,
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  alignItems: "center",
+                  gap: 16,
+                  marginBottom: 18,
+                  paddingBottom: 14,
                   borderBottom:
-                    "2px solid #e5e7eb",
+                    "1px solid #e5e7eb",
                 }}
               >
 
-                <h2
+                <div>
+
+                  <div
+                    style={{
+                      color: "#6b7280",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textTransform:
+                        "uppercase",
+                      letterSpacing:
+                        "0.04em",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Apartment
+                  </div>
+
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: 22,
+                    }}
+                  >
+                    {apartmentNumber ===
+                    "Unknown"
+                      ? "Not assigned"
+                      : `#${apartmentNumber}`}
+                  </h2>
+
+                </div>
+
+                <div
                   style={{
-                    margin: 0,
-                    fontSize: 20,
+                    padding: "6px 11px",
+                    borderRadius: 999,
+                    background: "#f3f4f6",
+                    color: "#4b5563",
+                    fontSize: 13,
+                    fontWeight: 600,
                   }}
                 >
-                  {apartmentNumber ===
-                  "Unknown"
-                    ? "Apartment"
-                    : `Apartment #${apartmentNumber}`}
-                </h2>
+                  {meters.length}
+                  {" "}
+                  {meters.length === 1
+                    ? "meter"
+                    : "meters"}
+                </div>
 
               </div>
 
-              {meters.map(
-                (meter) => (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 16,
+                }}
+              >
 
-                  <WaterCard
-                    key={meter.id}
-                    meter={meter}
-                    onSubmit={
-                      submitReading
-                    }
-                  />
+                {meters.map(
+                  (meter) => (
 
-                )
-              )}
+                    <WaterCard
+                      key={meter.id}
+                      meter={meter}
+                      onSubmit={
+                        submitReading
+                      }
+                    />
+
+                  )
+                )}
+
+              </div>
 
             </section>
 
