@@ -1,7 +1,7 @@
 import { useState } from "react";
+
 import Drawer from "./Drawer";
 import WaterMeterDetails from "./WaterMeterDetails";
-
 import TabBar from "./TabBar";
 import SectionCard from "./SectionCard";
 
@@ -41,17 +41,10 @@ export default function ApartmentDetails({
 
       {tab === "Water" && (
 
-        <>
-
-          <ApartmentWaterTab
-            apartment={apartment}
-            onOpenMeter={setSelectedMeter}
-          />
-
-
-          )}
-
-        </>
+        <ApartmentWaterTab
+          apartment={apartment}
+          onOpenMeter={setSelectedMeter}
+        />
 
       )}
 
@@ -138,13 +131,13 @@ export default function ApartmentDetails({
             : ""
         }
       >
-      
+
         <WaterMeterDetails
           meter={selectedMeter}
         />
-      
+
       </Drawer>
-      
+
     </div>
 
   );
