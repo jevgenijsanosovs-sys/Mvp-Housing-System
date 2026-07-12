@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import {
-  cardStyle,
   inputStyle,
   buttonStyle,
 } from "../styles/theme";
@@ -53,6 +52,29 @@ export default function WaterCard({
     );
   };
 
+  const formatMeterType =
+    (type) => {
+
+      if (!type) {
+        return "Water";
+      }
+
+      const normalizedType =
+        String(type)
+          .trim()
+          .toLowerCase();
+
+      if (normalizedType === "cold") {
+        return "Cold Water";
+      }
+
+      if (normalizedType === "hot") {
+        return "Hot Water";
+      }
+
+      return `${type} Water`;
+    };
+
   const handleSubmit =
     async () => {
 
@@ -84,23 +106,32 @@ export default function WaterCard({
     display: "flex",
     justifyContent:
       "space-between",
+    alignItems: "center",
     gap: 16,
     padding: "8px 0",
-    borderBottom:
-      "1px solid #e5e7eb",
   };
 
   const labelStyle = {
     color: "#6b7280",
+    fontSize: 14,
   };
 
   const valueStyle = {
     fontWeight: 600,
     textAlign: "right",
+    color: "#111827",
   };
 
   return (
-    <div style={cardStyle}>
+    <div
+      style={{
+        padding: 18,
+        border:
+          "1px solid #e5e7eb",
+        borderRadius: 14,
+        background: "#f9fafb",
+      }}
+    >
 
       <div
         style={{
@@ -109,29 +140,43 @@ export default function WaterCard({
             "space-between",
           alignItems: "center",
           gap: 16,
-          marginBottom: 16,
+          marginBottom: 14,
         }}
       >
 
         <h3
           style={{
             margin: 0,
+            fontSize: 18,
           }}
         >
-          Apartment #
-          {formatValue(
-            meter.apartment_number
+          {formatMeterType(
+            meter.type
           )}
         </h3>
 
         <span
           style={{
-            padding: "4px 10px",
+            padding: "5px 10px",
             borderRadius: 999,
-            background: "#eff6ff",
-            color: "#1d4ed8",
-            fontSize: 13,
-            fontWeight: 600,
+            background:
+              String(
+                meter.type
+              ).toLowerCase() ===
+              "hot"
+                ? "#fff7ed"
+                : "#eff6ff",
+            color:
+              String(
+                meter.type
+              ).toLowerCase() ===
+              "hot"
+                ? "#c2410c"
+                : "#1d4ed8",
+            fontSize: 12,
+            fontWeight: 700,
+            textTransform:
+              "capitalize",
           }}
         >
           {formatValue(
@@ -143,7 +188,10 @@ export default function WaterCard({
 
       <div
         style={{
-          marginBottom: 20,
+          marginBottom: 16,
+          paddingBottom: 14,
+          borderBottom:
+            "1px solid #e5e7eb",
         }}
       >
 
@@ -170,8 +218,7 @@ export default function WaterCard({
           <span
             style={{
               ...valueStyle,
-              fontSize: 18,
-              color: "#111827",
+              fontSize: 20,
             }}
           >
             {formatValue(
@@ -181,12 +228,7 @@ export default function WaterCard({
 
         </div>
 
-        <div
-          style={{
-            ...rowStyle,
-            borderBottom: "none",
-          }}
-        >
+        <div style={rowStyle}>
 
           <span style={labelStyle}>
             Last submitted
@@ -202,23 +244,26 @@ export default function WaterCard({
 
       </div>
 
-      <div
+      <label
         style={{
-          paddingTop: 16,
-          borderTop:
-            "1px solid #e5e7eb",
+          display: "block",
+          marginBottom: 8,
+          fontWeight: 600,
+          color: "#374151",
         }}
       >
+        New reading
+      </label>
 
-        <label
-          style={{
-            display: "block",
-            marginBottom: 8,
-            fontWeight: 600,
-          }}
-        >
-          New reading
-        </label>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "minmax(0, 1fr) auto",
+          gap: 10,
+          alignItems: "stretch",
+        }}
+      >
 
         <input
           type="number"
@@ -234,48 +279,47 @@ export default function WaterCard({
           style={{
             ...inputStyle,
             width: "100%",
+            margin: 0,
             boxSizing:
               "border-box",
-            marginBottom: 10,
           }}
         />
 
-        <div
-          style={{
-            marginBottom: 12,
-            color: "#6b7280",
-            fontSize: 13,
-            lineHeight: 1.4,
-          }}
-        >
-          Enter the value currently
-          shown on the meter.
-        </div>
-
         <button
           type="button"
+          disabled={isSubmitting}
+          onClick={handleSubmit}
           style={{
             ...buttonStyle,
-            width: "100%",
-
+            minWidth: 150,
+            margin: 0,
             opacity:
               isSubmitting
                 ? 0.65
                 : 1,
-
             cursor:
               isSubmitting
                 ? "not-allowed"
                 : "pointer",
           }}
-          disabled={isSubmitting}
-          onClick={handleSubmit}
         >
           {isSubmitting
             ? "Submitting..."
-            : "Submit reading"}
+            : "Submit"}
         </button>
 
+      </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          color: "#6b7280",
+          fontSize: 12,
+          lineHeight: 1.4,
+        }}
+      >
+        Enter the value currently
+        shown on this meter.
       </div>
 
     </div>
