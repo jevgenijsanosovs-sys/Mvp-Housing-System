@@ -20,13 +20,12 @@ export default function useWater() {
   // =====================================
   // ADMIN WATER METERS
   // =====================================
-  
+
   const [
     adminWaterMeters,
     setAdminWaterMeters
   ] = useState([]);
 
-  
   // =====================================
   // LOAD RESIDENT WATER
   // =====================================
@@ -60,22 +59,21 @@ export default function useWater() {
   // =====================================
   // LOAD ADMIN WATER METERS
   // =====================================
-  
+
   const loadAdminWaterMeters =
     async () => {
-  
+
       const d = await api(
         "/api/admin/water-meters"
       );
-  
+
       setAdminWaterMeters(
         Array.isArray(d)
           ? d
           : []
       );
-  };
+    };
 
-  
   // =====================================
   // SUBMIT READING
   // =====================================
@@ -85,90 +83,117 @@ export default function useWater() {
     value
   ) => {
 
-    if (!value) {
+    if (value === "") {
 
       alert("Enter value");
 
-      return;
+      return false;
     }
 
-    const r = await api(
-      "/api/submit-water-reading",
-      {
-        method: "POST",
+    const numericValue =
+      Number(value);
 
-        body: JSON.stringify({
-          meter_id: meterId,
-          reading_value: Number(value),
-        }),
-      }
-    );
-
-
-    
-    if (r.ok) {
-
-      alert("Submitted");
-
-      loadMyWater();
-
-    } else {
+    if (
+      !Number.isFinite(numericValue) ||
+      numericValue < 0
+    ) {
 
       alert(
-        r?.error || "Submit failed"
+        "Enter a valid reading"
       );
 
+      return false;
+    }
+
+    try {
+
+      const r = await api(
+        "/api/submit-water-reading",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            meter_id: meterId,
+            reading_value:
+              numericValue,
+          }),
+        }
+      );
+
+      if (r.ok) {
+
+        await loadMyWater();
+
+        alert("Submitted");
+
+        return true;
+      }
+
+      alert(
+        r?.error ||
+        "Submit failed"
+      );
+
+      return false;
+
+    } catch (error) {
+
+      console.error(
+        "Submit reading failed:",
+        error
+      );
+
+      alert("Submit failed");
+
+      return false;
     }
   };
 
-    // =====================================
-    // DEACTIVATE WATER METER
-    // =====================================
-    
-    const deactivateMeter =
-      async (
-        meterId,
-        reason = "replacement"
-      ) => {
-    
-        const r = await api(
-          "/api/admin/deactivate-water-meter",
-          {
-            method: "POST",
-    
-            body: JSON.stringify({
-              meter_id: meterId,
-              reason,
-            }),
-          }
-        );
-    
-        if (r.ok) {
-    
-          loadAdminWaterMeters();
-    
-        } else {
-    
-          alert(
-            r?.error ||
-            "Deactivate failed"
-          );
-    
+  // =====================================
+  // DEACTIVATE WATER METER
+  // =====================================
+
+  const deactivateMeter =
+    async (
+      meterId,
+      reason = "replacement"
+    ) => {
+
+      const r = await api(
+        "/api/admin/deactivate-water-meter",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            meter_id: meterId,
+            reason,
+          }),
         }
+      );
+
+      if (r.ok) {
+
+        loadAdminWaterMeters();
+
+      } else {
+
+        alert(
+          r?.error ||
+          "Deactivate failed"
+        );
+      }
     };
 
-
-  
   return {
-  
+
     waterMeters,
     adminWater,
     adminWaterMeters,
-  
+
     loadMyWater,
     loadAdminWater,
     loadAdminWaterMeters,
-  
+
     submitReading,
     deactivateMeter,
   };
