@@ -7,7 +7,9 @@ export default function MeterHistoryModal({
   onClose,
 }) {
 
-  const formatReading = (value) => {
+  const formatStoredReading = (
+    value
+  ) => {
 
     if (
       value === null ||
@@ -25,7 +27,7 @@ export default function MeterHistoryModal({
         storedValue
       )
     ) {
-      return value;
+      return "—";
     }
 
     return (
@@ -33,6 +35,36 @@ export default function MeterHistoryModal({
     )
       .toFixed(3)
       .replace(".", ",");
+  };
+
+  const calculateConsumption = (
+    currentValue,
+    previousValue
+  ) => {
+
+    if (
+      currentValue === null ||
+      currentValue === undefined ||
+      previousValue === null ||
+      previousValue === undefined
+    ) {
+      return null;
+    }
+
+    const current =
+      Number(currentValue);
+
+    const previous =
+      Number(previousValue);
+
+    if (
+      !Number.isFinite(current) ||
+      !Number.isFinite(previous)
+    ) {
+      return null;
+    }
+
+    return current - previous;
   };
 
   const formatDate = (value) => {
@@ -222,7 +254,7 @@ export default function MeterHistoryModal({
             <div
               style={{
                 maxHeight: 360,
-                overflowY: "auto",
+                overflow: "auto",
                 border:
                   "1px solid #e5e7eb",
                 borderRadius: 8,
@@ -232,6 +264,7 @@ export default function MeterHistoryModal({
               <table
                 style={{
                   width: "100%",
+                  minWidth: 390,
                   borderCollapse:
                     "collapse",
                   fontSize: 12,
@@ -259,6 +292,7 @@ export default function MeterHistoryModal({
                         top: 0,
                         background:
                           "#f3f4f6",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Date
@@ -277,9 +311,29 @@ export default function MeterHistoryModal({
                         top: 0,
                         background:
                           "#f3f4f6",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Reading (m³)
+                    </th>
+
+                    <th
+                      style={{
+                        padding:
+                          "8px 10px",
+                        textAlign: "right",
+                        fontWeight: 700,
+                        color: "#374151",
+                        borderBottom:
+                          "1px solid #d1d5db",
+                        position: "sticky",
+                        top: 0,
+                        background:
+                          "#f3f4f6",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Consumption (m³)
                     </th>
 
                   </tr>
@@ -292,60 +346,113 @@ export default function MeterHistoryModal({
                     (
                       reading,
                       index
-                    ) => (
+                    ) => {
 
-                      <tr
-                        key={reading.id}
-                        style={{
-                          background:
-                            index % 2 === 0
-                              ? "#ffffff"
-                              : "#f9fafb",
-                        }}
-                      >
+                      const previousReading =
+                        readings[
+                          index + 1
+                        ];
 
-                        <td
+                      const consumption =
+                        previousReading
+                          ? calculateConsumption(
+                              reading.reading_value,
+                              previousReading.reading_value
+                            )
+                          : null;
+
+                      const isNegative =
+                        consumption !== null &&
+                        consumption < 0;
+
+                      return (
+
+                        <tr
+                          key={reading.id}
                           style={{
-                            padding:
-                              "7px 10px",
-                            color: "#4b5563",
-                            borderBottom:
-                              index ===
-                              readings.length - 1
-                                ? "none"
-                                : "1px solid #e5e7eb",
+                            background:
+                              index % 2 === 0
+                                ? "#ffffff"
+                                : "#f9fafb",
                           }}
                         >
-                          {formatDate(
-                            reading.reading_date
-                          )}
-                        </td>
 
-                        <td
-                          style={{
-                            padding:
-                              "7px 10px",
-                            textAlign:
-                              "right",
-                            fontWeight: 600,
-                            color: "#111827",
-                            fontVariantNumeric:
-                              "tabular-nums",
-                            borderBottom:
-                              index ===
-                              readings.length - 1
-                                ? "none"
-                                : "1px solid #e5e7eb",
-                          }}
-                        >
-                          {formatReading(
-                            reading.reading_value
-                          )}
-                        </td>
+                          <td
+                            style={{
+                              padding:
+                                "7px 10px",
+                              color: "#4b5563",
+                              whiteSpace:
+                                "nowrap",
+                              borderBottom:
+                                index ===
+                                readings.length - 1
+                                  ? "none"
+                                  : "1px solid #e5e7eb",
+                            }}
+                          >
+                            {formatDate(
+                              reading.reading_date
+                            )}
+                          </td>
 
-                      </tr>
+                          <td
+                            style={{
+                              padding:
+                                "7px 10px",
+                              textAlign:
+                                "right",
+                              fontWeight: 600,
+                              color: "#111827",
+                              whiteSpace:
+                                "nowrap",
+                              fontVariantNumeric:
+                                "tabular-nums",
+                              borderBottom:
+                                index ===
+                                readings.length - 1
+                                  ? "none"
+                                  : "1px solid #e5e7eb",
+                            }}
+                          >
+                            {formatStoredReading(
+                              reading.reading_value
+                            )}
+                          </td>
 
-                    )
+                          <td
+                            style={{
+                              padding:
+                                "7px 10px",
+                              textAlign:
+                                "right",
+                              fontWeight: 600,
+                              color:
+                                isNegative
+                                  ? "#b91c1c"
+                                  : "#111827",
+                              whiteSpace:
+                                "nowrap",
+                              fontVariantNumeric:
+                                "tabular-nums",
+                              borderBottom:
+                                index ===
+                                readings.length - 1
+                                  ? "none"
+                                  : "1px solid #e5e7eb",
+                            }}
+                          >
+                            {consumption === null
+                              ? "—"
+                              : formatStoredReading(
+                                  consumption
+                                )}
+                          </td>
+
+                        </tr>
+
+                      );
+                    }
                   )}
 
                 </tbody>
