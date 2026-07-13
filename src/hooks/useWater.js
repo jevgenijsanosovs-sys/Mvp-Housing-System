@@ -11,6 +11,20 @@ export default function useWater() {
     useState([]);
 
   // =====================================
+  // WATER METER HISTORY
+  // =====================================
+
+  const [
+    meterHistory,
+    setMeterHistory
+  ] = useState(null);
+
+  const [
+    meterHistoryLoading,
+    setMeterHistoryLoading
+  ] = useState(false);
+
+  // =====================================
   // ADMIN WATER
   // =====================================
 
@@ -39,6 +53,87 @@ export default function useWater() {
     setWaterMeters(
       Array.isArray(d) ? d : []
     );
+  };
+
+  // =====================================
+  // LOAD WATER METER HISTORY
+  // =====================================
+
+  const loadMeterHistory =
+    async (meterId) => {
+
+      if (!meterId) {
+        return null;
+      }
+
+      setMeterHistoryLoading(true);
+      setMeterHistory(null);
+
+      try {
+
+        const d = await api(
+          `/api/my-water-meter-history?id=${meterId}`
+        );
+
+        if (
+          d?.error
+        ) {
+
+          alert(
+            d.error ||
+            "History load failed"
+          );
+
+          return null;
+        }
+
+        const historyData = {
+
+          meter:
+            d?.meter || null,
+
+          readings:
+            Array.isArray(
+              d?.readings
+            )
+              ? d.readings
+              : [],
+        };
+
+        setMeterHistory(
+          historyData
+        );
+
+        return historyData;
+
+      } catch (error) {
+
+        console.error(
+          "Load meter history failed:",
+          error
+        );
+
+        alert(
+          "History load failed"
+        );
+
+        return null;
+
+      } finally {
+
+        setMeterHistoryLoading(
+          false
+        );
+      }
+    };
+
+  // =====================================
+  // CLEAR WATER METER HISTORY
+  // =====================================
+
+  const clearMeterHistory = () => {
+
+    setMeterHistory(null);
   };
 
   // =====================================
@@ -231,10 +326,17 @@ export default function useWater() {
   return {
 
     waterMeters,
+
+    meterHistory,
+    meterHistoryLoading,
+
     adminWater,
     adminWaterMeters,
 
     loadMyWater,
+    loadMeterHistory,
+    clearMeterHistory,
+
     loadAdminWater,
     loadAdminWaterMeters,
 
