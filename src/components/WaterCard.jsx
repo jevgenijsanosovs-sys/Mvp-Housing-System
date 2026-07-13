@@ -8,6 +8,7 @@ import {
 export default function WaterCard({
   meter,
   onSubmit,
+  onHistory,
 }) {
 
   const [value, setValue] =
@@ -413,6 +414,27 @@ export default function WaterCard({
         whole cubic metres; three digits
         after it are litres.
       </div>
+
+      <button
+        type="button"
+        onClick={() =>
+          onHistory(meter.id)
+        }
+        style={{
+          width: "100%",
+          marginTop: 10,
+          padding: "9px 12px",
+          border:
+            "1px solid #d1d5db",
+          borderRadius: 9,
+          background: "#ffffff",
+          color: "#374151",
+          fontWeight: 600,
+          cursor: "pointer",
+        }}
+      >
+        View history
+      </button>
 
     </div>
   );
