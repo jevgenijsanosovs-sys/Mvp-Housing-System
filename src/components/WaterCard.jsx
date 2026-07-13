@@ -75,6 +75,16 @@ export default function WaterCard({
       return `${type} Water`;
     };
 
+  const normalizedMeterType =
+    String(
+      meter.type || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const isHotWater =
+    normalizedMeterType === "hot";
+
   const handleSubmit =
     async () => {
 
@@ -138,45 +148,59 @@ export default function WaterCard({
           display: "flex",
           justifyContent:
             "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 16,
           marginBottom: 14,
         }}
       >
 
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 18,
-          }}
-        >
-          {formatMeterType(
-            meter.type
+        <div>
+
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 18,
+            }}
+          >
+            {formatMeterType(
+              meter.type
+            )}
+          </h3>
+
+          {meter.local_label && (
+
+            <div
+              style={{
+                marginTop: 5,
+                color: "#4b5563",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {meter.local_label}
+            </div>
+
           )}
-        </h3>
+
+        </div>
 
         <span
           style={{
             padding: "5px 10px",
             borderRadius: 999,
             background:
-              String(
-                meter.type
-              ).toLowerCase() ===
-              "hot"
+              isHotWater
                 ? "#fff7ed"
                 : "#eff6ff",
             color:
-              String(
-                meter.type
-              ).toLowerCase() ===
-              "hot"
+              isHotWater
                 ? "#c2410c"
                 : "#1d4ed8",
             fontSize: 12,
             fontWeight: 700,
             textTransform:
               "capitalize",
+            whiteSpace: "nowrap",
           }}
         >
           {formatValue(
@@ -194,6 +218,41 @@ export default function WaterCard({
             "1px solid #e5e7eb",
         }}
       >
+
+        <div style={rowStyle}>
+
+          <span style={labelStyle}>
+            Location
+          </span>
+
+          <span style={valueStyle}>
+            {formatValue(
+              meter.local_label
+            )}
+          </span>
+
+        </div>
+
+        <div style={rowStyle}>
+
+          <span style={labelStyle}>
+            Riser
+          </span>
+
+          <span
+            style={{
+              ...valueStyle,
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: 13,
+            }}
+          >
+            {formatValue(
+              meter.riser_code
+            )}
+          </span>
+
+        </div>
 
         <div style={rowStyle}>
 
