@@ -123,6 +123,29 @@ export default function MeterHistoryModal({
       )} History`
     : "Meter History";
 
+  const headerCellStyle = {
+    padding: "7px 5px",
+    fontWeight: 700,
+    color: "#374151",
+    borderBottom:
+      "1px solid #d1d5db",
+    position: "sticky",
+    top: 0,
+    background: "#f3f4f6",
+    lineHeight: 1.15,
+    fontSize: 11,
+    verticalAlign: "bottom",
+  };
+
+  const bodyCellStyle = {
+    padding: "7px 5px",
+    fontSize: 11,
+    lineHeight: 1.2,
+    whiteSpace: "nowrap",
+    fontVariantNumeric:
+      "tabular-nums",
+  };
+
   return (
     <Modal
       open={open}
@@ -150,8 +173,8 @@ export default function MeterHistoryModal({
 
             <div
               style={{
-                marginBottom: 14,
-                paddingBottom: 12,
+                marginBottom: 12,
+                paddingBottom: 10,
                 borderBottom:
                   "1px solid #e5e7eb",
               }}
@@ -161,7 +184,7 @@ export default function MeterHistoryModal({
 
                 <div
                   style={{
-                    marginBottom: 7,
+                    marginBottom: 6,
                     color: "#111827",
                     fontSize: 14,
                     fontWeight: 700,
@@ -176,12 +199,12 @@ export default function MeterHistoryModal({
                 style={{
                   display: "grid",
                   gridTemplateColumns:
-                    "auto 1fr",
-                  columnGap: 12,
-                  rowGap: 4,
+                    "auto minmax(0, 1fr)",
+                  columnGap: 10,
+                  rowGap: 3,
                   color: "#4b5563",
                   fontSize: 12,
-                  lineHeight: 1.4,
+                  lineHeight: 1.35,
                 }}
               >
 
@@ -212,6 +235,9 @@ export default function MeterHistoryModal({
                     color: "#111827",
                     fontFamily:
                       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: 11,
+                    overflowWrap:
+                      "anywhere",
                   }}
                 >
                   {meter.riser_code || "—"}
@@ -226,6 +252,8 @@ export default function MeterHistoryModal({
                     textAlign: "right",
                     fontWeight: 600,
                     color: "#111827",
+                    overflowWrap:
+                      "anywhere",
                   }}
                 >
                   {meter.serial_number || "—"}
@@ -253,46 +281,57 @@ export default function MeterHistoryModal({
 
             <div
               style={{
+                width: "100%",
                 maxHeight: 360,
-                overflow: "auto",
+                overflowY: "auto",
+                overflowX: "hidden",
                 border:
                   "1px solid #e5e7eb",
                 borderRadius: 8,
+                boxSizing:
+                  "border-box",
               }}
             >
 
               <table
                 style={{
                   width: "100%",
-                  minWidth: 390,
+                  tableLayout: "fixed",
                   borderCollapse:
                     "collapse",
-                  fontSize: 12,
                 }}
               >
 
+                <colgroup>
+
+                  <col
+                    style={{
+                      width: "34%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "31%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "35%",
+                    }}
+                  />
+
+                </colgroup>
+
                 <thead>
 
-                  <tr
-                    style={{
-                      background: "#f3f4f6",
-                    }}
-                  >
+                  <tr>
 
                     <th
                       style={{
-                        padding:
-                          "8px 10px",
+                        ...headerCellStyle,
                         textAlign: "left",
-                        fontWeight: 700,
-                        color: "#374151",
-                        borderBottom:
-                          "1px solid #d1d5db",
-                        position: "sticky",
-                        top: 0,
-                        background:
-                          "#f3f4f6",
-                        whiteSpace: "nowrap",
                       }}
                     >
                       Date
@@ -300,40 +339,46 @@ export default function MeterHistoryModal({
 
                     <th
                       style={{
-                        padding:
-                          "8px 10px",
+                        ...headerCellStyle,
                         textAlign: "right",
-                        fontWeight: 700,
-                        color: "#374151",
-                        borderBottom:
-                          "1px solid #d1d5db",
-                        position: "sticky",
-                        top: 0,
-                        background:
-                          "#f3f4f6",
-                        whiteSpace: "nowrap",
                       }}
                     >
-                      Reading (m³)
+                      <span>
+                        Reading
+                      </span>
+
+                      <br />
+
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: "#6b7280",
+                        }}
+                      >
+                        (m³)
+                      </span>
                     </th>
 
                     <th
                       style={{
-                        padding:
-                          "8px 10px",
+                        ...headerCellStyle,
                         textAlign: "right",
-                        fontWeight: 700,
-                        color: "#374151",
-                        borderBottom:
-                          "1px solid #d1d5db",
-                        position: "sticky",
-                        top: 0,
-                        background:
-                          "#f3f4f6",
-                        whiteSpace: "nowrap",
                       }}
                     >
-                      Consumption (m³)
+                      <span>
+                        Consumption
+                      </span>
+
+                      <br />
+
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: "#6b7280",
+                        }}
+                      >
+                        (m³)
+                      </span>
                     </th>
 
                   </tr>
@@ -365,6 +410,10 @@ export default function MeterHistoryModal({
                         consumption !== null &&
                         consumption < 0;
 
+                      const isLastRow =
+                        index ===
+                        readings.length - 1;
+
                       return (
 
                         <tr
@@ -379,14 +428,11 @@ export default function MeterHistoryModal({
 
                           <td
                             style={{
-                              padding:
-                                "7px 10px",
+                              ...bodyCellStyle,
+                              textAlign: "left",
                               color: "#4b5563",
-                              whiteSpace:
-                                "nowrap",
                               borderBottom:
-                                index ===
-                                readings.length - 1
+                                isLastRow
                                   ? "none"
                                   : "1px solid #e5e7eb",
                             }}
@@ -398,19 +444,12 @@ export default function MeterHistoryModal({
 
                           <td
                             style={{
-                              padding:
-                                "7px 10px",
-                              textAlign:
-                                "right",
+                              ...bodyCellStyle,
+                              textAlign: "right",
                               fontWeight: 600,
                               color: "#111827",
-                              whiteSpace:
-                                "nowrap",
-                              fontVariantNumeric:
-                                "tabular-nums",
                               borderBottom:
-                                index ===
-                                readings.length - 1
+                                isLastRow
                                   ? "none"
                                   : "1px solid #e5e7eb",
                             }}
@@ -422,22 +461,15 @@ export default function MeterHistoryModal({
 
                           <td
                             style={{
-                              padding:
-                                "7px 10px",
-                              textAlign:
-                                "right",
+                              ...bodyCellStyle,
+                              textAlign: "right",
                               fontWeight: 600,
                               color:
                                 isNegative
                                   ? "#b91c1c"
                                   : "#111827",
-                              whiteSpace:
-                                "nowrap",
-                              fontVariantNumeric:
-                                "tabular-nums",
                               borderBottom:
-                                index ===
-                                readings.length - 1
+                                isLastRow
                                   ? "none"
                                   : "1px solid #e5e7eb",
                             }}
@@ -468,7 +500,7 @@ export default function MeterHistoryModal({
             onClick={onClose}
             style={{
               width: "100%",
-              marginTop: 14,
+              marginTop: 12,
               padding: "9px 12px",
               border:
                 "1px solid #d1d5db",
