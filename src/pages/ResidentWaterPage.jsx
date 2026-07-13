@@ -1,21 +1,57 @@
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import WaterCard from "../components/WaterCard";
+import MeterHistoryModal
+  from "../components/MeterHistoryModal";
+
 import useWater from "../hooks/useWater";
 
 export default function ResidentWaterPage() {
 
   const {
     waterMeters,
+
+    meterHistory,
+    meterHistoryLoading,
+
     loadMyWater,
+    loadMeterHistory,
+    clearMeterHistory,
+
     submitReading,
   } = useWater();
+
+  const [
+    historyOpen,
+    setHistoryOpen
+  ] = useState(false);
 
   useEffect(() => {
 
     loadMyWater();
 
   }, []);
+
+  const handleOpenHistory =
+    async (meterId) => {
+
+      setHistoryOpen(true);
+
+      await loadMeterHistory(
+        meterId
+      );
+    };
+
+  const handleCloseHistory =
+    () => {
+
+      setHistoryOpen(false);
+
+      clearMeterHistory();
+    };
 
   const metersByApartment =
     waterMeters.reduce(
@@ -210,6 +246,9 @@ export default function ResidentWaterPage() {
                       onSubmit={
                         submitReading
                       }
+                      onHistory={
+                        handleOpenHistory
+                      }
                     />
 
                   )
@@ -223,6 +262,17 @@ export default function ResidentWaterPage() {
         )
 
       )}
+
+      <MeterHistoryModal
+        open={historyOpen}
+        history={meterHistory}
+        loading={
+          meterHistoryLoading
+        }
+        onClose={
+          handleCloseHistory
+        }
+      />
 
     </div>
   );
