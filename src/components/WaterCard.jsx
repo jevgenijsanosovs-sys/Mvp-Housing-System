@@ -61,6 +61,35 @@ export default function WaterCard({
     );
   };
 
+  const formatReadingInput =
+    (value) => {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return "0,000";
+      }
+
+      const storedValue =
+        Number(value);
+
+      if (
+        !Number.isFinite(
+          storedValue
+        )
+      ) {
+        return "0,000";
+      }
+
+      return (
+        storedValue / 1000
+      )
+        .toFixed(3)
+        .replace(".", ",");
+    };
+
   const formatDate = (value) => {
 
     if (!value) {
@@ -156,6 +185,16 @@ export default function WaterCard({
         setIsSubmitting(false);
       }
     };
+
+  const handleHistory = () => {
+
+    if (
+      typeof onHistory ===
+      "function"
+    ) {
+      onHistory(meter.id);
+    }
+  };
 
   const rowStyle = {
     display: "flex",
@@ -361,7 +400,11 @@ export default function WaterCard({
         <input
           type="text"
           inputMode="decimal"
-          placeholder="547,436"
+          placeholder={
+            formatReadingInput(
+              meter.last_reading
+            )
+          }
           value={value}
           disabled={isSubmitting}
           onChange={
@@ -409,17 +452,15 @@ export default function WaterCard({
           lineHeight: 1.4,
         }}
       >
-        Example: 547,436 m³.
+        Enter the full meter value.
         Digits before the comma are
-        whole cubic metres; three digits
+        cubic metres; three digits
         after it are litres.
       </div>
 
       <button
         type="button"
-        onClick={() =>
-          onHistory(meter.id)
-        }
+        onClick={handleHistory}
         style={{
           width: "100%",
           marginTop: 10,
