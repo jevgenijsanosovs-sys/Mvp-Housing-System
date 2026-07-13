@@ -31,6 +31,35 @@ export default function WaterCard({
     return value;
   };
 
+  const formatReading = (value) => {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return "—";
+    }
+
+    const storedValue =
+      Number(value);
+
+    if (
+      !Number.isFinite(
+        storedValue
+      )
+    ) {
+      return value;
+    }
+
+    return (
+      (storedValue / 1000)
+        .toFixed(3)
+        .replace(".", ",") +
+      " m³"
+    );
+  };
+
   const formatDate = (value) => {
 
     if (!value) {
@@ -84,6 +113,21 @@ export default function WaterCard({
 
   const isHotWater =
     normalizedMeterType === "hot";
+
+  const handleInputChange =
+    (event) => {
+
+      const inputValue =
+        event.target.value;
+
+      if (
+        /^[0-9]*([,.][0-9]{0,3})?$/.test(
+          inputValue
+        )
+      ) {
+        setValue(inputValue);
+      }
+    };
 
   const handleSubmit =
     async () => {
@@ -268,7 +312,7 @@ export default function WaterCard({
               fontSize: 18,
             }}
           >
-            {formatValue(
+            {formatReading(
               meter.last_reading
             )}
           </span>
@@ -300,7 +344,7 @@ export default function WaterCard({
           color: "#374151",
         }}
       >
-        New reading
+        New reading, m³
       </label>
 
       <div
@@ -314,15 +358,13 @@ export default function WaterCard({
       >
 
         <input
-          type="number"
-          min="0"
-          step="0.001"
+          type="text"
           inputMode="decimal"
-          placeholder="Enter value"
+          placeholder="547,436"
           value={value}
           disabled={isSubmitting}
-          onChange={(e) =>
-            setValue(e.target.value)
+          onChange={
+            handleInputChange
           }
           style={{
             ...inputStyle,
@@ -356,6 +398,20 @@ export default function WaterCard({
             : "Submit"}
         </button>
 
+      </div>
+
+      <div
+        style={{
+          marginTop: 7,
+          color: "#6b7280",
+          fontSize: 12,
+          lineHeight: 1.4,
+        }}
+      >
+        Example: 547,436 m³.
+        Digits before the comma are
+        whole cubic metres; three digits
+        after it are litres.
       </div>
 
     </div>
