@@ -117,28 +117,29 @@ export default function WaterCard({
     justifyContent:
       "space-between",
     alignItems: "center",
-    gap: 16,
-    padding: "8px 0",
+    gap: 12,
+    padding: "5px 0",
   };
 
   const labelStyle = {
     color: "#6b7280",
-    fontSize: 14,
+    fontSize: 13,
   };
 
   const valueStyle = {
     fontWeight: 600,
     textAlign: "right",
     color: "#111827",
+    fontSize: 14,
   };
 
   return (
     <div
       style={{
-        padding: 18,
+        padding: 14,
         border:
           "1px solid #e5e7eb",
-        borderRadius: 14,
+        borderRadius: 12,
         background: "#f9fafb",
       }}
     >
@@ -149,8 +150,8 @@ export default function WaterCard({
           justifyContent:
             "space-between",
           alignItems: "flex-start",
-          gap: 16,
-          marginBottom: 14,
+          gap: 12,
+          marginBottom: 10,
         }}
       >
 
@@ -159,7 +160,8 @@ export default function WaterCard({
           <h3
             style={{
               margin: 0,
-              fontSize: 18,
+              fontSize: 17,
+              lineHeight: 1.25,
             }}
           >
             {formatMeterType(
@@ -171,9 +173,9 @@ export default function WaterCard({
 
             <div
               style={{
-                marginTop: 5,
+                marginTop: 2,
                 color: "#4b5563",
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 600,
               }}
             >
@@ -186,7 +188,7 @@ export default function WaterCard({
 
         <span
           style={{
-            padding: "5px 10px",
+            padding: "4px 9px",
             borderRadius: 999,
             background:
               isHotWater
@@ -196,7 +198,7 @@ export default function WaterCard({
               isHotWater
                 ? "#c2410c"
                 : "#1d4ed8",
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 700,
             textTransform:
               "capitalize",
@@ -212,26 +214,12 @@ export default function WaterCard({
 
       <div
         style={{
-          marginBottom: 16,
-          paddingBottom: 14,
+          marginBottom: 12,
+          paddingBottom: 10,
           borderBottom:
             "1px solid #e5e7eb",
         }}
       >
-
-        <div style={rowStyle}>
-
-          <span style={labelStyle}>
-            Location
-          </span>
-
-          <span style={valueStyle}>
-            {formatValue(
-              meter.local_label
-            )}
-          </span>
-
-        </div>
 
         <div style={rowStyle}>
 
@@ -244,7 +232,7 @@ export default function WaterCard({
               ...valueStyle,
               fontFamily:
                 "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 13,
+              fontSize: 12,
             }}
           >
             {formatValue(
@@ -277,7 +265,7 @@ export default function WaterCard({
           <span
             style={{
               ...valueStyle,
-              fontSize: 20,
+              fontSize: 18,
             }}
           >
             {formatValue(
@@ -306,7 +294,8 @@ export default function WaterCard({
       <label
         style={{
           display: "block",
-          marginBottom: 8,
+          marginBottom: 6,
+          fontSize: 14,
           fontWeight: 600,
           color: "#374151",
         }}
@@ -319,7 +308,7 @@ export default function WaterCard({
           display: "grid",
           gridTemplateColumns:
             "minmax(0, 1fr) auto",
-          gap: 10,
+          gap: 8,
           alignItems: "stretch",
         }}
       >
@@ -329,7 +318,7 @@ export default function WaterCard({
           min="0"
           step="0.001"
           inputMode="decimal"
-          placeholder="Enter current value"
+          placeholder="Enter value"
           value={value}
           disabled={isSubmitting}
           onChange={(e) =>
@@ -350,7 +339,7 @@ export default function WaterCard({
           onClick={handleSubmit}
           style={{
             ...buttonStyle,
-            minWidth: 150,
+            minWidth: 120,
             margin: 0,
             opacity:
               isSubmitting
@@ -367,18 +356,6 @@ export default function WaterCard({
             : "Submit"}
         </button>
 
-      </div>
-
-      <div
-        style={{
-          marginTop: 8,
-          color: "#6b7280",
-          fontSize: 12,
-          lineHeight: 1.4,
-        }}
-      >
-        Enter the value currently
-        shown on this meter.
       </div>
 
     </div>
