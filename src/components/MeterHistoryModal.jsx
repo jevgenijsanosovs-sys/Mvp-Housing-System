@@ -146,6 +146,7 @@ export default function MeterHistoryModal({
                   lineHeight: 1.5,
                 }}
               >
+
                 {meter.riser_code && (
                   <div>
                     Riser:{" "}
@@ -190,6 +191,8 @@ export default function MeterHistoryModal({
               style={{
                 display: "grid",
                 gap: 8,
+                maxHeight: 420,
+                overflowY: "auto",
               }}
             >
 
