@@ -75,6 +75,48 @@ export default function useWater() {
     };
 
   // =====================================
+  // PARSE READING
+  // =====================================
+
+  const parseReadingValue = (
+    value
+  ) => {
+
+    const normalizedValue =
+      String(value)
+        .trim()
+        .replace(",", ".");
+
+    if (!normalizedValue) {
+      return null;
+    }
+
+    if (
+      !/^\d+(\.\d{1,3})?$/.test(
+        normalizedValue
+      )
+    ) {
+      return null;
+    }
+
+    const cubicMeters =
+      Number(normalizedValue);
+
+    if (
+      !Number.isFinite(
+        cubicMeters
+      ) ||
+      cubicMeters < 0
+    ) {
+      return null;
+    }
+
+    return Math.round(
+      cubicMeters * 1000
+    );
+  };
+
+  // =====================================
   // SUBMIT READING
   // =====================================
 
@@ -83,23 +125,24 @@ export default function useWater() {
     value
   ) => {
 
-    if (value === "") {
+    if (
+      String(value).trim() === ""
+    ) {
 
       alert("Enter value");
 
       return false;
     }
 
-    const numericValue =
-      Number(value);
+    const storedReadingValue =
+      parseReadingValue(value);
 
     if (
-      !Number.isFinite(numericValue) ||
-      numericValue < 0
+      storedReadingValue === null
     ) {
 
       alert(
-        "Enter a valid reading"
+        "Enter the reading in m³ with up to 3 decimal places"
       );
 
       return false;
@@ -114,8 +157,9 @@ export default function useWater() {
 
           body: JSON.stringify({
             meter_id: meterId,
+
             reading_value:
-              numericValue,
+              storedReadingValue,
           }),
         }
       );
