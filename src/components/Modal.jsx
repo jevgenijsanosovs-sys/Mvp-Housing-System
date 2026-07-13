@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import {
   modalStyle,
   modalContentStyle,
@@ -10,15 +12,96 @@ export default function Modal({
   onClose,
 }) {
 
+  useEffect(() => {
+
+    if (!open) {
+      return undefined;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    return () => {
+
+      document.body.style.overflow =
+        previousOverflow;
+    };
+
+  }, [open]);
+
+  useEffect(() => {
+
+    if (!open) {
+      return undefined;
+    }
+
+    const handleKeyDown =
+      (event) => {
+
+        if (
+          event.key === "Escape"
+        ) {
+          onClose();
+        }
+      };
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+
+  }, [open, onClose]);
+
   if (!open) {
     return null;
   }
 
   return (
 
-    <div style={modalStyle}>
+    <div
+      style={{
+        ...modalStyle,
 
-      <div style={modalContentStyle}>
+        overflowY: "auto",
+
+        padding:
+          "20px 12px",
+
+        boxSizing:
+          "border-box",
+      }}
+    >
+
+      <div
+        style={{
+          ...modalContentStyle,
+
+          width: "100%",
+
+          maxWidth: 560,
+
+          maxHeight:
+            "calc(100vh - 40px)",
+
+          overflowY: "auto",
+
+          boxSizing:
+            "border-box",
+
+          margin: "auto",
+        }}
+      >
 
         <div
           style={{
@@ -26,24 +109,48 @@ export default function Modal({
             justifyContent:
               "space-between",
             alignItems: "center",
-            marginBottom: 20,
+            gap: 16,
+            marginBottom: 16,
           }}
         >
 
           <h2
             style={{
               margin: 0,
+              fontSize: 20,
+              lineHeight: 1.25,
             }}
           >
             {title}
           </h2>
 
           <button
+            type="button"
+            aria-label="Close"
             onClick={onClose}
             style={{
+              flexShrink: 0,
+
+              width: 36,
+              height: 36,
+
+              display: "flex",
+              alignItems: "center",
+              justifyContent:
+                "center",
+
+              padding: 0,
+
               border: "none",
-              background: "none",
-              fontSize: 22,
+              borderRadius: 8,
+
+              background:
+                "transparent",
+
+              color: "#374151",
+              fontSize: 24,
+              lineHeight: 1,
+
               cursor: "pointer",
             }}
           >
