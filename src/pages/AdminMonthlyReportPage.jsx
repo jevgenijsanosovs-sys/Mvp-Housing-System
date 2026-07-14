@@ -6,22 +6,42 @@ export default function AdminMonthlyReportPage() {
 
   const {
 
+    currentWaterReportingPeriod,
+    currentWaterReportingPeriodLoading,
+    currentWaterReportingPeriodError,
+    loadCurrentWaterReportingPeriod,
+
     adminMonthlyReport,
-
     adminMonthlyReportLoading,
-
     adminMonthlyReportError,
-
     loadAdminMonthlyReport,
 
   } = useWater();
 
   useEffect(() => {
 
-    loadAdminMonthlyReport(
-      2026,
-      7
-    );
+    const loadReport = async () => {
+
+      const periodData =
+        await loadCurrentWaterReportingPeriod();
+
+      const period =
+        periodData?.period;
+
+      if (
+        !period?.period_year ||
+        !period?.period_month
+      ) {
+        return;
+      }
+
+      await loadAdminMonthlyReport(
+        period.period_year,
+        period.period_month
+      );
+    };
+
+    loadReport();
 
   }, []);
 
@@ -29,100 +49,348 @@ export default function AdminMonthlyReportPage() {
     adminMonthlyReport?.summary;
 
   const period =
-    adminMonthlyReport?.period;
+    adminMonthlyReport?.period ||
+    currentWaterReportingPeriod?.period;
+
+  const isLoading =
+    currentWaterReportingPeriodLoading ||
+    adminMonthlyReportLoading;
+
+  const errorMessage =
+    currentWaterReportingPeriodError ||
+    adminMonthlyReportError;
+
+  const formatMonth = (
+    year,
+    month
+  ) => {
+
+    if (!year || !month) {
+      return "—";
+    }
+
+    const date = new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        1
+      )
+    );
+
+    return date.toLocaleDateString(
+      "en-GB",
+      {
+        month: "long",
+        year: "numeric",
+      }
+    );
+  };
+
+  const formatDateTime = (
+    value
+  ) => {
+
+    if (!value) {
+      return "—";
+    }
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return value;
+    }
+
+    return date.toLocaleString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
+  };
+
+  const formatConsumption = (
+    value
+  ) => {
+
+    const storedValue =
+      Number(value);
+
+    if (
+      !Number.isFinite(
+        storedValue
+      )
+    ) {
+      return "0,000 m³";
+    }
+
+    return (
+      (storedValue / 1000)
+        .toFixed(3)
+        .replace(".", ",") +
+      " m³"
+    );
+  };
+
+  const formatStatus = (
+    value
+  ) => {
+
+    if (!value) {
+      return "Unknown";
+    }
+
+    return (
+      value.charAt(0).toUpperCase() +
+      value.slice(1)
+    );
+  };
+
+  const getStatusStyle = (
+    status
+  ) => {
+
+    const normalizedStatus =
+      String(status || "")
+        .toLowerCase();
+
+    if (
+      normalizedStatus === "open"
+    ) {
+      return {
+        background: "#dcfce7",
+        color: "#166534",
+      };
+    }
+
+    if (
+      normalizedStatus === "closed"
+    ) {
+      return {
+        background: "#fef3c7",
+        color: "#92400e",
+      };
+    }
+
+    if (
+      normalizedStatus ===
+      "finalized"
+    ) {
+      return {
+        background: "#dbeafe",
+        color: "#1d4ed8",
+      };
+    }
+
+    return {
+      background: "#f3f4f6",
+      color: "#4b5563",
+    };
+  };
 
   return (
-
     <div>
 
-      <h1>
-        Water Monthly Report
-      </h1>
+      <div
+        style={{
+          marginBottom: 24,
+        }}
+      >
 
-      {adminMonthlyReportLoading && (
-
-        <p>
-          Loading...
-        </p>
-
-      )}
-
-      {adminMonthlyReportError && (
+        <h1
+          style={{
+            margin: 0,
+          }}
+        >
+          Monthly Report
+        </h1>
 
         <p
           style={{
-            color: "red",
+            marginTop: 8,
+            marginBottom: 0,
+            color: "#6b7280",
+            lineHeight: 1.5,
           }}
         >
-          {adminMonthlyReportError}
+          Water meter collection
+          status and monthly
+          consumption summary.
         </p>
+
+      </div>
+
+      {isLoading && (
+
+        <div
+          style={{
+            padding: 20,
+            border:
+              "1px solid #e5e7eb",
+            borderRadius: 14,
+            background: "#ffffff",
+            color: "#6b7280",
+          }}
+        >
+          Loading monthly report...
+        </div>
 
       )}
 
-      {!adminMonthlyReportLoading &&
-       adminMonthlyReport &&
-       (
+      {!isLoading &&
+        errorMessage && (
+
+        <div
+          style={{
+            padding: 16,
+            border:
+              "1px solid #fecaca",
+            borderRadius: 12,
+            background: "#fef2f2",
+            color: "#b91c1c",
+          }}
+        >
+          {errorMessage}
+        </div>
+
+      )}
+
+      {!isLoading &&
+        !errorMessage &&
+        adminMonthlyReport &&
+        summary &&
+        period && (
 
         <>
 
-          <div
+          <section
             style={{
-              border:
-                "1px solid #ddd",
-
-              borderRadius: 12,
-
-              padding: 20,
-
               marginBottom: 20,
+              padding: 18,
+              border:
+                "1px solid #e5e7eb",
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow:
+                "0 4px 16px rgba(15, 23, 42, 0.05)",
             }}
           >
 
-            <h2
+            <div
               style={{
-                marginTop: 0,
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems:
+                  "flex-start",
+                gap: 16,
+                flexWrap: "wrap",
               }}
             >
-              Period
-            </h2>
 
-            <p>
+              <div>
 
-              {period.period_month}/
-              {period.period_year}
+                <div
+                  style={{
+                    color: "#6b7280",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform:
+                      "uppercase",
+                    letterSpacing:
+                      "0.04em",
+                    marginBottom: 5,
+                  }}
+                >
+                  Reporting period
+                </div>
 
-            </p>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: 22,
+                  }}
+                >
+                  {formatMonth(
+                    period.period_year,
+                    period.period_month
+                  )}
+                </h2>
 
-            <p>
+              </div>
 
-              Status:
+              <span
+                style={{
+                  ...getStatusStyle(
+                    period.status
+                  ),
+                  padding: "6px 11px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform:
+                    "uppercase",
+                  letterSpacing:
+                    "0.03em",
+                }}
+              >
+                {formatStatus(
+                  period.status
+                )}
+              </span>
 
-              {" "}
+            </div>
 
-              <b>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(210px, 1fr))",
+                gap: 12,
+                marginTop: 16,
+                paddingTop: 14,
+                borderTop:
+                  "1px solid #e5e7eb",
+              }}
+            >
 
-                {period.status}
+              <InfoItem
+                label="Collection opens"
+                value={formatDateTime(
+                  period.collection_opens_at
+                )}
+              />
 
-              </b>
+              <InfoItem
+                label="Collection closes"
+                value={formatDateTime(
+                  period.collection_closes_at
+                )}
+              />
 
-            </p>
+            </div>
 
-          </div>
+          </section>
 
           <div
             style={{
               display: "grid",
-
               gridTemplateColumns:
-                "repeat(auto-fit,minmax(220px,1fr))",
-
-              gap: 16,
+                "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 14,
             }}
           >
 
             <ReportCard
               title="Apartments"
-
               value={
                 summary.apartments_total
               }
@@ -130,7 +398,6 @@ export default function AdminMonthlyReportPage() {
 
             <ReportCard
               title="Submitted"
-
               value={
                 summary.apartments_submitted
               }
@@ -138,33 +405,55 @@ export default function AdminMonthlyReportPage() {
 
             <ReportCard
               title="Missing"
-
               value={
                 summary.apartments_missing
+              }
+              warning={
+                summary.apartments_missing >
+                0
+              }
+            />
+
+            <ReportCard
+              title="Meters"
+              value={
+                summary.meters_total
+              }
+            />
+
+            <ReportCard
+              title="Meters submitted"
+              value={
+                summary.meters_submitted
+              }
+            />
+
+            <ReportCard
+              title="Meters missing"
+              value={
+                summary.meters_missing
+              }
+              warning={
+                summary.meters_missing >
+                0
               }
             />
 
             <ReportCard
               title="Cold Water"
-
               value={
-                (
-                  summary.cold_consumption /
-                  1000
-                ).toFixed(3)
-                + " m³"
+                formatConsumption(
+                  summary.cold_consumption
+                )
               }
             />
 
             <ReportCard
               title="Hot Water"
-
               value={
-                (
-                  summary.hot_consumption /
-                  1000
-                ).toFixed(3)
-                + " m³"
+                formatConsumption(
+                  summary.hot_consumption
+                )
               }
             />
 
@@ -175,61 +464,94 @@ export default function AdminMonthlyReportPage() {
       )}
 
     </div>
-
   );
-
 }
 
-function ReportCard({
-
-  title,
-
+function InfoItem({
+  label,
   value,
-
 }) {
 
   return (
+    <div>
 
+      <div
+        style={{
+          marginBottom: 4,
+          color: "#6b7280",
+          fontSize: 12,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          color: "#111827",
+          fontSize: 14,
+          fontWeight: 600,
+        }}
+      >
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+function ReportCard({
+  title,
+  value,
+  warning = false,
+}) {
+
+  return (
     <div
       style={{
+        padding: 16,
         border:
-          "1px solid #ddd",
-
-        borderRadius: 12,
-
-        padding: 18,
-
+          warning
+            ? "1px solid #fed7aa"
+            : "1px solid #e5e7eb",
+        borderRadius: 14,
         background:
-          "#fff",
+          warning
+            ? "#fff7ed"
+            : "#ffffff",
+        boxShadow:
+          "0 3px 12px rgba(15, 23, 42, 0.04)",
       }}
     >
 
       <div
         style={{
-          color: "#666",
-
-          marginBottom: 8,
+          marginBottom: 7,
+          color:
+            warning
+              ? "#9a3412"
+              : "#6b7280",
+          fontSize: 13,
+          fontWeight: 600,
         }}
       >
-
         {title}
-
       </div>
 
       <div
         style={{
-          fontSize: 28,
-
+          color:
+            warning
+              ? "#9a3412"
+              : "#111827",
+          fontSize: 25,
           fontWeight: 700,
+          fontVariantNumeric:
+            "tabular-nums",
         }}
       >
-
         {value}
-
       </div>
 
     </div>
-
   );
-
 }
