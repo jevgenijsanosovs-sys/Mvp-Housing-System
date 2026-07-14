@@ -626,7 +626,8 @@ export default function useWater() {
       meterId,
       value,
       submissionSource,
-      sourceNote
+      sourceNote,
+      options = {}
     ) => {
 
       if (!meterId) {
@@ -668,6 +669,11 @@ export default function useWater() {
         "phone",
         "admin_manual",
       ];
+
+      const {
+        suppressSuccessAlert = false,
+        suppressReload = false,
+      } = options;
 
       if (
         !allowedSources.includes(
@@ -721,31 +727,39 @@ export default function useWater() {
 
         if (r?.ok) {
 
-          const reportPeriod =
-            adminMonthlyReport
-              ?.period;
+          if (!suppressReload) {
 
-          if (
-            reportPeriod
-              ?.period_year &&
-            reportPeriod
-              ?.period_month
-          ) {
+            const reportPeriod =
+              adminMonthlyReport
+                ?.period;
 
-            await loadAdminMonthlyReport(
+            if (
               reportPeriod
-                .period_year,
-
+                ?.period_year &&
               reportPeriod
-                .period_month
-            );
+                ?.period_month
+            ) {
+
+              await loadAdminMonthlyReport(
+                reportPeriod
+                  .period_year,
+
+                reportPeriod
+                  .period_month
+              );
+            }
+
+            await loadAdminWater();
           }
 
-          await loadAdminWater();
+          if (
+            !suppressSuccessAlert
+          ) {
 
-          alert(
-            "Reading submitted"
-          );
+            alert(
+              "Reading submitted"
+            );
+          }
 
           return true;
         }
