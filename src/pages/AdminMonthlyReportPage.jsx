@@ -52,6 +52,15 @@ export default function AdminMonthlyReportPage() {
     adminMonthlyReport?.period ||
     currentWaterReportingPeriod?.period;
 
+  const missingApartments =
+    Array.isArray(
+      adminMonthlyReport
+        ?.missing_apartments
+    )
+      ? adminMonthlyReport
+          .missing_apartments
+      : [];
+
   const isLoading =
     currentWaterReportingPeriodLoading ||
     adminMonthlyReportLoading;
@@ -386,6 +395,7 @@ export default function AdminMonthlyReportPage() {
               gridTemplateColumns:
                 "repeat(auto-fit, minmax(180px, 1fr))",
               gap: 14,
+              marginBottom: 20,
             }}
           >
 
@@ -458,6 +468,210 @@ export default function AdminMonthlyReportPage() {
             />
 
           </div>
+
+          <section
+            style={{
+              padding: 18,
+              border:
+                "1px solid #e5e7eb",
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow:
+                "0 4px 16px rgba(15, 23, 42, 0.05)",
+            }}
+          >
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 14,
+                paddingBottom: 12,
+                borderBottom:
+                  "1px solid #e5e7eb",
+              }}
+            >
+
+              <div>
+
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: 18,
+                  }}
+                >
+                  Apartments requiring
+                  attention
+                </h2>
+
+                <p
+                  style={{
+                    marginTop: 5,
+                    marginBottom: 0,
+                    color: "#6b7280",
+                    fontSize: 13,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Apartments with one or
+                  more missing meter
+                  readings.
+                </p>
+
+              </div>
+
+              <span
+                style={{
+                  minWidth: 32,
+                  padding: "5px 9px",
+                  borderRadius: 999,
+                  background:
+                    missingApartments
+                      .length > 0
+                      ? "#ffedd5"
+                      : "#dcfce7",
+                  color:
+                    missingApartments
+                      .length > 0
+                      ? "#9a3412"
+                      : "#166534",
+                  textAlign: "center",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                {
+                  missingApartments.length
+                }
+              </span>
+
+            </div>
+
+            {missingApartments.length ===
+            0 ? (
+
+              <div
+                style={{
+                  padding: "14px 0",
+                  color: "#166534",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                All apartments have
+                submitted readings for
+                every active meter.
+              </div>
+
+            ) : (
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+
+                {missingApartments.map(
+                  (apartment) => (
+
+                    <div
+                      key={
+                        apartment
+                          .apartment_id
+                      }
+                      style={{
+                        display: "flex",
+                        justifyContent:
+                          "space-between",
+                        alignItems:
+                          "center",
+                        gap: 12,
+                        padding:
+                          "10px 12px",
+                        border:
+                          "1px solid #fed7aa",
+                        borderRadius: 10,
+                        background:
+                          "#fff7ed",
+                      }}
+                    >
+
+                      <div>
+
+                        <div
+                          style={{
+                            color:
+                              "#111827",
+                            fontSize: 14,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Apartment #
+                          {
+                            apartment
+                              .apartment_number
+                          }
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 2,
+                            color:
+                              "#9a3412",
+                            fontSize: 12,
+                          }}
+                        >
+                          Missing readings
+                        </div>
+
+                      </div>
+
+                      <span
+                        style={{
+                          padding:
+                            "5px 9px",
+                          borderRadius:
+                            999,
+                          background:
+                            "#ffffff",
+                          border:
+                            "1px solid #fed7aa",
+                          color:
+                            "#9a3412",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          whiteSpace:
+                            "nowrap",
+                        }}
+                      >
+                        {
+                          apartment
+                            .missing_meter_count
+                        }
+                        {" "}
+                        {
+                          apartment
+                            .missing_meter_count ===
+                          1
+                            ? "meter"
+                            : "meters"
+                        }
+                      </span>
+
+                    </div>
+
+                  )
+                )}
+
+              </div>
+
+            )}
+
+          </section>
 
         </>
 
