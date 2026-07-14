@@ -2,7 +2,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import MenuButton from "./MenuButton";
+import MenuButton
+  from "./MenuButton";
 
 import {
   useAuth,
@@ -28,6 +29,7 @@ export default function Sidebar({
   sidebarOpen = false,
   setSidebarOpen = () => {},
 }) {
+
   const {
     me,
     logout,
@@ -56,14 +58,17 @@ export default function Sidebar({
     roles.includes("admin");
 
   const go = (path) => {
+
     navigate(path);
 
     if (isMobile) {
+
       setSidebarOpen(false);
     }
   };
 
   const sidebarStyle = {
+
     ...sidebar,
 
     ...(isMobile
@@ -89,23 +94,40 @@ export default function Sidebar({
   };
 
   return (
+
     <div style={sidebarStyle}>
+
       <div>
+
         <h2 style={sidebarTitle}>
-          <div style={{ fontSize: "0.8em" }}>
+
+          <div
+            style={{
+              fontSize: "0.8em",
+            }}
+          >
             MVX System
           </div>
-          <div>DzĪKS IRLAVA 20</div>
+
+          <div>
+            DzĪKS IRLAVA 20
+          </div>
+
         </h2>
 
         <div style={sidebarUser}>
+
           User:{" "}
-          {me?.user?.first_name}{" "}
+          {me?.user?.first_name}
+          {" "}
           {me?.user?.last_name}
+
         </div>
 
         <div style={modeBlock}>
+
           {hasResident && (
+
             <button
               style={
                 mode === "resident"
@@ -118,9 +140,11 @@ export default function Sidebar({
             >
               Resident Mode
             </button>
+
           )}
 
           {hasAdmin && (
+
             <button
               style={
                 mode === "admin"
@@ -133,13 +157,17 @@ export default function Sidebar({
             >
               Admin Mode
             </button>
+
           )}
+
         </div>
 
         <hr style={divider} />
 
         {mode === "resident" && (
+
           <>
+
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -153,11 +181,15 @@ export default function Sidebar({
                 go("/water")
               }
             />
+
           </>
+
         )}
 
         {mode === "admin" && (
+
           <>
+
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -185,7 +217,7 @@ export default function Sidebar({
                 go("/water-meters")
               }
             />
-            
+
             <MenuButton
               title="Water Readings Log"
               onClick={() =>
@@ -193,9 +225,17 @@ export default function Sidebar({
               }
             />
 
-            
+            <MenuButton
+              title="Monthly Report"
+              onClick={() =>
+                go("/monthly-report")
+              }
+            />
+
           </>
+
         )}
+
       </div>
 
       <div
@@ -203,6 +243,7 @@ export default function Sidebar({
           marginTop: "auto",
         }}
       >
+
         <hr style={divider} />
 
         <button
@@ -211,7 +252,9 @@ export default function Sidebar({
         >
           Logout
         </button>
+
       </div>
+
     </div>
   );
 }
