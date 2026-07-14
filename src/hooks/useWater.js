@@ -60,6 +60,25 @@ export default function useWater() {
   ] = useState("");
 
   // =====================================
+  // CURRENT WATER REPORTING PERIOD
+  // =====================================
+
+  const [
+    currentWaterReportingPeriod,
+    setCurrentWaterReportingPeriod
+  ] = useState(null);
+
+  const [
+    currentWaterReportingPeriodLoading,
+    setCurrentWaterReportingPeriodLoading
+  ] = useState(false);
+
+  const [
+    currentWaterReportingPeriodError,
+    setCurrentWaterReportingPeriodError
+  ] = useState("");
+
+  // =====================================
   // LOAD RESIDENT WATER
   // =====================================
 
@@ -183,6 +202,110 @@ export default function useWater() {
         Array.isArray(d)
           ? d
           : []
+      );
+    };
+
+  // =====================================
+  // LOAD CURRENT WATER REPORTING PERIOD
+  // =====================================
+
+  const loadCurrentWaterReportingPeriod =
+    async () => {
+
+      setCurrentWaterReportingPeriodLoading(
+        true
+      );
+
+      setCurrentWaterReportingPeriodError(
+        ""
+      );
+
+      try {
+
+        const d = await api(
+          "/api/admin/current-water-reporting-period"
+        );
+
+        if (d?.error) {
+
+          const messages = {
+
+            forbidden:
+              "Administrator access required.",
+
+            reporting_period_not_found:
+              "Reporting period not found.",
+          };
+
+          const errorMessage =
+            messages[d.error] ||
+            d.error ||
+            "Reporting period load failed";
+
+          setCurrentWaterReportingPeriodError(
+            errorMessage
+          );
+
+          setCurrentWaterReportingPeriod(
+            null
+          );
+
+          return null;
+        }
+
+        const periodData = {
+
+          period:
+            d?.period || null,
+
+          selection_reason:
+            d?.selection_reason || "",
+        };
+
+        setCurrentWaterReportingPeriod(
+          periodData
+        );
+
+        return periodData;
+
+      } catch (error) {
+
+        console.error(
+          "Load current water reporting period failed:",
+          error
+        );
+
+        setCurrentWaterReportingPeriodError(
+          "Reporting period load failed"
+        );
+
+        setCurrentWaterReportingPeriod(
+          null
+        );
+
+        return null;
+
+      } finally {
+
+        setCurrentWaterReportingPeriodLoading(
+          false
+        );
+      }
+    };
+
+  // =====================================
+  // CLEAR CURRENT WATER REPORTING PERIOD
+  // =====================================
+
+  const clearCurrentWaterReportingPeriod =
+    () => {
+
+      setCurrentWaterReportingPeriod(
+        null
+      );
+
+      setCurrentWaterReportingPeriodError(
+        ""
       );
     };
 
@@ -674,6 +797,10 @@ export default function useWater() {
     adminMonthlyReportLoading,
     adminMonthlyReportError,
 
+    currentWaterReportingPeriod,
+    currentWaterReportingPeriodLoading,
+    currentWaterReportingPeriodError,
+
     loadMyWater,
     loadMeterHistory,
     clearMeterHistory,
@@ -683,6 +810,9 @@ export default function useWater() {
 
     loadAdminMonthlyReport,
     clearAdminMonthlyReport,
+
+    loadCurrentWaterReportingPeriod,
+    clearCurrentWaterReportingPeriod,
 
     submitReading,
     correctReading,
