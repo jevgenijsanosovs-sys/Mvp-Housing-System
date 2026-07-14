@@ -1,8 +1,18 @@
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import useWater from "../hooks/useWater";
 
 export default function AdminMonthlyReportPage() {
+
+  const [
+    isMobile,
+    setIsMobile
+  ] = useState(
+    window.innerWidth < 768
+  );
 
   const {
 
@@ -17,6 +27,28 @@ export default function AdminMonthlyReportPage() {
     loadAdminMonthlyReport,
 
   } = useWater();
+
+  useEffect(() => {
+
+    const handleResize = () => {
+
+      setIsMobile(
+        window.innerWidth < 768
+      );
+    };
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+    return () =>
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
+  }, []);
 
   useEffect(() => {
 
@@ -59,6 +91,13 @@ export default function AdminMonthlyReportPage() {
     )
       ? adminMonthlyReport
           .missing_apartments
+      : [];
+
+  const reportRows =
+    Array.isArray(
+      adminMonthlyReport?.rows
+    )
+      ? adminMonthlyReport.rows
       : [];
 
   const isLoading =
@@ -202,6 +241,73 @@ export default function AdminMonthlyReportPage() {
     return {
       background: "#f3f4f6",
       color: "#4b5563",
+    };
+  };
+
+  const formatMeterType = (
+    value
+  ) => {
+
+    const normalizedValue =
+      String(value || "")
+        .trim()
+        .toLowerCase();
+
+    if (normalizedValue === "cold") {
+      return "Cold Water";
+    }
+
+    if (normalizedValue === "hot") {
+      return "Hot Water";
+    }
+
+    return value || "Water";
+  };
+
+  const formatRowStatus = (
+    value
+  ) => {
+
+    const labels = {
+      complete: "Complete",
+      missing_current:
+        "Missing current",
+      missing_previous:
+        "Missing previous",
+      negative_consumption:
+        "Negative consumption",
+    };
+
+    return (
+      labels[value] ||
+      formatStatus(value)
+    );
+  };
+
+  const getRowStatusStyle = (
+    value
+  ) => {
+
+    if (value === "complete") {
+      return {
+        background: "#dcfce7",
+        color: "#166534",
+      };
+    }
+
+    if (
+      value ===
+      "negative_consumption"
+    ) {
+      return {
+        background: "#fee2e2",
+        color: "#b91c1c",
+      };
+    }
+
+    return {
+      background: "#ffedd5",
+      color: "#9a3412",
     };
   };
 
@@ -673,6 +779,129 @@ export default function AdminMonthlyReportPage() {
 
           </section>
 
+          <section
+            style={{
+              marginTop: 20,
+              padding: 18,
+              border:
+                "1px solid #e5e7eb",
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow:
+                "0 4px 16px rgba(15, 23, 42, 0.05)",
+            }}
+          >
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 14,
+                paddingBottom: 12,
+                borderBottom:
+                  "1px solid #e5e7eb",
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: 18,
+                  }}
+                >
+                  Meter details
+                </h2>
+
+                <p
+                  style={{
+                    marginTop: 5,
+                    marginBottom: 0,
+                    color: "#6b7280",
+                    fontSize: 13,
+                  }}
+                >
+                  Previous and current
+                  readings for every
+                  active water meter.
+                </p>
+              </div>
+
+              <span
+                style={{
+                  padding: "5px 9px",
+                  borderRadius: 999,
+                  background: "#f3f4f6",
+                  color: "#4b5563",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                {reportRows.length}
+              </span>
+            </div>
+
+            {reportRows.length === 0 ? (
+              <div
+                style={{
+                  padding: "14px 0",
+                  color: "#6b7280",
+                  fontSize: 14,
+                }}
+              >
+                No active water meters
+                found for this report.
+              </div>
+            ) : isMobile ? (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                {reportRows.map(
+                  (row) => (
+                    <MeterDetailCard
+                      key={row.meter_id}
+                      row={row}
+                      formatMeterType={
+                        formatMeterType
+                      }
+                      formatConsumption={
+                        formatConsumption
+                      }
+                      formatRowStatus={
+                        formatRowStatus
+                      }
+                      getRowStatusStyle={
+                        getRowStatusStyle
+                      }
+                    />
+                  )
+                )}
+              </div>
+            ) : (
+              <MeterDetailsTable
+                rows={reportRows}
+                formatMeterType={
+                  formatMeterType
+                }
+                formatConsumption={
+                  formatConsumption
+                }
+                formatRowStatus={
+                  formatRowStatus
+                }
+                getRowStatusStyle={
+                  getRowStatusStyle
+                }
+              />
+            )}
+
+          </section>
+
         </>
 
       )}
@@ -766,6 +995,436 @@ function ReportCard({
         {value}
       </div>
 
+    </div>
+  );
+}
+
+function MeterDetailsTable({
+  rows,
+  formatMeterType,
+  formatConsumption,
+  formatRowStatus,
+  getRowStatusStyle,
+}) {
+
+  const headings = [
+    "Apartment",
+    "Type / Location",
+    "Serial Number",
+    "Riser",
+    "Previous",
+    "Current",
+    "Consumption",
+    "Status",
+  ];
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        overflowX: "auto",
+        border:
+          "1px solid #e5e7eb",
+        borderRadius: 10,
+      }}
+    >
+      <table
+        style={{
+          width: "100%",
+          minWidth: 1080,
+          borderCollapse:
+            "collapse",
+          fontSize: 12,
+        }}
+      >
+        <thead>
+          <tr
+            style={{
+              background: "#f3f4f6",
+            }}
+          >
+            {headings.map(
+              (heading, index) => (
+                <th
+                  key={heading}
+                  style={{
+                    padding:
+                      "9px 10px",
+                    textAlign:
+                      index >= 4 &&
+                      index <= 6
+                        ? "right"
+                        : "left",
+                    color: "#374151",
+                    fontWeight: 700,
+                    borderBottom:
+                      "1px solid #d1d5db",
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {heading}
+                </th>
+              )
+            )}
+          </tr>
+        </thead>
+
+        <tbody>
+          {rows.map(
+            (row, index) => {
+
+              const isLast =
+                index ===
+                rows.length - 1;
+
+              const borderBottom =
+                isLast
+                  ? "none"
+                  : "1px solid #e5e7eb";
+
+              return (
+                <tr
+                  key={row.meter_id}
+                  style={{
+                    background:
+                      index % 2 === 0
+                        ? "#ffffff"
+                        : "#f9fafb",
+                  }}
+                >
+                  <td
+                    style={{
+                      padding:
+                        "8px 10px",
+                      borderBottom,
+                      fontWeight: 700,
+                      whiteSpace:
+                        "nowrap",
+                    }}
+                  >
+                    #{row.apartment_number}
+                  </td>
+
+                  <td
+                    style={{
+                      padding:
+                        "8px 10px",
+                      borderBottom,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 600,
+                      }}
+                    >
+                      {formatMeterType(
+                        row.type
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 2,
+                        color: "#6b7280",
+                        fontSize: 11,
+                      }}
+                    >
+                      {row.local_label ||
+                        "—"}
+                    </div>
+                  </td>
+
+                  <td
+                    style={{
+                      padding:
+                        "8px 10px",
+                      borderBottom,
+                      fontWeight: 600,
+                      whiteSpace:
+                        "nowrap",
+                    }}
+                  >
+                    {row.serial_number ||
+                      "—"}
+                  </td>
+
+                  <td
+                    style={{
+                      padding:
+                        "8px 10px",
+                      borderBottom,
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontSize: 11,
+                      whiteSpace:
+                        "nowrap",
+                    }}
+                  >
+                    {row.riser_code ||
+                      "—"}
+                  </td>
+
+                  {[
+                    row.previous_reading,
+                    row.current_reading,
+                    row.consumption,
+                  ].map(
+                    (
+                      value,
+                      valueIndex
+                    ) => (
+                      <td
+                        key={
+                          valueIndex
+                        }
+                        style={{
+                          padding:
+                            "8px 10px",
+                          borderBottom,
+                          textAlign:
+                            "right",
+                          fontWeight:
+                            valueIndex ===
+                            2
+                              ? 700
+                              : 600,
+                          color:
+                            valueIndex ===
+                              2 &&
+                            Number(value) <
+                              0
+                              ? "#b91c1c"
+                              : "#111827",
+                          whiteSpace:
+                            "nowrap",
+                          fontVariantNumeric:
+                            "tabular-nums",
+                        }}
+                      >
+                        {value === null ||
+                        value ===
+                          undefined
+                          ? "—"
+                          : formatConsumption(
+                              value
+                            )}
+                      </td>
+                    )
+                  )}
+
+                  <td
+                    style={{
+                      padding:
+                        "8px 10px",
+                      borderBottom,
+                    }}
+                  >
+                    <span
+                      style={{
+                        ...getRowStatusStyle(
+                          row.status
+                        ),
+                        display:
+                          "inline-block",
+                        padding:
+                          "4px 8px",
+                        borderRadius:
+                          999,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      {formatRowStatus(
+                        row.status
+                      )}
+                    </span>
+                  </td>
+                </tr>
+              );
+            }
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MeterDetailCard({
+  row,
+  formatMeterType,
+  formatConsumption,
+  formatRowStatus,
+  getRowStatusStyle,
+}) {
+
+  const values = [
+    [
+      "Serial number",
+      row.serial_number || "—",
+    ],
+    [
+      "Riser",
+      row.riser_code || "—",
+    ],
+    [
+      "Previous",
+      row.previous_reading ===
+        null ||
+      row.previous_reading ===
+        undefined
+        ? "—"
+        : formatConsumption(
+            row.previous_reading
+          ),
+    ],
+    [
+      "Current",
+      row.current_reading ===
+        null ||
+      row.current_reading ===
+        undefined
+        ? "—"
+        : formatConsumption(
+            row.current_reading
+          ),
+    ],
+    [
+      "Consumption",
+      row.consumption === null ||
+      row.consumption ===
+        undefined
+        ? "—"
+        : formatConsumption(
+            row.consumption
+          ),
+    ],
+  ];
+
+  return (
+    <div
+      style={{
+        padding: 12,
+        border:
+          row.status === "complete"
+            ? "1px solid #e5e7eb"
+            : "1px solid #fed7aa",
+        borderRadius: 12,
+        background:
+          row.status === "complete"
+            ? "#f9fafb"
+            : "#fff7ed",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "flex-start",
+          gap: 10,
+          marginBottom: 10,
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            Apartment #
+            {row.apartment_number}
+          </div>
+
+          <div
+            style={{
+              marginTop: 2,
+              color: "#4b5563",
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
+            {formatMeterType(
+              row.type
+            )}
+            {row.local_label
+              ? ` · ${row.local_label}`
+              : ""}
+          </div>
+        </div>
+
+        <span
+          style={{
+            ...getRowStatusStyle(
+              row.status
+            ),
+            padding: "4px 8px",
+            borderRadius: 999,
+            fontSize: 10,
+            fontWeight: 700,
+            textAlign: "center",
+          }}
+        >
+          {formatRowStatus(
+            row.status
+          )}
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "auto minmax(0, 1fr)",
+          columnGap: 10,
+          rowGap: 5,
+          fontSize: 12,
+        }}
+      >
+        {values.map(
+          ([label, value]) => (
+            <>
+              <span
+                key={`${label}-label`}
+                style={{
+                  color: "#6b7280",
+                }}
+              >
+                {label}
+              </span>
+
+              <span
+                key={`${label}-value`}
+                style={{
+                  textAlign: "right",
+                  fontWeight:
+                    label ===
+                    "Consumption"
+                      ? 700
+                      : 600,
+                  color:
+                    label ===
+                      "Consumption" &&
+                    Number(
+                      row.consumption
+                    ) < 0
+                      ? "#b91c1c"
+                      : "#111827",
+                  overflowWrap:
+                    "anywhere",
+                  fontVariantNumeric:
+                    "tabular-nums",
+                }}
+              >
+                {value}
+              </span>
+            </>
+          )
+        )}
+      </div>
     </div>
   );
 }
