@@ -4,15 +4,29 @@ import {
 
 import App from "../App";
 
-import LoginPage from "../pages/LoginPage";
+import LoginPage
+  from "../pages/LoginPage";
 
-import DashboardPage from "../pages/DashboardPage";
-import UsersPage from "../pages/UsersPage";
-import ApartmentsPage from "../pages/ApartmentsPage";
-import ResidentWaterPage from "../pages/ResidentWaterPage";
-import WaterReadingsPage from "../pages/WaterReadingsPage";
+import DashboardPage
+  from "../pages/DashboardPage";
+
+import UsersPage
+  from "../pages/UsersPage";
+
+import ApartmentsPage
+  from "../pages/ApartmentsPage";
+
+import ResidentWaterPage
+  from "../pages/ResidentWaterPage";
+
+import WaterReadingsPage
+  from "../pages/WaterReadingsPage";
+
 import WaterMetersPage
   from "../pages/WaterMetersPage";
+
+import AdminMonthlyReportPage
+  from "../pages/AdminMonthlyReportPage";
 
 import ProtectedRoute
   from "../routes/ProtectedRoute";
@@ -38,35 +52,46 @@ export const router =
 
         {
           index: true,
-          element: <DashboardPage />,
+          element:
+            <DashboardPage />,
         },
 
         {
           path: "users",
-          element: <UsersPage />,
+          element:
+            <UsersPage />,
         },
 
         {
           path: "apartments",
-          element: <ApartmentsPage />,
+          element:
+            <ApartmentsPage />,
         },
 
         {
           path: "water",
-          element: <ResidentWaterPage />,
+          element:
+            <ResidentWaterPage />,
         },
 
         {
           path: "water-readings",
-          element: <WaterReadingsPage />,
+          element:
+            <WaterReadingsPage />,
         },
 
         {
           path: "water-meters",
-          element: <WaterMetersPage />,
+          element:
+            <WaterMetersPage />,
         },
 
-        
+        {
+          path: "monthly-report",
+          element:
+            <AdminMonthlyReportPage />,
+        },
+
       ],
     },
 
