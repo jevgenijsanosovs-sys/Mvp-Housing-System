@@ -1503,17 +1503,14 @@ function ApartmentMeterGroup({
     );
 
   return (
-    <section
-      style={{
-        border:
-          hasProblems
-            ? "1px solid #fed7aa"
-            : "1px solid #e5e7eb",
-        borderRadius: 12,
-        background: "#ffffff",
-        overflow: "hidden",
-      }}
-    >
+      <section
+        style={{
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          background: "#ffffff",
+          overflow: "hidden",
+        }}
+      >
 
       <div
         style={{
@@ -1525,10 +1522,7 @@ function ApartmentMeterGroup({
           gap: 14,
           flexWrap: "wrap",
           padding: 14,
-          background:
-            hasProblems
-              ? "#fff7ed"
-              : "#f9fafb",
+          background: "#f8fafc",
           borderBottom:
             "1px solid #e5e7eb",
         }}
