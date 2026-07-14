@@ -499,78 +499,87 @@ export default function AdminMonthlyReportPage() {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(auto-fit, minmax(180px, 1fr))",
+                "repeat(auto-fit, minmax(260px, 1fr))",
               gap: 14,
               marginBottom: 20,
             }}
           >
 
-            <ReportCard
+            <SummaryGroupCard
               title="Apartments"
-              value={
+              primaryValue={
                 summary.apartments_total
               }
+              items={[
+                {
+                  label: "Submitted",
+                  value:
+                    summary.apartments_submitted,
+                },
+                {
+                  label: "Missing",
+                  value:
+                    summary.apartments_missing,
+                  warning:
+                    summary.apartments_missing >
+                    0,
+                },
+              ]}
             />
 
-            <ReportCard
-              title="Submitted"
-              value={
-                summary.apartments_submitted
-              }
-            />
-
-            <ReportCard
-              title="Missing"
-              value={
-                summary.apartments_missing
-              }
-              warning={
-                summary.apartments_missing >
-                0
-              }
-            />
-
-            <ReportCard
+            <SummaryGroupCard
               title="Meters"
-              value={
+              primaryValue={
                 summary.meters_total
               }
+              items={[
+                {
+                  label: "Submitted",
+                  value:
+                    summary.meters_submitted,
+                },
+                {
+                  label: "Missing",
+                  value:
+                    summary.meters_missing,
+                  warning:
+                    summary.meters_missing >
+                    0,
+                },
+              ]}
             />
 
-            <ReportCard
-              title="Meters submitted"
-              value={
-                summary.meters_submitted
-              }
-            />
-
-            <ReportCard
-              title="Meters missing"
-              value={
-                summary.meters_missing
-              }
-              warning={
-                summary.meters_missing >
-                0
-              }
-            />
-
-            <ReportCard
-              title="Cold Water"
-              value={
+            <SummaryGroupCard
+              title="Water consumption"
+              primaryLabel="Total"
+              primaryValue={
                 formatConsumption(
-                  summary.cold_consumption
+                  Number(
+                    summary.cold_consumption ||
+                    0
+                  ) +
+                  Number(
+                    summary.hot_consumption ||
+                    0
+                  )
                 )
               }
-            />
-
-            <ReportCard
-              title="Hot Water"
-              value={
-                formatConsumption(
-                  summary.hot_consumption
-                )
-              }
+              items={[
+                {
+                  label: "Cold Water",
+                  value:
+                    formatConsumption(
+                      summary.cold_consumption
+                    ),
+                },
+                {
+                  label: "Hot Water",
+                  value:
+                    formatConsumption(
+                      summary.hot_consumption
+                    ),
+                },
+              ]}
             />
 
           </div>
@@ -942,25 +951,21 @@ function InfoItem({
   );
 }
 
-function ReportCard({
+function SummaryGroupCard({
   title,
-  value,
-  warning = false,
+  primaryLabel = "Total",
+  primaryValue,
+  items = [],
 }) {
 
   return (
-    <div
+    <section
       style={{
         padding: 16,
         border:
-          warning
-            ? "1px solid #fed7aa"
-            : "1px solid #e5e7eb",
+          "1px solid #e5e7eb",
         borderRadius: 14,
-        background:
-          warning
-            ? "#fff7ed"
-            : "#ffffff",
+        background: "#ffffff",
         boxShadow:
           "0 3px 12px rgba(15, 23, 42, 0.04)",
       }}
@@ -968,34 +973,135 @@ function ReportCard({
 
       <div
         style={{
-          marginBottom: 7,
-          color:
-            warning
-              ? "#9a3412"
-              : "#6b7280",
-          fontSize: 13,
-          fontWeight: 600,
+          marginBottom: 12,
+          paddingBottom: 10,
+          borderBottom:
+            "1px solid #e5e7eb",
         }}
       >
-        {title}
+
+        <div
+          style={{
+            marginBottom: 5,
+            color: "#6b7280",
+            fontSize: 12,
+            fontWeight: 700,
+            textTransform:
+              "uppercase",
+            letterSpacing:
+              "0.04em",
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "baseline",
+            gap: 12,
+          }}
+        >
+
+          <span
+            style={{
+              color: "#6b7280",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            {primaryLabel}
+          </span>
+
+          <span
+            style={{
+              color: "#111827",
+              fontSize: 25,
+              fontWeight: 700,
+              fontVariantNumeric:
+                "tabular-nums",
+              textAlign: "right",
+            }}
+          >
+            {primaryValue}
+          </span>
+
+        </div>
+
       </div>
 
       <div
         style={{
-          color:
-            warning
-              ? "#9a3412"
-              : "#111827",
-          fontSize: 25,
-          fontWeight: 700,
-          fontVariantNumeric:
-            "tabular-nums",
+          display: "grid",
+          gap: 8,
         }}
       >
-        {value}
+
+        {items.map(
+          (item) => (
+
+            <div
+              key={item.label}
+              style={{
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems: "center",
+                gap: 12,
+                padding:
+                  item.warning
+                    ? "8px 9px"
+                    : "3px 0",
+                borderRadius:
+                  item.warning
+                    ? 8
+                    : 0,
+                background:
+                  item.warning
+                    ? "#fff7ed"
+                    : "transparent",
+              }}
+            >
+
+              <span
+                style={{
+                  color:
+                    item.warning
+                      ? "#9a3412"
+                      : "#6b7280",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                {item.label}
+              </span>
+
+              <span
+                style={{
+                  color:
+                    item.warning
+                      ? "#9a3412"
+                      : "#111827",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  fontVariantNumeric:
+                    "tabular-nums",
+                  textAlign: "right",
+                }}
+              >
+                {item.value}
+              </span>
+
+            </div>
+
+          )
+        )}
+
       </div>
 
-    </div>
+    </section>
   );
 }
 
