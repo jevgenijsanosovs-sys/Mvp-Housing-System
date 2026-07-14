@@ -2341,12 +2341,12 @@ function ApartmentTotal({
         padding: "8px 10px",
         border:
           emphasized
-            ? "1px solid #bfdbfe"
+            ? "1px solid #cbd5e1"
             : "1px solid #e5e7eb",
         borderRadius: 9,
         background:
           emphasized
-            ? "#eff6ff"
+            ? "#f3f4f6"
             : "#ffffff",
       }}
     >
@@ -2356,7 +2356,7 @@ function ApartmentTotal({
           marginBottom: 3,
           color:
             emphasized
-              ? "#1d4ed8"
+              ? "#374151"
               : "#6b7280",
           fontSize: 11,
           fontWeight: 600,
@@ -2367,10 +2367,7 @@ function ApartmentTotal({
 
       <div
         style={{
-          color:
-            emphasized
-              ? "#1d4ed8"
-              : "#111827",
+          color: "#111827",
           fontSize: 14,
           fontWeight: 700,
           textAlign: "right",
@@ -2709,14 +2706,13 @@ function MeterDetailCard({
       style={{
         padding: 12,
         border:
+          "1px solid #e5e7eb",
+        borderLeft:
           row.status === "complete"
             ? "1px solid #e5e7eb"
-            : "1px solid #fed7aa",
+            : "4px solid #fdba74",
         borderRadius: 12,
-        background:
-          row.status === "complete"
-            ? "#f9fafb"
-            : "#fff7ed",
+        background: "#ffffff",
       }}
     >
       <div
@@ -2733,29 +2729,28 @@ function MeterDetailCard({
         <div>
           <div
             style={{
+              color: "#111827",
               fontSize: 14,
               fontWeight: 700,
-            }}
-          >
-            Apartment #
-            {row.apartment_number}
-          </div>
-
-          <div
-            style={{
-              marginTop: 2,
-              color: "#4b5563",
-              fontSize: 12,
-              fontWeight: 600,
             }}
           >
             {formatMeterType(
               row.type
             )}
-            {row.local_label
-              ? ` · ${row.local_label}`
-              : ""}
           </div>
+
+          {row.local_label && (
+            <div
+              style={{
+                marginTop: 2,
+                color: "#6b7280",
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              {row.local_label}
+            </div>
+          )}
         </div>
 
         <span
