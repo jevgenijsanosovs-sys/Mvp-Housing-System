@@ -75,9 +75,7 @@ export default function useWater() {
           `/api/my-water-meter-history?id=${meterId}`
         );
 
-        if (
-          d?.error
-        ) {
+        if (d?.error) {
 
           alert(
             d.error ||
@@ -289,6 +287,133 @@ export default function useWater() {
   };
 
   // =====================================
+  // CORRECT READING
+  // =====================================
+
+  const correctReading = async (
+    readingId,
+    value,
+    reason
+  ) => {
+
+    if (
+      !readingId
+    ) {
+
+      alert(
+        "Reading not selected"
+      );
+
+      return false;
+    }
+
+    const storedReadingValue =
+      parseReadingValue(value);
+
+    if (
+      storedReadingValue === null
+    ) {
+
+      alert(
+        "Enter the corrected reading in m³ with up to 3 decimal places"
+      );
+
+      return false;
+    }
+
+    const correctionReason =
+      String(reason || "")
+        .trim();
+
+    if (!correctionReason) {
+
+      alert(
+        "Enter correction reason"
+      );
+
+      return false;
+    }
+
+    try {
+
+      const r = await api(
+        "/api/correct-water-reading",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            reading_id:
+              readingId,
+
+            reading_value:
+              storedReadingValue,
+
+            reason:
+              correctionReason,
+          }),
+        }
+      );
+
+      if (r.ok) {
+
+        const meterId =
+          meterHistory?.meter?.id;
+
+        if (meterId) {
+
+          await loadMeterHistory(
+            meterId
+          );
+        }
+
+        await loadMyWater();
+
+        alert(
+          "Reading corrected"
+        );
+
+        return true;
+      }
+
+      const messages = {
+
+        reading_not_active:
+          "This reading has already been replaced.",
+
+        only_latest_reading_can_be_corrected:
+          "Only the latest reading can be corrected.",
+
+        reading_value_unchanged:
+          "The corrected value is the same as the current value.",
+
+        reading_not_allowed:
+          "You cannot correct this reading.",
+      };
+
+      alert(
+        messages[r?.error] ||
+        r?.error ||
+        "Correction failed"
+      );
+
+      return false;
+
+    } catch (error) {
+
+      console.error(
+        "Correct reading failed:",
+        error
+      );
+
+      alert(
+        "Correction failed"
+      );
+
+      return false;
+    }
+  };
+
+  // =====================================
   // DEACTIVATE WATER METER
   // =====================================
 
@@ -341,6 +466,8 @@ export default function useWater() {
     loadAdminWaterMeters,
 
     submitReading,
+    correctReading,
+
     deactivateMeter,
   };
 }
