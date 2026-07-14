@@ -19,6 +19,31 @@ export default function AdminMonthlyReportPage() {
     setExpandedAttentionApartments
   ] = useState({});
 
+  const [
+    receiveReadingsApartmentId,
+    setReceiveReadingsApartmentId
+  ] = useState(null);
+
+  const [
+    receiveReadingValues,
+    setReceiveReadingValues
+  ] = useState({});
+
+  const [
+    receiveReadingSource,
+    setReceiveReadingSource
+  ] = useState("paper_note");
+
+  const [
+    receiveReadingNote,
+    setReceiveReadingNote
+  ] = useState("");
+
+  const [
+    receiveReadingsSubmitting,
+    setReceiveReadingsSubmitting
+  ] = useState(false);
+
   const {
 
     currentWaterReportingPeriod,
@@ -30,6 +55,7 @@ export default function AdminMonthlyReportPage() {
     adminMonthlyReportLoading,
     adminMonthlyReportError,
     loadAdminMonthlyReport,
+    submitAdminReading,
 
   } = useWater();
 
@@ -951,6 +977,199 @@ export default function AdminMonthlyReportPage() {
     );
   };
 
+  const openReceiveReadings =
+    (
+      apartmentId,
+      apartmentRows
+    ) => {
+
+      const initialValues = {};
+
+      apartmentRows.forEach(
+        (row) => {
+
+          initialValues[
+            row.meter_id
+          ] = "";
+        }
+      );
+
+      setReceiveReadingsApartmentId(
+        apartmentId
+      );
+
+      setReceiveReadingValues(
+        initialValues
+      );
+
+      setReceiveReadingSource(
+        "paper_note"
+      );
+
+      setReceiveReadingNote(
+        ""
+      );
+    };
+
+  const closeReceiveReadings =
+    () => {
+
+      if (
+        receiveReadingsSubmitting
+      ) {
+        return;
+      }
+
+      setReceiveReadingsApartmentId(
+        null
+      );
+
+      setReceiveReadingValues(
+        {}
+      );
+
+      setReceiveReadingNote(
+        ""
+      );
+    };
+
+  const handleReceiveValueChange =
+    (
+      meterId,
+      value
+    ) => {
+
+      if (
+        /^[0-9]*([,.][0-9]{0,3})?$/.test(
+          value
+        )
+      ) {
+
+        setReceiveReadingValues(
+          (current) => ({
+            ...current,
+            [meterId]: value,
+          })
+        );
+      }
+    };
+
+  const saveReceivedReadings =
+    async (
+      apartmentRows
+    ) => {
+
+      const rowsToSubmit =
+        apartmentRows.filter(
+          (row) =>
+            String(
+              receiveReadingValues[
+                row.meter_id
+              ] || ""
+            ).trim() !== ""
+        );
+
+      if (
+        rowsToSubmit.length === 0
+      ) {
+
+        alert(
+          "Enter at least one reading"
+        );
+
+        return;
+      }
+
+      if (
+        !String(
+          receiveReadingNote || ""
+        ).trim()
+      ) {
+
+        alert(
+          "Enter a source note"
+        );
+
+        return;
+      }
+
+      setReceiveReadingsSubmitting(
+        true
+      );
+
+      let successfulCount = 0;
+
+      try {
+
+        for (
+          const row of rowsToSubmit
+        ) {
+
+          const success =
+            await submitAdminReading(
+              row.meter_id,
+              receiveReadingValues[
+                row.meter_id
+              ],
+              receiveReadingSource,
+              receiveReadingNote,
+              {
+                suppressSuccessAlert:
+                  true,
+                suppressReload:
+                  true,
+              }
+            );
+
+          if (!success) {
+            break;
+          }
+
+          successfulCount += 1;
+        }
+
+        if (
+          successfulCount > 0
+        ) {
+
+          await loadAdminMonthlyReport(
+            period.period_year,
+            period.period_month
+          );
+        }
+
+        if (
+          successfulCount ===
+          rowsToSubmit.length
+        ) {
+
+          setReceiveReadingsApartmentId(
+            null
+          );
+
+          setReceiveReadingValues(
+            {}
+          );
+
+          setReceiveReadingNote(
+            ""
+          );
+
+          alert(
+            successfulCount === 1
+              ? "Reading received"
+              : `${successfulCount} readings received`
+          );
+        }
+
+      } finally {
+
+        setReceiveReadingsSubmitting(
+          false
+        );
+      }
+    };
+
   const toggleAttentionApartment =
     (apartmentId) => {
 
@@ -1748,6 +1967,363 @@ export default function AdminMonthlyReportPage() {
                               )
 
                             )}
+
+                            <div
+                              style={{
+                                marginTop: 4,
+                                paddingTop: 10,
+                                borderTop:
+                                  "1px solid #fed7aa",
+                              }}
+                            >
+
+                              {receiveReadingsApartmentId !==
+                              apartmentId ? (
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openReceiveReadings(
+                                      apartmentId,
+                                      apartmentRows
+                                    )
+                                  }
+                                  style={{
+                                    width: "100%",
+                                    padding:
+                                      "9px 12px",
+                                    border:
+                                      "1px solid #c2410c",
+                                    borderRadius: 9,
+                                    background:
+                                      "#ffffff",
+                                    color:
+                                      "#9a3412",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    cursor:
+                                      "pointer",
+                                  }}
+                                >
+                                  Receive readings
+                                </button>
+
+                              ) : (
+
+                                <div
+                                  style={{
+                                    display: "grid",
+                                    gap: 10,
+                                    padding: 10,
+                                    border:
+                                      "1px solid #d1d5db",
+                                    borderRadius: 10,
+                                    background:
+                                      "#f9fafb",
+                                  }}
+                                >
+
+                                  <div
+                                    style={{
+                                      color:
+                                        "#111827",
+                                      fontSize: 13,
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    Receive readings for
+                                    Apartment #
+                                    {
+                                      apartment
+                                        .apartment_number
+                                    }
+                                  </div>
+
+                                  {apartmentRows.map(
+                                    (row) => (
+
+                                      <label
+                                        key={
+                                          row.meter_id
+                                        }
+                                        style={{
+                                          display:
+                                            "grid",
+                                          gap: 5,
+                                        }}
+                                      >
+
+                                        <span
+                                          style={{
+                                            color:
+                                              "#374151",
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {formatMeterType(
+                                            row.type
+                                          )}
+                                          {row.local_label
+                                            ? ` · ${row.local_label}`
+                                            : ""}
+                                          {" — "}
+                                          {row.serial_number ||
+                                            "No serial"}
+                                        </span>
+
+                                        <input
+                                          type="text"
+                                          inputMode="decimal"
+                                          placeholder="547,436"
+                                          value={
+                                            receiveReadingValues[
+                                              row.meter_id
+                                            ] || ""
+                                          }
+                                          disabled={
+                                            receiveReadingsSubmitting
+                                          }
+                                          onChange={(
+                                            event
+                                          ) =>
+                                            handleReceiveValueChange(
+                                              row.meter_id,
+                                              event.target.value
+                                            )
+                                          }
+                                          style={{
+                                            width:
+                                              "100%",
+                                            boxSizing:
+                                              "border-box",
+                                            padding:
+                                              "9px 10px",
+                                            border:
+                                              "1px solid #d1d5db",
+                                            borderRadius: 8,
+                                            background:
+                                              "#ffffff",
+                                            color:
+                                              "#111827",
+                                            fontSize: 14,
+                                          }}
+                                        />
+
+                                      </label>
+
+                                    )
+                                  )}
+
+                                  <label
+                                    style={{
+                                      display: "grid",
+                                      gap: 5,
+                                    }}
+                                  >
+
+                                    <span
+                                      style={{
+                                        color:
+                                          "#374151",
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      Source
+                                    </span>
+
+                                    <select
+                                      value={
+                                        receiveReadingSource
+                                      }
+                                      disabled={
+                                        receiveReadingsSubmitting
+                                      }
+                                      onChange={(
+                                        event
+                                      ) =>
+                                        setReceiveReadingSource(
+                                          event.target.value
+                                        )
+                                      }
+                                      style={{
+                                        width: "100%",
+                                        padding:
+                                          "9px 10px",
+                                        border:
+                                          "1px solid #d1d5db",
+                                        borderRadius: 8,
+                                        background:
+                                          "#ffffff",
+                                        color:
+                                          "#111827",
+                                        fontSize: 13,
+                                      }}
+                                    >
+                                      <option
+                                        value="paper_note"
+                                      >
+                                        Paper note
+                                      </option>
+                                      <option
+                                        value="email"
+                                      >
+                                        Email
+                                      </option>
+                                      <option
+                                        value="phone"
+                                      >
+                                        Phone
+                                      </option>
+                                      <option
+                                        value="admin_manual"
+                                      >
+                                        Admin manual
+                                      </option>
+                                    </select>
+
+                                  </label>
+
+                                  <label
+                                    style={{
+                                      display: "grid",
+                                      gap: 5,
+                                    }}
+                                  >
+
+                                    <span
+                                      style={{
+                                        color:
+                                          "#374151",
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      Source note
+                                    </span>
+
+                                    <textarea
+                                      rows={3}
+                                      value={
+                                        receiveReadingNote
+                                      }
+                                      disabled={
+                                        receiveReadingsSubmitting
+                                      }
+                                      onChange={(
+                                        event
+                                      ) =>
+                                        setReceiveReadingNote(
+                                          event.target.value
+                                        )
+                                      }
+                                      placeholder="Example: Paper note received in mailbox"
+                                      style={{
+                                        width: "100%",
+                                        boxSizing:
+                                          "border-box",
+                                        padding:
+                                          "9px 10px",
+                                        border:
+                                          "1px solid #d1d5db",
+                                        borderRadius: 8,
+                                        resize:
+                                          "vertical",
+                                        background:
+                                          "#ffffff",
+                                        color:
+                                          "#111827",
+                                        fontSize: 13,
+                                        fontFamily:
+                                          "inherit",
+                                      }}
+                                    />
+
+                                  </label>
+
+                                  <div
+                                    style={{
+                                      display: "grid",
+                                      gridTemplateColumns:
+                                        "1fr 1fr",
+                                      gap: 8,
+                                    }}
+                                  >
+
+                                    <button
+                                      type="button"
+                                      onClick={
+                                        closeReceiveReadings
+                                      }
+                                      disabled={
+                                        receiveReadingsSubmitting
+                                      }
+                                      style={{
+                                        padding:
+                                          "9px 10px",
+                                        border:
+                                          "1px solid #d1d5db",
+                                        borderRadius: 8,
+                                        background:
+                                          "#ffffff",
+                                        color:
+                                          "#374151",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        cursor:
+                                          receiveReadingsSubmitting
+                                            ? "not-allowed"
+                                            : "pointer",
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        saveReceivedReadings(
+                                          apartmentRows
+                                        )
+                                      }
+                                      disabled={
+                                        receiveReadingsSubmitting
+                                      }
+                                      style={{
+                                        padding:
+                                          "9px 10px",
+                                        border:
+                                          "1px solid #2563eb",
+                                        borderRadius: 8,
+                                        background:
+                                          receiveReadingsSubmitting
+                                            ? "#d1d5db"
+                                            : "#2563eb",
+                                        color:
+                                          receiveReadingsSubmitting
+                                            ? "#6b7280"
+                                            : "#ffffff",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        cursor:
+                                          receiveReadingsSubmitting
+                                            ? "not-allowed"
+                                            : "pointer",
+                                      }}
+                                    >
+                                      {receiveReadingsSubmitting
+                                        ? "Saving..."
+                                        : "Save readings"}
+                                    </button>
+
+                                  </div>
+
+                                </div>
+
+                              )}
+
+                            </div>
 
                           </div>
 
