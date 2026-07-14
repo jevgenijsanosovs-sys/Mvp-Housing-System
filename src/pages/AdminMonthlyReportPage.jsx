@@ -360,6 +360,597 @@ export default function AdminMonthlyReportPage() {
     };
   };
 
+  const toCubicMeters = (
+    value
+  ) => {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
+
+    const storedValue =
+      Number(value);
+
+    if (
+      !Number.isFinite(
+        storedValue
+      )
+    ) {
+      return null;
+    }
+
+    return storedValue / 1000;
+  };
+
+  const getApartmentConsumption =
+    (
+      rows,
+      type = null
+    ) => {
+
+      return rows
+        .filter(
+          (row) => {
+
+            if (!type) {
+              return true;
+            }
+
+            return (
+              String(
+                row.type || ""
+              )
+                .trim()
+                .toLowerCase() ===
+              type
+            );
+          }
+        )
+        .reduce(
+          (
+            total,
+            row
+          ) => {
+
+            const value =
+              Number(
+                row.consumption
+              );
+
+            if (
+              !Number.isFinite(
+                value
+              ) ||
+              value < 0
+            ) {
+              return total;
+            }
+
+            return total + value;
+          },
+          0
+        );
+    };
+
+  const setWorksheetColumns =
+    (
+      worksheet,
+      widths
+    ) => {
+
+      worksheet["!cols"] =
+        widths.map(
+          (width) => ({
+            wch: width,
+          })
+        );
+    };
+
+  const applyThreeDecimalFormat =
+    (
+      worksheet,
+      columns,
+      startRow,
+      endRow
+    ) => {
+
+      for (
+        let row = startRow;
+        row <= endRow;
+        row += 1
+      ) {
+
+        columns.forEach(
+          (column) => {
+
+            const address =
+              `${column}${row}`;
+
+            const cell =
+              worksheet[address];
+
+            if (
+              cell &&
+              cell.t === "n"
+            ) {
+              cell.z = "0.000";
+            }
+          }
+        );
+      }
+    };
+
+  const handleDownloadXlsx = () => {
+
+    const XLSX =
+      window.XLSX;
+
+    if (!XLSX) {
+
+      alert(
+        "XLSX library is not available."
+      );
+
+      return;
+    }
+
+    if (
+      !adminMonthlyReport ||
+      !summary ||
+      !period
+    ) {
+
+      alert(
+        "Monthly report data is not available."
+      );
+
+      return;
+    }
+
+    const generatedAt =
+      new Date();
+
+    const periodName =
+      formatMonth(
+        period.period_year,
+        period.period_month
+      );
+
+    const coldTotal =
+      Number(
+        summary.cold_consumption ||
+        0
+      );
+
+    const hotTotal =
+      Number(
+        summary.hot_consumption ||
+        0
+      );
+
+    const totalWater =
+      coldTotal +
+      hotTotal;
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    // =====================================
+    // SUMMARY
+    // =====================================
+
+    const summaryData = [
+      [
+        "MVX System",
+        "Water Monthly Report",
+      ],
+      [],
+      [
+        "Reporting period",
+        periodName,
+      ],
+      [
+        "Status",
+        formatStatus(
+          period.status
+        ),
+      ],
+      [
+        "Collection opens",
+        formatDateTime(
+          period.collection_opens_at
+        ),
+      ],
+      [
+        "Collection closes",
+        formatDateTime(
+          period.collection_closes_at
+        ),
+      ],
+      [
+        "Generated at",
+        generatedAt.toLocaleString(
+          "en-GB"
+        ),
+      ],
+      [],
+      [
+        "Apartments total",
+        Number(
+          summary.apartments_total ||
+          0
+        ),
+      ],
+      [
+        "Apartments submitted",
+        Number(
+          summary.apartments_submitted ||
+          0
+        ),
+      ],
+      [
+        "Apartments missing",
+        Number(
+          summary.apartments_missing ||
+          0
+        ),
+      ],
+      [],
+      [
+        "Meters total",
+        Number(
+          summary.meters_total ||
+          0
+        ),
+      ],
+      [
+        "Meters submitted",
+        Number(
+          summary.meters_submitted ||
+          0
+        ),
+      ],
+      [
+        "Meters missing",
+        Number(
+          summary.meters_missing ||
+          0
+        ),
+      ],
+      [],
+      [
+        "Cold Water, m³",
+        toCubicMeters(
+          coldTotal
+        ),
+      ],
+      [
+        "Hot Water, m³",
+        toCubicMeters(
+          hotTotal
+        ),
+      ],
+      [
+        "Total Water, m³",
+        toCubicMeters(
+          totalWater
+        ),
+      ],
+    ];
+
+    const summarySheet =
+      XLSX.utils.aoa_to_sheet(
+        summaryData
+      );
+
+    setWorksheetColumns(
+      summarySheet,
+      [28, 26]
+    );
+
+    applyThreeDecimalFormat(
+      summarySheet,
+      ["B"],
+      17,
+      19
+    );
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      summarySheet,
+      "Summary"
+    );
+
+    // =====================================
+    // APARTMENTS
+    // =====================================
+
+    const apartmentRows =
+      apartmentGroups.map(
+        (group) => {
+
+          const rows =
+            group.rows || [];
+
+          const cold =
+            getApartmentConsumption(
+              rows,
+              "cold"
+            );
+
+          const hot =
+            getApartmentConsumption(
+              rows,
+              "hot"
+            );
+
+          const hasProblems =
+            rows.some(
+              (row) =>
+                row.status !==
+                "complete"
+            );
+
+          return {
+            Apartment:
+              String(
+                group.apartment_number
+              ),
+
+            "Cold Water, m³":
+              toCubicMeters(
+                cold
+              ),
+
+            "Hot Water, m³":
+              toCubicMeters(
+                hot
+              ),
+
+            "Total Water, m³":
+              toCubicMeters(
+                cold + hot
+              ),
+
+            Meters:
+              rows.length,
+
+            Status:
+              hasProblems
+                ? "Requires attention"
+                : "Complete",
+          };
+        }
+      );
+
+    const apartmentsSheet =
+      XLSX.utils.json_to_sheet(
+        apartmentRows
+      );
+
+    setWorksheetColumns(
+      apartmentsSheet,
+      [12, 18, 18, 18, 10, 22]
+    );
+
+    if (
+      apartmentRows.length > 0
+    ) {
+
+      apartmentsSheet[
+        "!autofilter"
+      ] = {
+        ref:
+          apartmentsSheet["!ref"],
+      };
+
+      applyThreeDecimalFormat(
+        apartmentsSheet,
+        ["B", "C", "D"],
+        2,
+        apartmentRows.length + 1
+      );
+    }
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      apartmentsSheet,
+      "Apartments"
+    );
+
+    // =====================================
+    // METER DETAILS
+    // =====================================
+
+    const meterRows =
+      reportRows.map(
+        (row) => ({
+
+          Apartment:
+            String(
+              row.apartment_number
+            ),
+
+          Type:
+            formatMeterType(
+              row.type
+            ),
+
+          Location:
+            row.local_label || "",
+
+          "Serial Number":
+            String(
+              row.serial_number ||
+              ""
+            ),
+
+          Riser:
+            String(
+              row.riser_code ||
+              ""
+            ),
+
+          "Previous Reading, m³":
+            toCubicMeters(
+              row.previous_reading
+            ),
+
+          "Current Reading, m³":
+            toCubicMeters(
+              row.current_reading
+            ),
+
+          "Consumption, m³":
+            toCubicMeters(
+              row.consumption
+            ),
+
+          Status:
+            formatRowStatus(
+              row.status
+            ),
+        })
+      );
+
+    const meterDetailsSheet =
+      XLSX.utils.json_to_sheet(
+        meterRows
+      );
+
+    setWorksheetColumns(
+      meterDetailsSheet,
+      [
+        12,
+        16,
+        18,
+        20,
+        20,
+        22,
+        22,
+        20,
+        24,
+      ]
+    );
+
+    if (meterRows.length > 0) {
+
+      meterDetailsSheet[
+        "!autofilter"
+      ] = {
+        ref:
+          meterDetailsSheet["!ref"],
+      };
+
+      applyThreeDecimalFormat(
+        meterDetailsSheet,
+        ["F", "G", "H"],
+        2,
+        meterRows.length + 1
+      );
+    }
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      meterDetailsSheet,
+      "Meter Details"
+    );
+
+    // =====================================
+    // MISSING DATA
+    // =====================================
+
+    const missingRows =
+      reportRows
+        .filter(
+          (row) =>
+            row.status !==
+            "complete"
+        )
+        .map(
+          (row) => ({
+
+            Apartment:
+              String(
+                row.apartment_number
+              ),
+
+            Type:
+              formatMeterType(
+                row.type
+              ),
+
+            Location:
+              row.local_label || "",
+
+            "Serial Number":
+              String(
+                row.serial_number ||
+                ""
+              ),
+
+            Riser:
+              String(
+                row.riser_code ||
+                ""
+              ),
+
+            Problem:
+              formatRowStatus(
+                row.status
+              ),
+          })
+        );
+
+    const missingDataSheet =
+      XLSX.utils.json_to_sheet(
+        missingRows
+      );
+
+    setWorksheetColumns(
+      missingDataSheet,
+      [12, 16, 18, 20, 20, 24]
+    );
+
+    if (
+      missingRows.length > 0
+    ) {
+
+      missingDataSheet[
+        "!autofilter"
+      ] = {
+        ref:
+          missingDataSheet["!ref"],
+      };
+    }
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      missingDataSheet,
+      "Missing Data"
+    );
+
+    const safeMonth =
+      String(
+        period.period_month
+      ).padStart(2, "0");
+
+    const fileName =
+      `MVX_Water_Monthly_Report_${period.period_year}-${safeMonth}.xlsx`;
+
+    XLSX.writeFileXLSX(
+      workbook,
+      fileName,
+      {
+        compression: true,
+      }
+    );
+  };
+
   const toggleAttentionApartment =
     (apartmentId) => {
 
@@ -378,30 +969,88 @@ export default function AdminMonthlyReportPage() {
 
       <div
         style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "flex-start",
+          gap: 16,
+          flexWrap: "wrap",
           marginBottom: 24,
         }}
       >
 
-        <h1
-          style={{
-            margin: 0,
-          }}
-        >
-          Monthly Report
-        </h1>
+        <div>
 
-        <p
+          <h1
+            style={{
+              margin: 0,
+            }}
+          >
+            Monthly Report
+          </h1>
+
+          <p
+            style={{
+              marginTop: 8,
+              marginBottom: 0,
+              color: "#6b7280",
+              lineHeight: 1.5,
+            }}
+          >
+            Water meter collection
+            status and monthly
+            consumption summary.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          onClick={
+            handleDownloadXlsx
+          }
+          disabled={
+            isLoading ||
+            !adminMonthlyReport ||
+            !summary ||
+            !period
+          }
           style={{
-            marginTop: 8,
-            marginBottom: 0,
-            color: "#6b7280",
-            lineHeight: 1.5,
+            padding:
+              "10px 14px",
+            border:
+              "1px solid #1d4ed8",
+            borderRadius: 10,
+            background:
+              isLoading ||
+              !adminMonthlyReport ||
+              !summary ||
+              !period
+                ? "#e5e7eb"
+                : "#2563eb",
+            color:
+              isLoading ||
+              !adminMonthlyReport ||
+              !summary ||
+              !period
+                ? "#6b7280"
+                : "#ffffff",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor:
+              isLoading ||
+              !adminMonthlyReport ||
+              !summary ||
+              !period
+                ? "not-allowed"
+                : "pointer",
+            whiteSpace:
+              "nowrap",
           }}
         >
-          Water meter collection
-          status and monthly
-          consumption summary.
-        </p>
+          Download XLSX
+        </button>
 
       </div>
 
