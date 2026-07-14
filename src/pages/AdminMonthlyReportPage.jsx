@@ -14,6 +14,11 @@ export default function AdminMonthlyReportPage() {
     window.innerWidth < 768
   );
 
+  const [
+    expandedAttentionApartments,
+    setExpandedAttentionApartments
+  ] = useState({});
+
   const {
 
     currentWaterReportingPeriod,
@@ -310,6 +315,19 @@ export default function AdminMonthlyReportPage() {
       color: "#9a3412",
     };
   };
+
+  const toggleAttentionApartment =
+    (apartmentId) => {
+
+      setExpandedAttentionApartments(
+        (current) => ({
+          ...current,
+
+          [apartmentId]:
+            !current[apartmentId],
+        })
+      );
+    };
 
   return (
     <div>
@@ -691,95 +709,361 @@ export default function AdminMonthlyReportPage() {
               >
 
                 {missingApartments.map(
-                  (apartment) => (
+                  (apartment) => {
 
-                    <div
-                      key={
-                        apartment
-                          .apartment_id
-                      }
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "space-between",
-                        alignItems:
-                          "center",
-                        gap: 12,
-                        padding:
-                          "10px 12px",
-                        border:
-                          "1px solid #fed7aa",
-                        borderRadius: 10,
-                        background:
-                          "#fff7ed",
-                      }}
-                    >
+                    const apartmentId =
+                      apartment
+                        .apartment_id;
 
-                      <div>
+                    const isExpanded =
+                      Boolean(
+                        expandedAttentionApartments[
+                          apartmentId
+                        ]
+                      );
 
-                        <div
+                    const apartmentRows =
+                      reportRows.filter(
+                        (row) =>
+                          row.apartment_id ===
+                            apartmentId &&
+                          row.status !==
+                            "complete"
+                      );
+
+                    return (
+
+                      <div
+                        key={apartmentId}
+                        style={{
+                          border:
+                            "1px solid #fed7aa",
+                          borderRadius: 10,
+                          background:
+                            "#fff7ed",
+                          overflow: "hidden",
+                        }}
+                      >
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggleAttentionApartment(
+                              apartmentId
+                            )
+                          }
+                          aria-expanded={
+                            isExpanded
+                          }
                           style={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent:
+                              "space-between",
+                            alignItems:
+                              "center",
+                            gap: 12,
+                            padding:
+                              "10px 12px",
+                            border: "none",
+                            background:
+                              "transparent",
                             color:
                               "#111827",
-                            fontSize: 14,
-                            fontWeight: 700,
+                            textAlign:
+                              "left",
+                            cursor:
+                              "pointer",
                           }}
                         >
-                          Apartment #
-                          {
-                            apartment
-                              .apartment_number
-                          }
-                        </div>
 
-                        <div
-                          style={{
-                            marginTop: 2,
-                            color:
-                              "#9a3412",
-                            fontSize: 12,
-                          }}
-                        >
-                          Missing readings
-                        </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems:
+                                "center",
+                              gap: 9,
+                              minWidth: 0,
+                            }}
+                          >
+
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                color:
+                                  "#9a3412",
+                                fontSize: 13,
+                                fontWeight: 700,
+                                transform:
+                                  isExpanded
+                                    ? "rotate(90deg)"
+                                    : "rotate(0deg)",
+                                transition:
+                                  "transform 0.18s ease",
+                              }}
+                            >
+                              ▶
+                            </span>
+
+                            <div>
+
+                              <div
+                                style={{
+                                  color:
+                                    "#111827",
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Apartment #
+                                {
+                                  apartment
+                                    .apartment_number
+                                }
+                              </div>
+
+                              <div
+                                style={{
+                                  marginTop: 2,
+                                  color:
+                                    "#9a3412",
+                                  fontSize: 12,
+                                }}
+                              >
+                                Missing readings
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                          <span
+                            style={{
+                              padding:
+                                "5px 9px",
+                              borderRadius:
+                                999,
+                              background:
+                                "#ffffff",
+                              border:
+                                "1px solid #fed7aa",
+                              color:
+                                "#9a3412",
+                              fontSize: 12,
+                              fontWeight: 700,
+                              whiteSpace:
+                                "nowrap",
+                            }}
+                          >
+                            {
+                              apartment
+                                .missing_meter_count
+                            }
+                            {" "}
+                            {
+                              apartment
+                                .missing_meter_count ===
+                              1
+                                ? "meter"
+                                : "meters"
+                            }
+                          </span>
+
+                        </button>
+
+                        {isExpanded && (
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gap: 8,
+                              padding:
+                                "0 12px 12px",
+                              borderTop:
+                                "1px solid #fed7aa",
+                            }}
+                          >
+
+                            {apartmentRows.length ===
+                            0 ? (
+
+                              <div
+                                style={{
+                                  paddingTop: 10,
+                                  color:
+                                    "#9a3412",
+                                  fontSize: 12,
+                                }}
+                              >
+                                No detailed meter
+                                data available.
+                              </div>
+
+                            ) : (
+
+                              apartmentRows.map(
+                                (row) => (
+
+                                  <div
+                                    key={
+                                      row.meter_id
+                                    }
+                                    style={{
+                                      marginTop: 8,
+                                      padding:
+                                        "9px 10px",
+                                      border:
+                                        "1px solid #fed7aa",
+                                      borderRadius: 8,
+                                      background:
+                                        "#ffffff",
+                                    }}
+                                  >
+
+                                    <div
+                                      style={{
+                                        display:
+                                          "flex",
+                                        justifyContent:
+                                          "space-between",
+                                        alignItems:
+                                          "flex-start",
+                                        gap: 10,
+                                        marginBottom: 7,
+                                      }}
+                                    >
+
+                                      <div>
+
+                                        <div
+                                          style={{
+                                            color:
+                                              "#111827",
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                          }}
+                                        >
+                                          {formatMeterType(
+                                            row.type
+                                          )}
+                                        </div>
+
+                                        <div
+                                          style={{
+                                            marginTop: 2,
+                                            color:
+                                              "#6b7280",
+                                            fontSize: 11,
+                                          }}
+                                        >
+                                          {row.local_label ||
+                                            "Location not assigned"}
+                                        </div>
+
+                                      </div>
+
+                                      <span
+                                        style={{
+                                          ...getRowStatusStyle(
+                                            row.status
+                                          ),
+                                          padding:
+                                            "4px 8px",
+                                          borderRadius:
+                                            999,
+                                          fontSize: 10,
+                                          fontWeight: 700,
+                                          whiteSpace:
+                                            "nowrap",
+                                        }}
+                                      >
+                                        {formatRowStatus(
+                                          row.status
+                                        )}
+                                      </span>
+
+                                    </div>
+
+                                    <div
+                                      style={{
+                                        display:
+                                          "grid",
+                                        gridTemplateColumns:
+                                          "auto minmax(0, 1fr)",
+                                        columnGap: 10,
+                                        rowGap: 4,
+                                        fontSize: 11,
+                                        lineHeight: 1.35,
+                                      }}
+                                    >
+
+                                      <span
+                                        style={{
+                                          color:
+                                            "#6b7280",
+                                        }}
+                                      >
+                                        Serial number
+                                      </span>
+
+                                      <span
+                                        style={{
+                                          textAlign:
+                                            "right",
+                                          color:
+                                            "#111827",
+                                          fontWeight: 600,
+                                          overflowWrap:
+                                            "anywhere",
+                                        }}
+                                      >
+                                        {row.serial_number ||
+                                          "—"}
+                                      </span>
+
+                                      <span
+                                        style={{
+                                          color:
+                                            "#6b7280",
+                                        }}
+                                      >
+                                        Riser
+                                      </span>
+
+                                      <span
+                                        style={{
+                                          textAlign:
+                                            "right",
+                                          color:
+                                            "#111827",
+                                          fontWeight: 600,
+                                          fontFamily:
+                                            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                          overflowWrap:
+                                            "anywhere",
+                                        }}
+                                      >
+                                        {row.riser_code ||
+                                          "—"}
+                                      </span>
+
+                                    </div>
+
+                                  </div>
+
+                                )
+                              )
+
+                            )}
+
+                          </div>
+
+                        )}
 
                       </div>
 
-                      <span
-                        style={{
-                          padding:
-                            "5px 9px",
-                          borderRadius:
-                            999,
-                          background:
-                            "#ffffff",
-                          border:
-                            "1px solid #fed7aa",
-                          color:
-                            "#9a3412",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          whiteSpace:
-                            "nowrap",
-                        }}
-                      >
-                        {
-                          apartment
-                            .missing_meter_count
-                        }
-                        {" "}
-                        {
-                          apartment
-                            .missing_meter_count ===
-                          1
-                            ? "meter"
-                            : "meters"
-                        }
-                      </span>
-
-                    </div>
-
-                  )
+                    );
+                  }
                 )}
 
               </div>
