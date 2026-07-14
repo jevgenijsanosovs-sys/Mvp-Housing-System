@@ -22,6 +22,7 @@ export default function ResidentWaterPage() {
     clearMeterHistory,
 
     submitReading,
+    correctReading,
   } = useWater();
 
   const [
@@ -268,6 +269,9 @@ export default function ResidentWaterPage() {
         history={meterHistory}
         loading={
           meterHistoryLoading
+        }
+        onCorrect={
+          correctReading
         }
         onClose={
           handleCloseHistory
