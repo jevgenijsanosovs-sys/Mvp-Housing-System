@@ -618,6 +618,189 @@ export default function useWater() {
   };
 
   // =====================================
+  // ADMIN SUBMIT READING
+  // =====================================
+
+  const submitAdminReading =
+    async (
+      meterId,
+      value,
+      submissionSource,
+      sourceNote
+    ) => {
+
+      if (!meterId) {
+
+        alert(
+          "Water meter not selected"
+        );
+
+        return false;
+      }
+
+      const storedReadingValue =
+        parseReadingValue(
+          value
+        );
+
+      if (
+        storedReadingValue ===
+        null
+      ) {
+
+        alert(
+          "Enter the reading in m³ with up to 3 decimal places"
+        );
+
+        return false;
+      }
+
+      const normalizedSource =
+        String(
+          submissionSource || ""
+        )
+          .trim()
+          .toLowerCase();
+
+      const allowedSources = [
+        "paper_note",
+        "email",
+        "phone",
+        "admin_manual",
+      ];
+
+      if (
+        !allowedSources.includes(
+          normalizedSource
+        )
+      ) {
+
+        alert(
+          "Select a valid reading source"
+        );
+
+        return false;
+      }
+
+      const normalizedNote =
+        String(
+          sourceNote || ""
+        ).trim();
+
+      if (!normalizedNote) {
+
+        alert(
+          "Enter a source note"
+        );
+
+        return false;
+      }
+
+      try {
+
+        const r = await api(
+          "/api/admin/submit-water-reading",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              meter_id:
+                meterId,
+
+              reading_value:
+                storedReadingValue,
+
+              submission_source:
+                normalizedSource,
+
+              source_note:
+                normalizedNote,
+            }),
+          }
+        );
+
+        if (r?.ok) {
+
+          const reportPeriod =
+            adminMonthlyReport
+              ?.period;
+
+          if (
+            reportPeriod
+              ?.period_year &&
+            reportPeriod
+              ?.period_month
+          ) {
+
+            await loadAdminMonthlyReport(
+              reportPeriod
+                .period_year,
+
+              reportPeriod
+                .period_month
+            );
+          }
+
+          await loadAdminWater();
+
+          alert(
+            "Reading submitted"
+          );
+
+          return true;
+        }
+
+        const messages = {
+
+          forbidden:
+            "Administrator access required.",
+
+          invalid_meter_id:
+            "Invalid water meter.",
+
+          invalid_reading_value:
+            "Invalid water reading.",
+
+          invalid_submission_source:
+            "Invalid reading source.",
+
+          missing_source_note:
+            "Enter a source note.",
+
+          meter_not_found_or_inactive:
+            "Water meter not found or inactive.",
+
+          water_collection_period_closed:
+            "Water reading collection is currently closed.",
+
+          reading_already_submitted_for_period:
+            "A reading has already been submitted for this meter and reporting period.",
+        };
+
+        alert(
+          messages[r?.error] ||
+          r?.error ||
+          "Admin submission failed"
+        );
+
+        return false;
+
+      } catch (error) {
+
+        console.error(
+          "Admin submit reading failed:",
+          error
+        );
+
+        alert(
+          "Admin submission failed"
+        );
+
+        return false;
+      }
+    };
+
+  // =====================================
   // CORRECT READING
   // =====================================
 
@@ -815,6 +998,7 @@ export default function useWater() {
     clearCurrentWaterReportingPeriod,
 
     submitReading,
+    submitAdminReading,
     correctReading,
 
     deactivateMeter,
