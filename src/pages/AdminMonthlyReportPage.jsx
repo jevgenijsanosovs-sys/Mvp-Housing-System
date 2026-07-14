@@ -2072,10 +2072,41 @@ export default function AdminMonthlyReportPage() {
                                             "No serial"}
                                         </span>
 
+                                        <span
+                                          style={{
+                                            color:
+                                              "#6b7280",
+                                            fontSize: 11,
+                                            lineHeight: 1.35,
+                                          }}
+                                        >
+                                          Previous:{" "}
+                                          {row.previous_reading ===
+                                            null ||
+                                          row.previous_reading ===
+                                            undefined
+                                            ? "—"
+                                            : formatConsumption(
+                                                row.previous_reading
+                                              )}
+                                        </span>
+
                                         <input
                                           type="text"
                                           inputMode="decimal"
-                                          placeholder="547,436"
+                                          placeholder={
+                                            row.previous_reading ===
+                                              null ||
+                                            row.previous_reading ===
+                                              undefined
+                                              ? "Enter reading"
+                                              : formatConsumption(
+                                                  row.previous_reading
+                                                ).replace(
+                                                  " m³",
+                                                  ""
+                                                )
+                                          }
                                           value={
                                             receiveReadingValues[
                                               row.meter_id
