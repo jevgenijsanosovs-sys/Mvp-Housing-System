@@ -105,6 +105,50 @@ export default function AdminMonthlyReportPage() {
       ? adminMonthlyReport.rows
       : [];
 
+  const apartmentGroups =
+    Object.values(
+      reportRows.reduce(
+        (
+          groups,
+          row
+        ) => {
+
+          const key =
+            String(
+              row.apartment_id
+            );
+
+          if (!groups[key]) {
+
+            groups[key] = {
+              apartment_id:
+                row.apartment_id,
+
+              apartment_number:
+                row.apartment_number,
+
+              rows: [],
+            };
+          }
+
+          groups[key].rows.push(
+            row
+          );
+
+          return groups;
+        },
+        {}
+      )
+    ).sort(
+      (a, b) =>
+        Number(
+          a.apartment_number
+        ) -
+        Number(
+          b.apartment_number
+        )
+    );
+
   const isLoading =
     currentWaterReportingPeriodLoading ||
     adminMonthlyReportLoading;
@@ -1136,7 +1180,9 @@ export default function AdminMonthlyReportPage() {
               </span>
             </div>
 
-            {reportRows.length === 0 ? (
+            {apartmentGroups.length ===
+            0 ? (
+
               <div
                 style={{
                   padding: "14px 0",
@@ -1147,18 +1193,32 @@ export default function AdminMonthlyReportPage() {
                 No active water meters
                 found for this report.
               </div>
-            ) : isMobile ? (
+
+            ) : (
+
               <div
                 style={{
                   display: "grid",
-                  gap: 10,
+                  gap: 14,
                 }}
               >
-                {reportRows.map(
-                  (row) => (
-                    <MeterDetailCard
-                      key={row.meter_id}
-                      row={row}
+
+                {apartmentGroups.map(
+                  (
+                    apartmentGroup
+                  ) => (
+
+                    <ApartmentMeterGroup
+                      key={
+                        apartmentGroup
+                          .apartment_id
+                      }
+                      apartmentGroup={
+                        apartmentGroup
+                      }
+                      isMobile={
+                        isMobile
+                      }
                       formatMeterType={
                         formatMeterType
                       }
@@ -1172,25 +1232,12 @@ export default function AdminMonthlyReportPage() {
                         getRowStatusStyle
                       }
                     />
+
                   )
                 )}
+
               </div>
-            ) : (
-              <MeterDetailsTable
-                rows={reportRows}
-                formatMeterType={
-                  formatMeterType
-                }
-                formatConsumption={
-                  formatConsumption
-                }
-                formatRowStatus={
-                  formatRowStatus
-                }
-                getRowStatusStyle={
-                  getRowStatusStyle
-                }
-              />
+
             )}
 
           </section>
@@ -1389,16 +1436,326 @@ function SummaryGroupCard({
   );
 }
 
-function MeterDetailsTable({
-  rows,
+function ApartmentMeterGroup({
+  apartmentGroup,
+  isMobile,
   formatMeterType,
   formatConsumption,
   formatRowStatus,
   getRowStatusStyle,
 }) {
 
+  const rows =
+    apartmentGroup.rows || [];
+
+  const sumConsumption =
+    (type) =>
+      rows
+        .filter(
+          (row) =>
+            String(
+              row.type || ""
+            )
+              .trim()
+              .toLowerCase() ===
+              type
+        )
+        .reduce(
+          (
+            total,
+            row
+          ) => {
+
+            const value =
+              Number(
+                row.consumption
+              );
+
+            if (
+              !Number.isFinite(
+                value
+              ) ||
+              value < 0
+            ) {
+              return total;
+            }
+
+            return total + value;
+          },
+          0
+        );
+
+  const coldConsumption =
+    sumConsumption("cold");
+
+  const hotConsumption =
+    sumConsumption("hot");
+
+  const totalConsumption =
+    coldConsumption +
+    hotConsumption;
+
+  const hasProblems =
+    rows.some(
+      (row) =>
+        row.status !==
+        "complete"
+    );
+
+  return (
+    <section
+      style={{
+        border:
+          hasProblems
+            ? "1px solid #fed7aa"
+            : "1px solid #e5e7eb",
+        borderRadius: 12,
+        background: "#ffffff",
+        overflow: "hidden",
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "flex-start",
+          gap: 14,
+          flexWrap: "wrap",
+          padding: 14,
+          background:
+            hasProblems
+              ? "#fff7ed"
+              : "#f9fafb",
+          borderBottom:
+            "1px solid #e5e7eb",
+        }}
+      >
+
+        <div>
+
+          <div
+            style={{
+              color: "#111827",
+              fontSize: 16,
+              fontWeight: 700,
+            }}
+          >
+            Apartment #
+            {
+              apartmentGroup
+                .apartment_number
+            }
+          </div>
+
+          <div
+            style={{
+              marginTop: 3,
+              color: "#6b7280",
+              fontSize: 12,
+            }}
+          >
+            {rows.length}
+            {" "}
+            {rows.length === 1
+              ? "active meter"
+              : "active meters"}
+          </div>
+
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              isMobile
+                ? "1fr"
+                : "repeat(3, minmax(120px, 1fr))",
+            gap: 8,
+            width:
+              isMobile
+                ? "100%"
+                : "auto",
+            minWidth:
+              isMobile
+                ? 0
+                : 420,
+          }}
+        >
+
+          <ApartmentTotal
+            label="Cold Water"
+            value={
+              formatConsumption(
+                coldConsumption
+              )
+            }
+          />
+
+          <ApartmentTotal
+            label="Hot Water"
+            value={
+              formatConsumption(
+                hotConsumption
+              )
+            }
+          />
+
+          <ApartmentTotal
+            label="Total Water"
+            value={
+              formatConsumption(
+                totalConsumption
+              )
+            }
+            emphasized
+          />
+
+        </div>
+
+      </div>
+
+      <div
+        style={{
+          padding: 12,
+        }}
+      >
+
+        {isMobile ? (
+
+          <div
+            style={{
+              display: "grid",
+              gap: 10,
+            }}
+          >
+
+            {rows.map(
+              (row) => (
+
+                <MeterDetailCard
+                  key={
+                    row.meter_id
+                  }
+                  row={row}
+                  formatMeterType={
+                    formatMeterType
+                  }
+                  formatConsumption={
+                    formatConsumption
+                  }
+                  formatRowStatus={
+                    formatRowStatus
+                  }
+                  getRowStatusStyle={
+                    getRowStatusStyle
+                  }
+                />
+
+              )
+            )}
+
+          </div>
+
+        ) : (
+
+          <MeterDetailsTable
+            rows={rows}
+            formatMeterType={
+              formatMeterType
+            }
+            formatConsumption={
+              formatConsumption
+            }
+            formatRowStatus={
+              formatRowStatus
+            }
+            getRowStatusStyle={
+              getRowStatusStyle
+            }
+            hideApartmentColumn
+          />
+
+        )}
+
+      </div>
+
+    </section>
+  );
+}
+
+function ApartmentTotal({
+  label,
+  value,
+  emphasized = false,
+}) {
+
+  return (
+    <div
+      style={{
+        padding: "8px 10px",
+        border:
+          emphasized
+            ? "1px solid #bfdbfe"
+            : "1px solid #e5e7eb",
+        borderRadius: 9,
+        background:
+          emphasized
+            ? "#eff6ff"
+            : "#ffffff",
+      }}
+    >
+
+      <div
+        style={{
+          marginBottom: 3,
+          color:
+            emphasized
+              ? "#1d4ed8"
+              : "#6b7280",
+          fontSize: 11,
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          color:
+            emphasized
+              ? "#1d4ed8"
+              : "#111827",
+          fontSize: 14,
+          fontWeight: 700,
+          textAlign: "right",
+          fontVariantNumeric:
+            "tabular-nums",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+function MeterDetailsTable({
+  rows,
+  formatMeterType,
+  formatConsumption,
+  formatRowStatus,
+  getRowStatusStyle,
+  hideApartmentColumn = false,
+}) {
+
   const headings = [
-    "Apartment",
+    ...(hideApartmentColumn
+      ? []
+      : ["Apartment"]),
     "Type / Location",
     "Serial Number",
     "Riser",
@@ -1421,7 +1778,10 @@ function MeterDetailsTable({
       <table
         style={{
           width: "100%",
-          minWidth: 1080,
+          minWidth:
+            hideApartmentColumn
+              ? 940
+              : 1080,
           borderCollapse:
             "collapse",
           fontSize: 12,
@@ -1441,8 +1801,13 @@ function MeterDetailsTable({
                     padding:
                       "9px 10px",
                     textAlign:
-                      index >= 4 &&
-                      index <= 6
+                      (
+                        hideApartmentColumn
+                          ? index >= 3 &&
+                            index <= 5
+                          : index >= 4 &&
+                            index <= 6
+                      )
                         ? "right"
                         : "left",
                     color: "#374151",
@@ -1483,18 +1848,22 @@ function MeterDetailsTable({
                         : "#f9fafb",
                   }}
                 >
-                  <td
-                    style={{
-                      padding:
-                        "8px 10px",
-                      borderBottom,
-                      fontWeight: 700,
-                      whiteSpace:
-                        "nowrap",
-                    }}
-                  >
-                    #{row.apartment_number}
-                  </td>
+                  {!hideApartmentColumn && (
+
+                    <td
+                      style={{
+                        padding:
+                          "8px 10px",
+                        borderBottom,
+                        fontWeight: 700,
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      #{row.apartment_number}
+                    </td>
+
+                  )}
 
                   <td
                     style={{
