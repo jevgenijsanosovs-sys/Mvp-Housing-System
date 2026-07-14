@@ -41,6 +41,25 @@ export default function useWater() {
   ] = useState([]);
 
   // =====================================
+  // ADMIN MONTHLY REPORT
+  // =====================================
+
+  const [
+    adminMonthlyReport,
+    setAdminMonthlyReport
+  ] = useState(null);
+
+  const [
+    adminMonthlyReportLoading,
+    setAdminMonthlyReportLoading
+  ] = useState(false);
+
+  const [
+    adminMonthlyReportError,
+    setAdminMonthlyReportError
+  ] = useState("");
+
+  // =====================================
   // LOAD RESIDENT WATER
   // =====================================
 
@@ -168,6 +187,182 @@ export default function useWater() {
     };
 
   // =====================================
+  // LOAD ADMIN MONTHLY REPORT
+  // =====================================
+
+  const loadAdminMonthlyReport =
+    async (
+      year,
+      month
+    ) => {
+
+      const reportYear =
+        Number(year);
+
+      const reportMonth =
+        Number(month);
+
+      if (
+        !Number.isInteger(
+          reportYear
+        ) ||
+        reportYear < 2000 ||
+        reportYear > 2100
+      ) {
+
+        setAdminMonthlyReportError(
+          "Invalid reporting year"
+        );
+
+        return null;
+      }
+
+      if (
+        !Number.isInteger(
+          reportMonth
+        ) ||
+        reportMonth < 1 ||
+        reportMonth > 12
+      ) {
+
+        setAdminMonthlyReportError(
+          "Invalid reporting month"
+        );
+
+        return null;
+      }
+
+      setAdminMonthlyReportLoading(
+        true
+      );
+
+      setAdminMonthlyReportError(
+        ""
+      );
+
+      try {
+
+        const d = await api(
+          `/api/admin/water-monthly-report?year=${reportYear}&month=${reportMonth}`
+        );
+
+        if (d?.error) {
+
+          const messages = {
+
+            forbidden:
+              "Administrator access required.",
+
+            invalid_year:
+              "Invalid reporting year.",
+
+            invalid_month:
+              "Invalid reporting month.",
+
+            reporting_period_not_found:
+              "Reporting period not found.",
+          };
+
+          const errorMessage =
+            messages[d.error] ||
+            d.error ||
+            "Monthly report load failed";
+
+          setAdminMonthlyReportError(
+            errorMessage
+          );
+
+          setAdminMonthlyReport(
+            null
+          );
+
+          return null;
+        }
+
+        const reportData = {
+
+          period:
+            d?.period || null,
+
+          summary:
+            d?.summary || {
+              apartments_total: 0,
+              apartments_submitted: 0,
+              apartments_missing: 0,
+
+              meters_total: 0,
+              meters_submitted: 0,
+              meters_missing: 0,
+
+              meters_missing_previous: 0,
+
+              meters_negative_consumption: 0,
+
+              cold_consumption: 0,
+              hot_consumption: 0,
+            },
+
+          missing_apartments:
+            Array.isArray(
+              d?.missing_apartments
+            )
+              ? d.missing_apartments
+              : [],
+
+          rows:
+            Array.isArray(
+              d?.rows
+            )
+              ? d.rows
+              : [],
+        };
+
+        setAdminMonthlyReport(
+          reportData
+        );
+
+        return reportData;
+
+      } catch (error) {
+
+        console.error(
+          "Load admin monthly report failed:",
+          error
+        );
+
+        setAdminMonthlyReportError(
+          "Monthly report load failed"
+        );
+
+        setAdminMonthlyReport(
+          null
+        );
+
+        return null;
+
+      } finally {
+
+        setAdminMonthlyReportLoading(
+          false
+        );
+      }
+    };
+
+  // =====================================
+  // CLEAR ADMIN MONTHLY REPORT
+  // =====================================
+
+  const clearAdminMonthlyReport =
+    () => {
+
+      setAdminMonthlyReport(null);
+
+      setAdminMonthlyReportError(
+        ""
+      );
+    };
+
+  // =====================================
   // PARSE READING
   // =====================================
 
@@ -266,7 +461,20 @@ export default function useWater() {
         return true;
       }
 
+      const messages = {
+
+        water_collection_period_closed:
+          "Water reading collection is currently closed.",
+
+        reading_already_submitted_for_period:
+          "A reading has already been submitted for this reporting period.",
+
+        meter_not_allowed:
+          "You cannot submit a reading for this meter.",
+      };
+
       alert(
+        messages[r?.error] ||
         r?.error ||
         "Submit failed"
       );
@@ -296,9 +504,7 @@ export default function useWater() {
     reason
   ) => {
 
-    if (
-      !readingId
-    ) {
+    if (!readingId) {
 
       alert(
         "Reading not selected"
@@ -388,6 +594,12 @@ export default function useWater() {
 
         reading_not_allowed:
           "You cannot correct this reading.",
+
+        reading_period_not_assigned:
+          "This reading is not assigned to a reporting period.",
+
+        water_collection_period_closed:
+          "The reporting period is closed. This reading can no longer be corrected.",
       };
 
       alert(
@@ -458,12 +670,19 @@ export default function useWater() {
     adminWater,
     adminWaterMeters,
 
+    adminMonthlyReport,
+    adminMonthlyReportLoading,
+    adminMonthlyReportError,
+
     loadMyWater,
     loadMeterHistory,
     clearMeterHistory,
 
     loadAdminWater,
     loadAdminWaterMeters,
+
+    loadAdminMonthlyReport,
+    clearAdminMonthlyReport,
 
     submitReading,
     correctReading,
