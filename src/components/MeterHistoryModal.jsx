@@ -26,6 +26,13 @@ export default function MeterHistoryModal({
   const [
     correctionReason,
     setCorrectionReason
+  ] = useState(
+    "Incorrect digit entered"
+  );
+
+  const [
+    otherReason,
+    setOtherReason
   ] = useState("");
 
   const [
@@ -50,7 +57,12 @@ export default function MeterHistoryModal({
 
     setCorrectionOpen(false);
     setCorrectedValue("");
-    setCorrectionReason("");
+
+    setCorrectionReason(
+      "Incorrect digit entered"
+    );
+
+    setOtherReason("");
     setIsCorrecting(false);
 
   }, [
@@ -177,7 +189,11 @@ export default function MeterHistoryModal({
         )
       );
 
-      setCorrectionReason("");
+      setCorrectionReason(
+        "Incorrect digit entered"
+      );
+
+      setOtherReason("");
       setCorrectionOpen(true);
     };
 
@@ -186,7 +202,12 @@ export default function MeterHistoryModal({
 
       setCorrectionOpen(false);
       setCorrectedValue("");
-      setCorrectionReason("");
+
+      setCorrectionReason(
+        "Incorrect digit entered"
+      );
+
+      setOtherReason("");
     };
 
   const handleCorrectedValueChange =
@@ -206,6 +227,37 @@ export default function MeterHistoryModal({
       }
     };
 
+  const handleReasonChange =
+    (event) => {
+
+      const selectedReason =
+        event.target.value;
+
+      setCorrectionReason(
+        selectedReason
+      );
+
+      if (
+        selectedReason !== "Other"
+      ) {
+        setOtherReason("");
+      }
+    };
+
+  const getCorrectionReason =
+    () => {
+
+      if (
+        correctionReason === "Other"
+      ) {
+        return String(
+          otherReason
+        ).trim();
+      }
+
+      return correctionReason;
+    };
+
   const handleSaveCorrection =
     async () => {
 
@@ -213,6 +265,18 @@ export default function MeterHistoryModal({
         !latestReading ||
         isCorrecting
       ) {
+        return;
+      }
+
+      const finalReason =
+        getCorrectionReason();
+
+      if (!finalReason) {
+
+        alert(
+          "Enter correction reason"
+        );
+
         return;
       }
 
@@ -224,14 +288,19 @@ export default function MeterHistoryModal({
           await onCorrect(
             latestReading.id,
             correctedValue,
-            correctionReason
+            finalReason
           );
 
         if (success) {
 
           setCorrectionOpen(false);
           setCorrectedValue("");
-          setCorrectionReason("");
+
+          setCorrectionReason(
+            "Incorrect digit entered"
+          );
+
+          setOtherReason("");
         }
 
       } finally {
@@ -261,6 +330,19 @@ export default function MeterHistoryModal({
     whiteSpace: "nowrap",
     fontVariantNumeric:
       "tabular-nums",
+  };
+
+  const correctionFieldStyle = {
+    width: "100%",
+    padding: "8px 10px",
+    border:
+      "1px solid #d1d5db",
+    borderRadius: 8,
+    background: "#ffffff",
+    color: "#111827",
+    fontSize: 13,
+    boxSizing:
+      "border-box",
   };
 
   return (
@@ -462,6 +544,7 @@ export default function MeterHistoryModal({
                     >
                       Reading
                       <br />
+
                       <span
                         style={{
                           fontWeight: 600,
@@ -480,6 +563,7 @@ export default function MeterHistoryModal({
                     >
                       Consumption
                       <br />
+
                       <span
                         style={{
                           fontWeight: 600,
@@ -549,6 +633,7 @@ export default function MeterHistoryModal({
                                   : "1px solid #e5e7eb",
                             }}
                           >
+
                             {formatDate(
                               reading.reading_date
                             )}
@@ -681,16 +766,8 @@ export default function MeterHistoryModal({
                   handleCorrectedValueChange
                 }
                 style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  border:
-                    "1px solid #d1d5db",
-                  borderRadius: 8,
-                  background: "#ffffff",
-                  color: "#111827",
+                  ...correctionFieldStyle,
                   fontSize: 14,
-                  boxSizing:
-                    "border-box",
                 }}
               />
 
@@ -707,29 +784,81 @@ export default function MeterHistoryModal({
                 Correction reason
               </label>
 
-              <input
-                type="text"
+              <select
                 value={correctionReason}
                 disabled={isCorrecting}
-                placeholder="For example: incorrect digit entered"
-                onChange={(event) =>
-                  setCorrectionReason(
-                    event.target.value
-                  )
+                onChange={
+                  handleReasonChange
                 }
                 style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  border:
-                    "1px solid #d1d5db",
-                  borderRadius: 8,
-                  background: "#ffffff",
-                  color: "#111827",
-                  fontSize: 13,
-                  boxSizing:
-                    "border-box",
+                  ...correctionFieldStyle,
+                  cursor:
+                    isCorrecting
+                      ? "not-allowed"
+                      : "pointer",
                 }}
-              />
+              >
+                <option
+                  value="Incorrect digit entered"
+                >
+                  Incorrect digit entered
+                </option>
+
+                <option
+                  value="Wrong meter selected"
+                >
+                  Wrong meter selected
+                </option>
+
+                <option
+                  value="Decimal point error"
+                >
+                  Decimal point error
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
+              </select>
+
+              {correctionReason ===
+                "Other" && (
+
+                <>
+
+                  <label
+                    style={{
+                      display: "block",
+                      marginTop: 9,
+                      marginBottom: 4,
+                      color: "#374151",
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Other reason
+                  </label>
+
+                  <input
+                    type="text"
+                    value={otherReason}
+                    disabled={
+                      isCorrecting
+                    }
+                    placeholder="Describe the reason"
+                    onChange={(event) =>
+                      setOtherReason(
+                        event.target.value
+                      )
+                    }
+                    style={
+                      correctionFieldStyle
+                    }
+                  />
+
+                </>
+
+              )}
 
               <div
                 style={{
