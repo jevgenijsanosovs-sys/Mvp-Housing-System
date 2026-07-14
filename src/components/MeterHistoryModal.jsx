@@ -1,11 +1,62 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Modal from "./Modal";
 
 export default function MeterHistoryModal({
   open,
   history,
   loading,
+  onCorrect,
   onClose,
 }) {
+
+  const [
+    correctionOpen,
+    setCorrectionOpen
+  ] = useState(false);
+
+  const [
+    correctedValue,
+    setCorrectedValue
+  ] = useState("");
+
+  const [
+    correctionReason,
+    setCorrectionReason
+  ] = useState("");
+
+  const [
+    isCorrecting,
+    setIsCorrecting
+  ] = useState(false);
+
+  const meter =
+    history?.meter || null;
+
+  const readings =
+    Array.isArray(
+      history?.readings
+    )
+      ? history.readings
+      : [];
+
+  const latestReading =
+    readings[0] || null;
+
+  useEffect(() => {
+
+    setCorrectionOpen(false);
+    setCorrectedValue("");
+    setCorrectionReason("");
+    setIsCorrecting(false);
+
+  }, [
+    open,
+    latestReading?.id,
+  ]);
 
   const formatStoredReading = (
     value
@@ -107,21 +158,87 @@ export default function MeterHistoryModal({
       return "Water Meter";
     };
 
-  const meter =
-    history?.meter || null;
-
-  const readings =
-    Array.isArray(
-      history?.readings
-    )
-      ? history.readings
-      : [];
-
   const title = meter
     ? `${formatMeterType(
         meter.type
       )} History`
     : "Meter History";
+
+  const handleOpenCorrection =
+    () => {
+
+      if (!latestReading) {
+        return;
+      }
+
+      setCorrectedValue(
+        formatStoredReading(
+          latestReading.reading_value
+        )
+      );
+
+      setCorrectionReason("");
+      setCorrectionOpen(true);
+    };
+
+  const handleCancelCorrection =
+    () => {
+
+      setCorrectionOpen(false);
+      setCorrectedValue("");
+      setCorrectionReason("");
+    };
+
+  const handleCorrectedValueChange =
+    (event) => {
+
+      const inputValue =
+        event.target.value;
+
+      if (
+        /^[0-9]*([,.][0-9]{0,3})?$/.test(
+          inputValue
+        )
+      ) {
+        setCorrectedValue(
+          inputValue
+        );
+      }
+    };
+
+  const handleSaveCorrection =
+    async () => {
+
+      if (
+        !latestReading ||
+        isCorrecting
+      ) {
+        return;
+      }
+
+      setIsCorrecting(true);
+
+      try {
+
+        const success =
+          await onCorrect(
+            latestReading.id,
+            correctedValue,
+            correctionReason
+          );
+
+        if (success) {
+
+          setCorrectionOpen(false);
+          setCorrectedValue("");
+          setCorrectionReason("");
+        }
+
+      } finally {
+
+        setIsCorrecting(false);
+      }
+    };
 
   const headerCellStyle = {
     padding: "7px 5px",
@@ -343,12 +460,8 @@ export default function MeterHistoryModal({
                         textAlign: "right",
                       }}
                     >
-                      <span>
-                        Reading
-                      </span>
-
+                      Reading
                       <br />
-
                       <span
                         style={{
                           fontWeight: 600,
@@ -365,12 +478,8 @@ export default function MeterHistoryModal({
                         textAlign: "right",
                       }}
                     >
-                      <span>
-                        Consumption
-                      </span>
-
+                      Consumption
                       <br />
-
                       <span
                         style={{
                           fontWeight: 600,
@@ -414,6 +523,9 @@ export default function MeterHistoryModal({
                         index ===
                         readings.length - 1;
 
+                      const isLatest =
+                        index === 0;
+
                       return (
 
                         <tr
@@ -440,6 +552,32 @@ export default function MeterHistoryModal({
                             {formatDate(
                               reading.reading_date
                             )}
+
+                            {isLatest && (
+
+                              <button
+                                type="button"
+                                onClick={
+                                  handleOpenCorrection
+                                }
+                                style={{
+                                  display: "block",
+                                  marginTop: 3,
+                                  padding: 0,
+                                  border: "none",
+                                  background:
+                                    "transparent",
+                                  color: "#2563eb",
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Correct
+                              </button>
+
+                            )}
+
                           </td>
 
                           <td
@@ -448,6 +586,7 @@ export default function MeterHistoryModal({
                               textAlign: "right",
                               fontWeight: 600,
                               color: "#111827",
+                              verticalAlign: "top",
                               borderBottom:
                                 isLastRow
                                   ? "none"
@@ -468,6 +607,7 @@ export default function MeterHistoryModal({
                                 isNegative
                                   ? "#b91c1c"
                                   : "#111827",
+                              verticalAlign: "top",
                               borderBottom:
                                 isLastRow
                                   ? "none"
@@ -490,6 +630,171 @@ export default function MeterHistoryModal({
                 </tbody>
 
               </table>
+
+            </div>
+
+          )}
+
+          {correctionOpen &&
+            latestReading && (
+
+            <div
+              style={{
+                marginTop: 12,
+                padding: 12,
+                border:
+                  "1px solid #bfdbfe",
+                borderRadius: 10,
+                background: "#eff6ff",
+              }}
+            >
+
+              <div
+                style={{
+                  marginBottom: 10,
+                  color: "#1e3a8a",
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Correct latest reading
+              </div>
+
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 4,
+                  color: "#374151",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                Corrected reading, m³
+              </label>
+
+              <input
+                type="text"
+                inputMode="decimal"
+                value={correctedValue}
+                disabled={isCorrecting}
+                onChange={
+                  handleCorrectedValueChange
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  border:
+                    "1px solid #d1d5db",
+                  borderRadius: 8,
+                  background: "#ffffff",
+                  color: "#111827",
+                  fontSize: 14,
+                  boxSizing:
+                    "border-box",
+                }}
+              />
+
+              <label
+                style={{
+                  display: "block",
+                  marginTop: 9,
+                  marginBottom: 4,
+                  color: "#374151",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                Correction reason
+              </label>
+
+              <input
+                type="text"
+                value={correctionReason}
+                disabled={isCorrecting}
+                placeholder="For example: incorrect digit entered"
+                onChange={(event) =>
+                  setCorrectionReason(
+                    event.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  border:
+                    "1px solid #d1d5db",
+                  borderRadius: 8,
+                  background: "#ffffff",
+                  color: "#111827",
+                  fontSize: 13,
+                  boxSizing:
+                    "border-box",
+                }}
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "flex-end",
+                  gap: 8,
+                  marginTop: 10,
+                }}
+              >
+
+                <button
+                  type="button"
+                  disabled={isCorrecting}
+                  onClick={
+                    handleCancelCorrection
+                  }
+                  style={{
+                    padding: "7px 11px",
+                    border:
+                      "1px solid #d1d5db",
+                    borderRadius: 8,
+                    background: "#ffffff",
+                    color: "#374151",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor:
+                      isCorrecting
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isCorrecting}
+                  onClick={
+                    handleSaveCorrection
+                  }
+                  style={{
+                    padding: "7px 11px",
+                    border: "none",
+                    borderRadius: 8,
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    opacity:
+                      isCorrecting
+                        ? 0.65
+                        : 1,
+                    cursor:
+                      isCorrecting
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
+                >
+                  {isCorrecting
+                    ? "Saving..."
+                    : "Save correction"}
+                </button>
+
+              </div>
 
             </div>
 
