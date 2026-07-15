@@ -1080,31 +1080,67 @@ export default function useWater() {
   const deactivateMeter =
     async (
       meterId,
-      reason = "replacement"
+      reason = "replacement",
+      options = {}
     ) => {
 
-      const r = await api(
-        "/api/admin/deactivate-water-meter",
-        {
-          method: "POST",
+      const {
+        suppressSuccessAlert = false,
+        suppressReload = false,
+      } = options;
 
-          body: JSON.stringify({
-            meter_id: meterId,
-            reason,
-          }),
+      try {
+
+        const r = await api(
+          "/api/admin/deactivate-water-meter",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              meter_id: meterId,
+              reason,
+            }),
+          }
+        );
+
+        if (r?.ok) {
+
+          if (!suppressReload) {
+
+            await loadAdminWaterMeters();
+          }
+
+          if (
+            !suppressSuccessAlert
+          ) {
+
+            alert(
+              "Water meter deactivated"
+            );
+          }
+
+          return true;
         }
-      );
-
-      if (r.ok) {
-
-        loadAdminWaterMeters();
-
-      } else {
 
         alert(
           r?.error ||
           "Deactivate failed"
         );
+
+        return false;
+
+      } catch (error) {
+
+        console.error(
+          "Deactivate water meter failed:",
+          error
+        );
+
+        alert(
+          "Deactivate failed"
+        );
+
+        return false;
       }
     };
 
