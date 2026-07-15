@@ -19,6 +19,9 @@ export default function WaterMetersPage() {
     adminWaterMeters,
     loadAdminWaterMeters,
     addWaterMeter,
+    loadApartmentRisers,
+    uploadCalibrationDocument,
+    openCalibrationDocument,
     deactivateMeter,
   } = useWater();
 
@@ -33,6 +36,16 @@ export default function WaterMetersPage() {
     apartments,
     setApartments
   ] = useState([]);
+
+  const [
+    apartmentRisers,
+    setApartmentRisers
+  ] = useState([]);
+
+  const [
+    risersLoading,
+    setRisersLoading
+  ] = useState(false);
 
   const [
     loading,
@@ -63,9 +76,14 @@ export default function WaterMetersPage() {
     setAddForm
   ] = useState({
     apartmentId: "",
+    apartmentRiserId: "",
     type: "cold",
     serialNumber: "",
     installedAt: "",
+    calibrationDate: "",
+    validityMonths: "12",
+    calibrationNotes: "",
+    calibrationDocument: null,
   });
 
   const [
@@ -308,11 +326,128 @@ export default function WaterMetersPage() {
 
     setAddForm({
       apartmentId: "",
+      apartmentRiserId: "",
       type: "cold",
       serialNumber: "",
       installedAt: "",
+      calibrationDate: "",
+      validityMonths: "12",
+      calibrationNotes: "",
+      calibrationDocument: null,
     });
+
+    setApartmentRisers([]);
   };
+
+  const handleApartmentChange =
+    async (
+      apartmentId
+    ) => {
+
+      setAddForm(
+        (current) => ({
+          ...current,
+          apartmentId,
+          apartmentRiserId: "",
+        })
+      );
+
+      setApartmentRisers([]);
+
+      if (!apartmentId) {
+        return;
+      }
+
+      setRisersLoading(true);
+
+      try {
+
+        const risers =
+          await loadApartmentRisers(
+            apartmentId
+          );
+
+        setApartmentRisers(
+          risers
+        );
+
+      } finally {
+
+        setRisersLoading(false);
+      }
+    };
+
+  const calculatedExpiresAt =
+    useMemo(
+      () => {
+
+        if (
+          !addForm.calibrationDate ||
+          !addForm.validityMonths
+        ) {
+          return "";
+        }
+
+        const [
+          year,
+          month,
+          day,
+        ] =
+          addForm.calibrationDate
+            .split("-")
+            .map(Number);
+
+        const months =
+          Number(
+            addForm.validityMonths
+          );
+
+        if (
+          !year ||
+          !month ||
+          !day ||
+          !Number.isInteger(
+            months
+          ) ||
+          months <= 0
+        ) {
+          return "";
+        }
+
+        const date =
+          new Date(
+            Date.UTC(
+              year,
+              month - 1 + months,
+              1
+            )
+          );
+
+        const lastDay =
+          new Date(
+            Date.UTC(
+              date.getUTCFullYear(),
+              date.getUTCMonth() + 1,
+              0
+            )
+          ).getUTCDate();
+
+        date.setUTCDate(
+          Math.min(
+            day,
+            lastDay
+          )
+        );
+
+        return date
+          .toISOString()
+          .slice(0, 10);
+      },
+      [
+        addForm.calibrationDate,
+        addForm.validityMonths,
+      ]
+    );
 
   const handleAddMeter =
     async () => {
@@ -325,10 +460,46 @@ export default function WaterMetersPage() {
 
       try {
 
-        const success =
+        if (
+          !addForm.apartmentRiserId
+        ) {
+
+          alert(
+            "Select a riser"
+          );
+
+          return;
+        }
+
+        if (
+          !addForm.calibrationDate
+        ) {
+
+          alert(
+            "Select calibration date"
+          );
+
+          return;
+        }
+
+        if (
+          !addForm.calibrationDocument
+        ) {
+
+          alert(
+            "Select calibration document"
+          );
+
+          return;
+        }
+
+        const meterResult =
           await addWaterMeter({
             apartmentId:
               addForm.apartmentId,
+
+            apartmentRiserId:
+              addForm.apartmentRiserId,
 
             type:
               addForm.type,
@@ -338,12 +509,66 @@ export default function WaterMetersPage() {
 
             installedAt:
               addForm.installedAt,
+
+            options: {
+              suppressSuccessAlert:
+                true,
+
+              suppressReload:
+                true,
+            },
           });
 
-        if (success) {
+        if (!meterResult?.ok) {
+          return;
+        }
+
+        const calibrationResult =
+          await uploadCalibrationDocument({
+            meterId:
+              meterResult.meter_id,
+
+            calibrationDate:
+              addForm.calibrationDate,
+
+            validityMonths:
+              Number(
+                addForm.validityMonths
+              ),
+
+            notes:
+              addForm.calibrationNotes,
+
+            certificate:
+              addForm.calibrationDocument,
+
+            options: {
+              suppressSuccessAlert:
+                true,
+
+              suppressReload:
+                true,
+            },
+          });
+
+        await loadAdminWaterMeters();
+
+        if (
+          calibrationResult?.ok
+        ) {
 
           setAddOpen(false);
           resetAddForm();
+
+          alert(
+            "Water meter and calibration document added"
+          );
+
+        } else {
+
+          alert(
+            "Water meter was created, but the calibration document was not saved."
+          );
         }
 
       } finally {
@@ -513,6 +738,67 @@ export default function WaterMetersPage() {
       " m³"
     );
   };
+
+  const getCalibrationStatus =
+    (
+      expiresAt
+    ) => {
+
+      if (!expiresAt) {
+        return {
+          label:
+            "No calibration",
+          tone:
+            "neutral",
+        };
+      }
+
+      const today =
+        new Date();
+
+      today.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+      const expiry =
+        new Date(
+          `${expiresAt}T00:00:00`
+        );
+
+      const daysRemaining =
+        Math.ceil(
+          (
+            expiry.getTime() -
+            today.getTime()
+          ) /
+          86400000
+        );
+
+      if (daysRemaining < 0) {
+        return {
+          label: "Expired",
+          tone: "danger",
+        };
+      }
+
+      if (
+        daysRemaining <= 30
+      ) {
+        return {
+          label:
+            `Expires in ${daysRemaining} d`,
+          tone: "warning",
+        };
+      }
+
+      return {
+        label: "Valid",
+        tone: "success",
+      };
+    };
 
   return (
     <div>
@@ -813,6 +1099,12 @@ export default function WaterMetersPage() {
                           formatReading={
                             formatReading
                           }
+                          getCalibrationStatus={
+                            getCalibrationStatus
+                          }
+                          onOpenDocument={
+                            openCalibrationDocument
+                          }
                         />
 
                       )
@@ -843,7 +1135,7 @@ export default function WaterMetersPage() {
           <table
             style={{
               width: "100%",
-              minWidth: 1050,
+              minWidth: 1450,
               borderCollapse:
                 "collapse",
               fontSize: 13,
@@ -865,6 +1157,10 @@ export default function WaterMetersPage() {
                   "Serial Number",
                   "Riser",
                   "Installed",
+                  "Calibration",
+                  "Expires",
+                  "Calibration Status",
+                  "Document",
                   "Last Reading",
                   "Last Date",
                   "Status",
@@ -957,10 +1253,53 @@ export default function WaterMetersPage() {
                       )}
                     </td>
 
+                    <td style={tableCell}>
+                      {formatDate(
+                        meter.calibration_date
+                      )}
+                    </td>
+
+                    <td style={tableCell}>
+                      {formatDate(
+                        meter.calibration_expires_at
+                      )}
+                    </td>
+
+                    <td style={tableCell}>
+                      <CalibrationBadge
+                        status={
+                          getCalibrationStatus(
+                            meter.calibration_expires_at
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td style={tableCell}>
+                      {meter.calibration_id ? (
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openCalibrationDocument(
+                              meter.calibration_id,
+                              meter.calibration_document_name
+                            )
+                          }
+                          style={documentButton}
+                        >
+                          View
+                        </button>
+
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+
                     <td
                       style={{
                         ...tableCellStrong,
-                        textAlign: "right",
+                        textAlign: "left",
                         fontVariantNumeric:
                           "tabular-nums",
                       }}
@@ -1027,13 +1366,8 @@ export default function WaterMetersPage() {
                 addSubmitting
               }
               onChange={(event) =>
-                setAddForm(
-                  (current) => ({
-                    ...current,
-
-                    apartmentId:
-                      event.target.value,
-                  })
+                handleApartmentChange(
+                  event.target.value
                 )
               }
               style={fieldStyle}
@@ -1063,6 +1397,90 @@ export default function WaterMetersPage() {
           </FormField>
 
           <FormField
+            label="Riser"
+          >
+            <select
+              value={
+                addForm.apartmentRiserId
+              }
+              disabled={
+                addSubmitting ||
+                risersLoading ||
+                !addForm.apartmentId
+              }
+              onChange={(event) =>
+                setAddForm(
+                  (current) => ({
+                    ...current,
+
+                    apartmentRiserId:
+                      event.target.value,
+                  })
+                )
+              }
+              style={fieldStyle}
+            >
+              <option value="">
+                {risersLoading
+                  ? "Loading risers..."
+                  : "Select riser"}
+              </option>
+
+              {apartmentRisers
+                .filter(
+                  (riser) => {
+
+                    const systemType =
+                      String(
+                        riser.system_type ||
+                        ""
+                      )
+                        .trim()
+                        .toLowerCase();
+
+                    if (
+                      addForm.type ===
+                      "cold"
+                    ) {
+                      return (
+                        systemType ===
+                          "cw" ||
+                        systemType ===
+                          "cold"
+                      );
+                    }
+
+                    return (
+                      systemType ===
+                        "hw" ||
+                      systemType ===
+                        "hot"
+                    );
+                  }
+                )
+                .map(
+                  (riser) => (
+
+                    <option
+                      key={
+                        riser.apartment_riser_id
+                      }
+                      value={
+                        riser.apartment_riser_id
+                      }
+                    >
+                      {riser.riser_code}
+                      {riser.local_label
+                        ? ` · ${riser.local_label}`
+                        : ""}
+                    </option>
+
+                  )
+                )}
+            </select>
+          </FormField>
+
+          <FormField
             label="Type"
           >
             <select
@@ -1079,6 +1497,9 @@ export default function WaterMetersPage() {
 
                     type:
                       event.target.value,
+
+                    apartmentRiserId:
+                      "",
                   })
                 )
               }
@@ -1142,6 +1563,174 @@ export default function WaterMetersPage() {
               style={fieldStyle}
             />
           </FormField>
+
+          <div
+            style={{
+              marginTop: 6,
+              paddingTop: 14,
+              borderTop:
+                "1px solid var(--border)",
+            }}
+          >
+
+            <div
+              style={{
+                marginBottom: 10,
+                color:
+                  "var(--text-h)",
+                fontSize: 14,
+                fontWeight: 700,
+              }}
+            >
+              Calibration
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+              }}
+            >
+
+              <FormField
+                label="Calibration Date"
+              >
+                <input
+                  type="date"
+                  value={
+                    addForm.calibrationDate
+                  }
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        calibrationDate:
+                          event.target.value,
+                      })
+                    )
+                  }
+                  style={fieldStyle}
+                />
+              </FormField>
+
+              <FormField
+                label="Validity Period, months"
+              >
+                <input
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={
+                    addForm.validityMonths
+                  }
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        validityMonths:
+                          event.target.value,
+                      })
+                    )
+                  }
+                  style={fieldStyle}
+                />
+              </FormField>
+
+              <FormField
+                label="Expires At"
+              >
+                <input
+                  type="text"
+                  value={
+                    calculatedExpiresAt ||
+                    "Calculated automatically"
+                  }
+                  readOnly
+                  style={{
+                    ...fieldStyle,
+                    background:
+                      "var(--surface-muted)",
+                  }}
+                />
+              </FormField>
+
+              <FormField
+                label="Calibration Document"
+              >
+                <input
+                  type="file"
+                  accept=".pdf,.edoc,.asice,application/pdf,application/octet-stream"
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        calibrationDocument:
+                          event.target.files?.[0] ||
+                          null,
+                      })
+                    )
+                  }
+                  style={fieldStyle}
+                />
+
+                <span
+                  style={{
+                    color:
+                      "var(--text)",
+                    fontSize: 11,
+                  }}
+                >
+                  Supported formats:
+                  PDF, eDoc, ASiC-E.
+                  Maximum size: 10 MB.
+                </span>
+              </FormField>
+
+              <FormField
+                label="Calibration Notes"
+              >
+                <textarea
+                  rows={3}
+                  value={
+                    addForm.calibrationNotes
+                  }
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        calibrationNotes:
+                          event.target.value,
+                      })
+                    )
+                  }
+                  style={{
+                    ...fieldStyle,
+                    resize: "vertical",
+                    fontFamily:
+                      "inherit",
+                  }}
+                />
+              </FormField>
+
+            </div>
+
+          </div>
 
           <div
             style={{
@@ -1481,6 +2070,8 @@ function MeterCard({
   formatType,
   formatDate,
   formatReading,
+  getCalibrationStatus,
+  onOpenDocument,
 }) {
 
   return (
@@ -1573,6 +2164,24 @@ function MeterCard({
             ),
           ],
           [
+            "Calibration",
+            formatDate(
+              meter.calibration_date
+            ),
+          ],
+          [
+            "Expires",
+            formatDate(
+              meter.calibration_expires_at
+            ),
+          ],
+          [
+            "Calibration Status",
+            getCalibrationStatus(
+              meter.calibration_expires_at
+            ).label,
+          ],
+          [
             "Last Reading",
             formatReading(
               meter.last_reading
@@ -1627,7 +2236,78 @@ function MeterCard({
 
       </div>
 
+      {meter.calibration_id && (
+
+        <button
+          type="button"
+          onClick={() =>
+            onOpenDocument(
+              meter.calibration_id,
+              meter.calibration_document_name
+            )
+          }
+          style={{
+            ...documentButton,
+            width: "100%",
+            marginTop: 10,
+          }}
+        >
+          View Calibration Document
+        </button>
+
+      )}
+
     </div>
+  );
+}
+
+function CalibrationBadge({
+  status,
+}) {
+
+  const styles = {
+
+    success: {
+      background: "#dcfce7",
+      color: "#166534",
+    },
+
+    warning: {
+      background: "#fef3c7",
+      color: "#92400e",
+    },
+
+    danger: {
+      background: "#fee2e2",
+      color: "#991b1b",
+    },
+
+    neutral: {
+      background:
+        "var(--surface-muted)",
+      color:
+        "var(--text)",
+    },
+  };
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "5px 8px",
+        borderRadius: 999,
+        fontSize: 10,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+        ...styles[
+          status?.tone ||
+          "neutral"
+        ],
+      }}
+    >
+      {status?.label ||
+        "No calibration"}
+    </span>
   );
 }
 
@@ -1677,6 +2357,19 @@ const dangerButton = {
   background: "#dc2626",
   color: "#ffffff",
   fontSize: 13,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const documentButton = {
+  padding: "7px 10px",
+  border:
+    "1px solid #2563eb",
+  borderRadius: 8,
+  background:
+    "var(--surface)",
+  color: "#2563eb",
+  fontSize: 11,
   fontWeight: 700,
   cursor: "pointer",
 };
