@@ -1438,23 +1438,39 @@ export default function WaterMetersPage() {
                         .trim()
                         .toLowerCase();
 
-                    if (
-                      addForm.type ===
-                      "cold"
-                    ) {
-                      return (
-                        systemType ===
-                          "cw" ||
-                        systemType ===
-                          "cold"
+                    const riserCode =
+                      String(
+                        riser.riser_code ||
+                        ""
+                      )
+                        .trim()
+                        .toLowerCase();
+
+                    const combinedType =
+                      `${systemType} ${riserCode}`;
+
+                    const isCold =
+                      /(^|[^a-z])(cw|cold|cold_water|cold-water)([^a-z]|$)/.test(
+                        combinedType
                       );
+
+                    const isHot =
+                      /(^|[^a-z])(hw|hot|hot_water|hot-water)([^a-z]|$)/.test(
+                        combinedType
+                      );
+
+                    if (
+                      !isCold &&
+                      !isHot
+                    ) {
+                      return true;
                     }
 
                     return (
-                      systemType ===
-                        "hw" ||
-                      systemType ===
-                        "hot"
+                      addForm.type ===
+                        "cold"
+                        ? isCold
+                        : isHot
                     );
                   }
                 )
