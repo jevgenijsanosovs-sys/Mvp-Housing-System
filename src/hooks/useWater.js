@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { api } from "../services/api";
+import {
+  api,
+  apiFile,
+} from "../services/api";
 
 export default function useWater() {
 
@@ -956,6 +959,7 @@ export default function useWater() {
       type,
       serialNumber,
       installedAt,
+      options = {},
     }) => {
 
       const normalizedApartmentId =
@@ -970,6 +974,11 @@ export default function useWater() {
         String(
           serialNumber || ""
         ).trim();
+
+      const {
+        suppressSuccessAlert = false,
+        suppressReload = false,
+      } = options;
 
       if (
         !Number.isInteger(
@@ -1042,13 +1051,21 @@ export default function useWater() {
 
         if (result?.ok) {
 
-          await loadAdminWaterMeters();
+          if (!suppressReload) {
 
-          alert(
-            "Water meter added"
-          );
+            await loadAdminWaterMeters();
+          }
 
-          return true;
+          if (
+            !suppressSuccessAlert
+          ) {
+
+            alert(
+              "Water meter added"
+            );
+          }
+
+          return result;
         }
 
         alert(
@@ -1067,6 +1084,334 @@ export default function useWater() {
 
         alert(
           "Add water meter failed"
+        );
+
+        return false;
+      }
+    };
+
+  // =====================================
+  // LOAD APARTMENT RISERS
+  // =====================================
+
+  const loadApartmentRisers =
+    async (
+      apartmentId
+    ) => {
+
+      const normalizedApartmentId =
+        Number(
+          apartmentId
+        );
+
+      if (
+        !Number.isInteger(
+          normalizedApartmentId
+        ) ||
+        normalizedApartmentId <= 0
+      ) {
+        return [];
+      }
+
+      try {
+
+        const result = await api(
+          `/api/admin/apartment-risers?apartment_id=${normalizedApartmentId}`
+        );
+
+        if (result?.error) {
+
+          alert(
+            result.error ||
+            "Risers load failed"
+          );
+
+          return [];
+        }
+
+        return Array.isArray(
+          result
+        )
+          ? result
+          : [];
+
+      } catch (error) {
+
+        console.error(
+          "Load apartment risers failed:",
+          error
+        );
+
+        alert(
+          "Risers load failed"
+        );
+
+        return [];
+      }
+    };
+
+  // =====================================
+  // UPLOAD CALIBRATION DOCUMENT
+  // =====================================
+
+  const uploadCalibrationDocument =
+    async ({
+      meterId,
+      calibrationDate,
+      validityMonths,
+      notes = "",
+      certificate,
+      options = {},
+    }) => {
+
+      const {
+        suppressSuccessAlert = false,
+        suppressReload = false,
+      } = options;
+
+      if (!meterId) {
+
+        alert(
+          "Water meter not selected"
+        );
+
+        return false;
+      }
+
+      if (!calibrationDate) {
+
+        alert(
+          "Select calibration date"
+        );
+
+        return false;
+      }
+
+      if (!certificate) {
+
+        alert(
+          "Select calibration document"
+        );
+
+        return false;
+      }
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "meter_id",
+        String(meterId)
+      );
+
+      formData.append(
+        "calibration_date",
+        calibrationDate
+      );
+
+      formData.append(
+        "validity_months",
+        String(
+          validityMonths || 12
+        )
+      );
+
+      formData.append(
+        "notes",
+        String(
+          notes || ""
+        )
+      );
+
+      formData.append(
+        "certificate",
+        certificate
+      );
+
+      try {
+
+        const result = await api(
+          "/api/admin/water-meter-certificate",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (result?.ok) {
+
+          if (!suppressReload) {
+
+            await loadAdminWaterMeters();
+          }
+
+          if (
+            !suppressSuccessAlert
+          ) {
+
+            alert(
+              "Calibration document uploaded"
+            );
+          }
+
+          return result;
+        }
+
+        const messages = {
+
+          invalid_calibration_date:
+            "Invalid calibration date.",
+
+          invalid_validity_months:
+            "Invalid calibration validity period.",
+
+          certificate_file_required:
+            "Select calibration document.",
+
+          certificate_file_too_large:
+            "Calibration document is too large. Maximum size is 10 MB.",
+
+          invalid_certificate_file_type:
+            "Supported formats: PDF, eDoc and ASiC-E.",
+
+          water_meter_not_found:
+            "Water meter not found.",
+
+          water_certificate_storage_unavailable:
+            "Calibration document storage is unavailable.",
+        };
+
+        alert(
+          messages[
+            result?.error
+          ] ||
+          result?.error ||
+          "Calibration document upload failed"
+        );
+
+        return false;
+
+      } catch (error) {
+
+        console.error(
+          "Upload calibration document failed:",
+          error
+        );
+
+        alert(
+          "Calibration document upload failed"
+        );
+
+        return false;
+      }
+    };
+
+  // =====================================
+  // OPEN CALIBRATION DOCUMENT
+  // =====================================
+
+  const openCalibrationDocument =
+    async (
+      calibrationId,
+      fileName = "calibration-document"
+    ) => {
+
+      if (!calibrationId) {
+        return false;
+      }
+
+      try {
+
+        const response =
+          await apiFile(
+            `/api/admin/water-meter-certificate?id=${calibrationId}`
+          );
+
+        if (!response.ok) {
+
+          const errorData =
+            await response
+              .json()
+              .catch(() => ({}));
+
+          alert(
+            errorData?.error ||
+            "Calibration document load failed"
+          );
+
+          return false;
+        }
+
+        const blob =
+          await response.blob();
+
+        const objectUrl =
+          URL.createObjectURL(
+            blob
+          );
+
+        const disposition =
+          response.headers.get(
+            "Content-Disposition"
+          ) || "";
+
+        const shouldDownload =
+          disposition
+            .toLowerCase()
+            .includes(
+              "attachment"
+            );
+
+        if (shouldDownload) {
+
+          const link =
+            document.createElement(
+              "a"
+            );
+
+          link.href =
+            objectUrl;
+
+          link.download =
+            fileName;
+
+          document.body.appendChild(
+            link
+          );
+
+          link.click();
+          link.remove();
+
+        } else {
+
+          window.open(
+            objectUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }
+
+        window.setTimeout(
+          () => {
+
+            URL.revokeObjectURL(
+              objectUrl
+            );
+          },
+          60000
+        );
+
+        return true;
+
+      } catch (error) {
+
+        console.error(
+          "Open calibration document failed:",
+          error
+        );
+
+        alert(
+          "Calibration document load failed"
         );
 
         return false;
@@ -1180,6 +1525,11 @@ export default function useWater() {
     correctReading,
 
     addWaterMeter,
+
+    loadApartmentRisers,
+    uploadCalibrationDocument,
+    openCalibrationDocument,
+
     deactivateMeter,
   };
 }
