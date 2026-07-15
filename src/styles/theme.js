@@ -1,7 +1,8 @@
 const layout = {
   display: "flex",
   minHeight: "100vh",
-  background: "#f3f4f6",
+  background: "var(--bg)",
+  color: "var(--text)",
 };
 
 const sidebar = {
@@ -9,39 +10,24 @@ const sidebar = {
   background: "#111827",
   color: "white",
   padding: 20,
-
   display: "flex",
   flexDirection: "column",
-
   height: "100vh",
   position: "sticky",
   top: 0,
-
   overflow: "hidden",
   boxSizing: "border-box",
 };
 
-const sidebarTitle = {
-  color: "white",
-};
-
-const sidebarUser = {
-  color: "#d1d5db",
-  marginBottom: 20,
-};
-
-const divider = {
-  borderColor: "#374151",
-  width: "100%",
-};
-
-const modeBlock = {
-  marginBottom: 20,
-};
+const sidebarTitle = { color: "white" };
+const sidebarUser = { color: "#d1d5db", marginBottom: 20 };
+const divider = { borderColor: "#374151", width: "100%" };
+const modeBlock = { marginBottom: 20 };
 
 const content = {
   flex: 1,
   padding: 30,
+  color: "var(--text)",
 };
 
 const loginPage = {
@@ -49,18 +35,19 @@ const loginPage = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "#f3f4f6",
+  background: "var(--bg)",
   padding: 20,
 };
 
 const loginCard = {
-  background: "white",
+  background: "var(--surface)",
+  color: "var(--text)",
   padding: 30,
   borderRadius: 20,
   width: "100%",
   maxWidth: 420,
-  boxShadow:
-    "0 10px 30px rgba(0,0,0,0.1)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
 };
 
 const inputStyle = {
@@ -68,7 +55,9 @@ const inputStyle = {
   padding: 12,
   marginTop: 10,
   borderRadius: 10,
-  border: "1px solid #ccc",
+  border: "1px solid var(--input-border)",
+  background: "var(--input-bg)",
+  color: "var(--input-text)",
   boxSizing: "border-box",
 };
 
@@ -97,44 +86,43 @@ const activeButton = {
 };
 
 const cardStyle = {
-  background: "white",
+  background: "var(--surface)",
+  color: "var(--text)",
   padding: 20,
   borderRadius: 20,
   marginBottom: 20,
+  border: "1px solid var(--border)",
 };
 
 const labelStyle = {
   textAlign: "right",
   paddingRight: 20,
   fontWeight: "bold",
+  color: "var(--text-h)",
 };
 
 const tableStyle = {
   width: "100%",
-  background: "white",
+  background: "var(--surface)",
+  color: "var(--text)",
   borderCollapse: "collapse",
 };
 
 const dashboardGrid = {
   display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(220px,1fr))",
+  gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
   gap: 20,
 };
 
 const dashboardCard = {
-  background: "white",
+  background: "var(--surface)",
+  color: "var(--text)",
   borderRadius: 20,
   padding: 28,
-  border: "1px solid #e5e7eb",
-
-  boxShadow:
-    "0 10px 25px rgba(0,0,0,0.05)",
-
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
   transition: "all 0.2s ease",
-
   minHeight: 130,
-
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -151,11 +139,14 @@ const modalStyle = {
 };
 
 const modalContentStyle = {
-  background: "white",
+  background: "var(--surface)",
+  color: "var(--text)",
   padding: 30,
   borderRadius: 20,
   width: "100%",
   maxWidth: 500,
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
 };
 
 export {
@@ -181,315 +172,169 @@ export {
   modalContentStyle,
 };
 
-// ======================================
-// PAGE HEADER
-// ======================================
-
 export const pageHeader = {
-
   position: "sticky",
-
   top: 0,
-
   zIndex: 100,
-
-  background: "inherit",
-
+  background: "var(--bg)",
   paddingBottom: 16,
-
   marginBottom: 20,
-
 };
 
 export const pageHeaderRow = {
-
   display: "flex",
-
   justifyContent: "space-between",
-
   alignItems: "center",
-
   gap: 16,
-
   flexWrap: "wrap",
-
 };
 
 export const pageHeaderButtons = {
-
   display: "flex",
-
   gap: 10,
-
   flexWrap: "wrap",
-
 };
 
-// ======================================
-// ACTION BUTTON
-// ======================================
-
 export const actionButton = {
-
   height: 42,
-
   padding: "0 18px",
-
   display: "flex",
-
   alignItems: "center",
-
   justifyContent: "center",
-
   gap: 8,
-
   border: "none",
-
   borderRadius: 10,
-
   cursor: "pointer",
-
   background: "#2563eb",
-
   color: "#fff",
-
   fontWeight: 600,
-
   fontSize: 14,
-
   transition: "0.15s",
-
 };
 
 export const dangerButton = {
-
   ...actionButton,
-
   background: "#dc2626",
-
 };
 
-// ========================================
-// MODERN TABLE
-// ========================================
-
 export const modernTable = {
-
   width: "100%",
-
   borderCollapse: "separate",
-
   borderSpacing: 0,
-
-  background: "#ffffff",
-
+  background: "var(--surface)",
+  color: "var(--text)",
   borderRadius: 16,
-
   overflow: "hidden",
-
-  boxShadow:
-    "0 6px 24px rgba(15,23,42,.08)",
-
+  boxShadow: "var(--shadow)",
 };
 
 export const modernTh = {
-
-  background: "#f8fafc",
-
+  background: "var(--surface-soft)",
   padding: "18px 20px",
-
   textAlign: "left",
-
-  color: "#475569",
-
+  color: "var(--text-h)",
   fontWeight: 700,
-
   fontSize: 14,
-
   letterSpacing: ".03em",
-
-  borderBottom:
-    "1px solid #e5e7eb",
-
+  borderBottom: "1px solid var(--border)",
 };
 
 export const modernTd = {
-
   padding: "18px 20px",
-
   fontSize: 15,
-
-  color: "#334155",
-
-  borderBottom:
-    "1px solid #f1f5f9",
-
+  color: "var(--text)",
+  borderBottom: "1px solid var(--border-soft)",
 };
 
 export const statusActive = {
-
   display: "inline-block",
-
   padding: "6px 14px",
-
   borderRadius: 999,
-
   background: "#dcfce7",
-
   color: "#15803d",
-
   fontWeight: 600,
-
   fontSize: 14,
-
 };
 
 export const statusInactive = {
-
   display: "inline-block",
-
   padding: "6px 14px",
-
   borderRadius: 999,
-
-  background: "#f3f4f6",
-
-  color: "#6b7280",
-
+  background: "var(--surface-muted)",
+  color: "var(--text)",
   fontWeight: 600,
-
   fontSize: 14,
-
 };
 
 export const tableContainer = {
-
-  background: "#fff",
-
+  background: "var(--surface)",
   borderRadius: 18,
-
   overflowX: "auto",
-
   overflowY: "hidden",
-
-  border: "1px solid #e5e7eb",
-
-  boxShadow:
-    "0 8px 30px rgba(15,23,42,.06)",
-
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
   marginTop: 20,
-
 };
 
-// ======================================
-// WATER CARDS
-// ======================================
-
 export const apartmentCard = {
-
-  background: "#ffffff",
-
-  border: "1px solid #e5e7eb",
-
+  background: "var(--surface)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
   borderRadius: 18,
-
   padding: 20,
-
   marginBottom: 24,
-
-  boxShadow:
-    "0 6px 20px rgba(15,23,42,.06)",
-
+  boxShadow: "var(--shadow)",
 };
 
 export const apartmentTitle = {
-
   border: "none",
-
   background: "none",
-
   padding: 0,
-
   cursor: "pointer",
-
   fontSize: 18,
-
   fontWeight: 600,
-
-  color: "#2563eb",
-
+  color: "var(--accent)",
 };
 
 export const riserBlock = {
-
   marginBottom: 18,
-
-  borderTop: "1px solid #f1f5f9",
-
+  borderTop: "1px solid var(--border-soft)",
   paddingTop: 14,
-
 };
 
 export const riserTitle = {
-
   fontWeight: 700,
-
-  color: "#334155",
-
+  color: "var(--text-h)",
   marginBottom: 10,
-
 };
 
 export const meterCard = {
-
   display: "flex",
-
   justifyContent: "space-between",
-
   alignItems: "center",
-
   padding: "10px 12px",
-
-  border: "1px solid #eef2f7",
-
+  border: "1px solid var(--border)",
   borderRadius: 12,
-
-  background: "#fafafa",
-
+  background: "var(--surface-soft)",
+  color: "var(--text)",
   cursor: "pointer",
-
   transition: "0.15s",
-
 };
 
 export const meterLeft = {
-
   display: "flex",
-
   alignItems: "center",
-
   gap: 10,
-
   flex: 1,
-
 };
 
 export const meterHistoryButton = {
-
   padding: "5px 10px",
-
   borderRadius: 6,
-
-  border: "1px solid #2563eb",
-
-  background: "#ffffff",
-
-  color: "#2563eb",
-
+  border: "1px solid var(--accent)",
+  background: "var(--surface)",
+  color: "var(--accent)",
   fontSize: 11,
-
   cursor: "pointer",
-
   fontWeight: 600,
-
 };
