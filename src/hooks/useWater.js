@@ -946,6 +946,134 @@ export default function useWater() {
   };
 
   // =====================================
+  // ADD WATER METER
+  // =====================================
+
+  const addWaterMeter =
+    async ({
+      apartmentId,
+      apartmentRiserId = null,
+      type,
+      serialNumber,
+      installedAt,
+    }) => {
+
+      const normalizedApartmentId =
+        Number(apartmentId);
+
+      const normalizedType =
+        String(type || "")
+          .trim()
+          .toLowerCase();
+
+      const normalizedSerialNumber =
+        String(
+          serialNumber || ""
+        ).trim();
+
+      if (
+        !Number.isInteger(
+          normalizedApartmentId
+        ) ||
+        normalizedApartmentId <= 0
+      ) {
+
+        alert(
+          "Select an apartment"
+        );
+
+        return false;
+      }
+
+      if (
+        ![
+          "cold",
+          "hot",
+        ].includes(
+          normalizedType
+        )
+      ) {
+
+        alert(
+          "Select a water meter type"
+        );
+
+        return false;
+      }
+
+      if (!normalizedSerialNumber) {
+
+        alert(
+          "Enter serial number"
+        );
+
+        return false;
+      }
+
+      try {
+
+        const result = await api(
+          "/api/admin/water-meters",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              apartment_id:
+                normalizedApartmentId,
+
+              apartment_riser_id:
+                apartmentRiserId
+                  ? Number(
+                      apartmentRiserId
+                    )
+                  : null,
+
+              type:
+                normalizedType,
+
+              serial_number:
+                normalizedSerialNumber,
+
+              installed_at:
+                installedAt || null,
+            }),
+          }
+        );
+
+        if (result?.ok) {
+
+          await loadAdminWaterMeters();
+
+          alert(
+            "Water meter added"
+          );
+
+          return true;
+        }
+
+        alert(
+          result?.error ||
+          "Add water meter failed"
+        );
+
+        return false;
+
+      } catch (error) {
+
+        console.error(
+          "Add water meter failed:",
+          error
+        );
+
+        alert(
+          "Add water meter failed"
+        );
+
+        return false;
+      }
+    };
+
+  // =====================================
   // DEACTIVATE WATER METER
   // =====================================
 
@@ -1015,6 +1143,7 @@ export default function useWater() {
     submitAdminReading,
     correctReading,
 
+    addWaterMeter,
     deactivateMeter,
   };
 }
