@@ -1,13 +1,26 @@
 const API =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
+function getAuthHeaders() {
+
+  const token =
+    localStorage.getItem("token");
+
+  return token
+    ? {
+        Authorization:
+          `Bearer ${token}`,
+      }
+    : {};
+}
+
 export async function api(
   url,
   options = {}
 ) {
 
-  const token =
-    localStorage.getItem("token");
+  const isFormData =
+    options.body instanceof FormData;
 
   const res = await fetch(
     API + url,
@@ -15,13 +28,16 @@ export async function api(
       ...options,
 
       headers: {
-        "Content-Type":
-          "application/json",
+        ...(
+          isFormData
+            ? {}
+            : {
+                "Content-Type":
+                  "application/json",
+              }
+        ),
 
-        Authorization:
-          token
-            ? "Bearer " + token
-            : "",
+        ...getAuthHeaders(),
 
         ...(options.headers || {}),
       },
@@ -29,4 +45,23 @@ export async function api(
   );
 
   return await res.json();
+}
+
+export async function apiFile(
+  url,
+  options = {}
+) {
+
+  return await fetch(
+    API + url,
+    {
+      ...options,
+
+      headers: {
+        ...getAuthHeaders(),
+
+        ...(options.headers || {}),
+      },
+    }
+  );
 }
