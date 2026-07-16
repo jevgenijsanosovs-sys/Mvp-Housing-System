@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import * as XLSX
+  from "xlsx";
+
 import useWater
   from "../hooks/useWater";
 
@@ -257,6 +260,157 @@ export default function WaterReadingsPage() {
       [normalizedRows]
     );
 
+  const exportToXlsx =
+    () => {
+
+      if (
+        filteredRows.length === 0
+      ) {
+
+        alert(
+          "No reading records to export"
+        );
+
+        return;
+      }
+
+      const exportRows =
+        filteredRows.map(
+          (row) => ({
+
+            "Date / Time":
+              formatDateTime(
+                row.submitted_at ||
+                row.created_at
+              ),
+
+            "Reading Date":
+              formatDate(
+                row.reading_date
+              ),
+
+            "Reporting Period":
+              row.period_label,
+
+            "Apartment":
+              row.apartment_number,
+
+            "Water Type":
+              row.type === "hot"
+                ? "Hot Water"
+                : "Cold Water",
+
+            "Serial Number":
+              row.serial_number ||
+              "",
+
+            "Riser":
+              row.riser_code ||
+              "",
+
+            "Location":
+              row.local_label ||
+              "",
+
+            "Reading, m³":
+              formatReadingNumber(
+                row.reading_value
+              ),
+
+            "Source":
+              row.source_label,
+
+            "Source Note":
+              row.source_note ||
+              "",
+
+            "Submitted By":
+              row.submitted_by_name,
+
+            "Submitted By Email":
+              row
+                .submitted_by_email ||
+              "",
+
+            "Status":
+              row.status_label,
+
+            "Correction Reason":
+              row.correction_reason ||
+              "",
+
+            "Corrected By":
+              row.corrected_by_name ||
+              "",
+
+            "Corrected At":
+              row.corrected_at
+                ? formatDateTime(
+                    row.corrected_at
+                  )
+                : "",
+
+            "Replacement Reading, m³":
+              row
+                .replacement_reading_value !==
+                null &&
+              row
+                .replacement_reading_value !==
+                undefined
+                ? formatReadingNumber(
+                    row
+                      .replacement_reading_value
+                  )
+                : "",
+          })
+        );
+
+      const worksheet =
+        XLSX.utils.json_to_sheet(
+          exportRows
+        );
+
+      worksheet["!cols"] = [
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 11 },
+        { wch: 14 },
+        { wch: 18 },
+        { wch: 20 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 18 },
+        { wch: 28 },
+        { wch: 22 },
+        { wch: 28 },
+        { wch: 14 },
+        { wch: 30 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 22 },
+      ];
+
+      const workbook =
+        XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Reading History"
+      );
+
+      const periodPart =
+        filter.period === "all"
+          ? "all-periods"
+          : filter.period;
+
+      XLSX.writeFile(
+        workbook,
+        `water-reading-history-${periodPart}.xlsx`
+      );
+    };
+
   return (
     <div>
 
@@ -298,15 +452,35 @@ export default function WaterReadingsPage() {
 
         </div>
 
-        <button
-          type="button"
-          onClick={
-            loadHistory
-          }
-          style={secondaryButton}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
         >
-          Refresh
-        </button>
+
+          <button
+            type="button"
+            onClick={
+              loadHistory
+            }
+            style={secondaryButton}
+          >
+            Refresh
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              exportToXlsx
+            }
+            style={primaryButton}
+          >
+            Export XLSX
+          </button>
+
+        </div>
 
       </div>
 
@@ -1176,6 +1350,32 @@ function formatStatus(
   );
 }
 
+function formatReadingNumber(
+  value
+) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "";
+  }
+
+  const numeric =
+    Number(value);
+
+  if (
+    !Number.isFinite(
+      numeric
+    )
+  ) {
+    return "";
+  }
+
+  return numeric / 1000;
+}
+
 function formatReading(
   value
 ) {
@@ -1262,6 +1462,17 @@ const fieldStyle = {
   color:
     "var(--input-text)",
   fontSize: 13,
+};
+
+const primaryButton = {
+  padding: "10px 14px",
+  border: "none",
+  borderRadius: 9,
+  background: "#2563eb",
+  color: "#ffffff",
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: "pointer",
 };
 
 const secondaryButton = {
