@@ -4,9 +4,6 @@ import {
   useState,
 } from "react";
 
-import * as XLSX
-  from "xlsx";
-
 import useWater
   from "../hooks/useWater";
 
@@ -262,6 +259,18 @@ export default function WaterReadingsPage() {
 
   const exportToXlsx =
     () => {
+
+      const XLSX =
+        window.XLSX;
+
+      if (!XLSX) {
+
+        alert(
+          "XLSX library is not loaded"
+        );
+
+        return;
+      }
 
       if (
         filteredRows.length === 0
