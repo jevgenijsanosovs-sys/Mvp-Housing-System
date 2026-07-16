@@ -219,7 +219,7 @@ export default function Sidebar({
             />
 
             <MenuButton
-              title="Water Readings Log"
+              title="Water Reading History"
               onClick={() =>
                 go("/water-readings")
               }
