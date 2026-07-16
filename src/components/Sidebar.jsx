@@ -1,4 +1,5 @@
 import {
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
@@ -24,6 +25,109 @@ import {
   modeBlock,
 } from "../styles/theme";
 
+const LAST_PATH_KEYS = {
+  resident:
+    "mvx:last-path:resident",
+
+  admin:
+    "mvx:last-path:admin",
+};
+
+const DEFAULT_PATHS = {
+  resident: "/",
+  admin: "/",
+};
+
+const RESIDENT_PATHS = new Set([
+  "/",
+  "/water",
+]);
+
+const ADMIN_PATHS = new Set([
+  "/",
+  "/users",
+  "/apartments",
+  "/water-meters",
+  "/water-readings",
+  "/monthly-report",
+]);
+
+function isPathAllowedForMode(
+  path,
+  mode
+) {
+
+  if (mode === "resident") {
+
+    return RESIDENT_PATHS.has(
+      path
+    );
+  }
+
+  if (mode === "admin") {
+
+    return ADMIN_PATHS.has(
+      path
+    );
+  }
+
+  return false;
+}
+
+function saveLastPath(
+  mode,
+  path
+) {
+
+  const key =
+    LAST_PATH_KEYS[mode];
+
+  if (
+    !key ||
+    !isPathAllowedForMode(
+      path,
+      mode
+    )
+  ) {
+    return;
+  }
+
+  sessionStorage.setItem(
+    key,
+    path
+  );
+}
+
+function getLastPath(
+  mode
+) {
+
+  const key =
+    LAST_PATH_KEYS[mode];
+
+  const storedPath =
+    key
+      ? sessionStorage.getItem(
+          key
+        )
+      : null;
+
+  if (
+    storedPath &&
+    isPathAllowedForMode(
+      storedPath,
+      mode
+    )
+  ) {
+    return storedPath;
+  }
+
+  return (
+    DEFAULT_PATHS[mode] ||
+    "/"
+  );
+}
+
 export default function Sidebar({
   isMobile = false,
   sidebarOpen = false,
@@ -43,6 +147,9 @@ export default function Sidebar({
   const navigate =
     useNavigate();
 
+  const location =
+    useLocation();
+
   if (!me) {
     return null;
   }
@@ -57,14 +164,61 @@ export default function Sidebar({
   const hasAdmin =
     roles.includes("admin");
 
-  const go = (path) => {
+  const closeMobileSidebar =
+    () => {
+
+      if (isMobile) {
+
+        setSidebarOpen(false);
+      }
+    };
+
+  const go = (
+    path
+  ) => {
+
+    saveLastPath(
+      mode,
+      path
+    );
 
     navigate(path);
 
-    if (isMobile) {
+    closeMobileSidebar();
+  };
 
-      setSidebarOpen(false);
+  const switchMode = (
+    nextMode
+  ) => {
+
+    if (
+      nextMode === mode
+    ) {
+
+      closeMobileSidebar();
+
+      return;
     }
+
+    saveLastPath(
+      mode,
+      location.pathname
+    );
+
+    const targetPath =
+      getLastPath(
+        nextMode
+      );
+
+    setMode(
+      nextMode
+    );
+
+    navigate(
+      targetPath
+    );
+
+    closeMobileSidebar();
   };
 
   const sidebarStyle = {
@@ -135,7 +289,9 @@ export default function Sidebar({
                   : menuButton
               }
               onClick={() =>
-                setMode("resident")
+                switchMode(
+                  "resident"
+                )
               }
             >
               Resident Mode
@@ -152,7 +308,9 @@ export default function Sidebar({
                   : menuButton
               }
               onClick={() =>
-                setMode("admin")
+                switchMode(
+                  "admin"
+                )
               }
             >
               Admin Mode
