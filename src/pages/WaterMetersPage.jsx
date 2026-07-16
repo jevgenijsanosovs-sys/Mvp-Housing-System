@@ -63,6 +63,7 @@ export default function WaterMetersPage() {
     search: "",
     type: "all",
     status: "active",
+    calibration: "all",
   });
 
   const [
@@ -236,6 +237,11 @@ export default function WaterMetersPage() {
             location:
               meter.local_label ||
               "Not assigned",
+
+            calibration_status:
+              calculateCalibrationStatus(
+                meter.calibration_expires_at
+              ).key,
           })
         ),
       [adminWaterMeters]
@@ -291,6 +297,14 @@ export default function WaterMetersPage() {
               filter.status !== "all" &&
               meter.status !==
                 filter.status
+            ) {
+              return false;
+            }
+
+            if (
+              filter.calibration !== "all" &&
+              meter.calibration_status !==
+                filter.calibration
             ) {
               return false;
             }
@@ -358,6 +372,46 @@ export default function WaterMetersPage() {
       (meter) =>
         meter.status ===
         "active"
+    );
+
+  const calibrationSummary =
+    useMemo(
+      () => {
+
+        const summary = {
+          valid: 0,
+          warning: 0,
+          expired: 0,
+          missing: 0,
+        };
+
+        normalizedMeters
+          .filter(
+            (meter) =>
+              meter.status ===
+              "active"
+          )
+          .forEach(
+            (meter) => {
+
+              const key =
+                meter.calibration_status;
+
+              if (
+                Object.prototype
+                  .hasOwnProperty.call(
+                    summary,
+                    key
+                  )
+              ) {
+                summary[key] += 1;
+              }
+            }
+          );
+
+        return summary;
+      },
+      [normalizedMeters]
     );
 
   const resetAddForm = () => {
@@ -964,63 +1018,10 @@ export default function WaterMetersPage() {
   const getCalibrationStatus =
     (
       expiresAt
-    ) => {
-
-      if (!expiresAt) {
-        return {
-          label:
-            "No calibration",
-          tone:
-            "neutral",
-        };
-      }
-
-      const today =
-        new Date();
-
-      today.setHours(
-        0,
-        0,
-        0,
-        0
+    ) =>
+      calculateCalibrationStatus(
+        expiresAt
       );
-
-      const expiry =
-        new Date(
-          `${expiresAt}T00:00:00`
-        );
-
-      const daysRemaining =
-        Math.ceil(
-          (
-            expiry.getTime() -
-            today.getTime()
-          ) /
-          86400000
-        );
-
-      if (daysRemaining < 0) {
-        return {
-          label: "Expired",
-          tone: "danger",
-        };
-      }
-
-      if (
-        daysRemaining <= 30
-      ) {
-        return {
-          label:
-            `Expires in ${daysRemaining} d`,
-          tone: "warning",
-        };
-      }
-
-      return {
-        label: "Valid",
-        tone: "success",
-      };
-    };
 
   return (
     <div>
@@ -1122,6 +1123,114 @@ export default function WaterMetersPage() {
 
       </div>
 
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(150px, 1fr))",
+          gap: 10,
+          marginBottom: 16,
+        }}
+      >
+
+        <CalibrationSummaryCard
+          label="Valid"
+          value={
+            calibrationSummary.valid
+          }
+          tone="success"
+          active={
+            filter.calibration ===
+            "valid"
+          }
+          onClick={() =>
+            setFilter(
+              (current) => ({
+                ...current,
+                calibration:
+                  current.calibration ===
+                    "valid"
+                    ? "all"
+                    : "valid",
+              })
+            )
+          }
+        />
+
+        <CalibrationSummaryCard
+          label="Expires soon"
+          value={
+            calibrationSummary.warning
+          }
+          tone="warning"
+          active={
+            filter.calibration ===
+            "warning"
+          }
+          onClick={() =>
+            setFilter(
+              (current) => ({
+                ...current,
+                calibration:
+                  current.calibration ===
+                    "warning"
+                    ? "all"
+                    : "warning",
+              })
+            )
+          }
+        />
+
+        <CalibrationSummaryCard
+          label="Expired"
+          value={
+            calibrationSummary.expired
+          }
+          tone="danger"
+          active={
+            filter.calibration ===
+            "expired"
+          }
+          onClick={() =>
+            setFilter(
+              (current) => ({
+                ...current,
+                calibration:
+                  current.calibration ===
+                    "expired"
+                    ? "all"
+                    : "expired",
+              })
+            )
+          }
+        />
+
+        <CalibrationSummaryCard
+          label="No calibration"
+          value={
+            calibrationSummary.missing
+          }
+          tone="neutral"
+          active={
+            filter.calibration ===
+            "missing"
+          }
+          onClick={() =>
+            setFilter(
+              (current) => ({
+                ...current,
+                calibration:
+                  current.calibration ===
+                    "missing"
+                    ? "all"
+                    : "missing",
+              })
+            )
+          }
+        />
+
+      </div>
+
       <section
         style={{
           marginBottom: 18,
@@ -1211,6 +1320,39 @@ export default function WaterMetersPage() {
             </option>
             <option value="inactive">
               Inactive
+            </option>
+          </select>
+
+          <select
+            value={
+              filter.calibration
+            }
+            onChange={(event) =>
+              setFilter(
+                (current) => ({
+                  ...current,
+
+                  calibration:
+                    event.target.value,
+                })
+              )
+            }
+            style={fieldStyle}
+          >
+            <option value="all">
+              All calibration statuses
+            </option>
+            <option value="valid">
+              Valid
+            </option>
+            <option value="warning">
+              Expires soon
+            </option>
+            <option value="expired">
+              Expired
+            </option>
+            <option value="missing">
+              No calibration
             </option>
           </select>
 
@@ -1537,18 +1679,68 @@ export default function WaterMetersPage() {
                     <td style={tableCell}>
                       {meter.calibration_id ? (
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openCalibrationDocument(
-                              meter.calibration_id,
-                              meter.calibration_document_name
-                            )
-                          }
-                          style={documentButton}
+                        <div
+                          style={{
+                            display: "grid",
+                            gap: 4,
+                            justifyItems: "start",
+                          }}
                         >
-                          View
-                        </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openCalibrationDocument(
+                                meter.calibration_id,
+                                meter.calibration_document_name
+                              )
+                            }
+                            style={documentButton}
+                          >
+                            View
+                          </button>
+
+                          {meter
+                            .calibration_certificate_number && (
+
+                            <span
+                              style={{
+                                fontSize: 10,
+                                color:
+                                  "var(--text)",
+                              }}
+                            >
+                              No.{" "}
+                              {
+                                meter
+                                  .calibration_certificate_number
+                              }
+                            </span>
+
+                          )}
+
+                          {meter
+                            .calibration_laboratory && (
+
+                            <span
+                              style={{
+                                maxWidth: 150,
+                                fontSize: 10,
+                                color:
+                                  "var(--text)",
+                                overflowWrap:
+                                  "anywhere",
+                              }}
+                            >
+                              {
+                                meter
+                                  .calibration_laboratory
+                              }
+                            </span>
+
+                          )}
+
+                        </div>
 
                       ) : (
                         "—"
@@ -2872,6 +3064,173 @@ export default function WaterMetersPage() {
   );
 }
 
+function calculateCalibrationStatus(
+  expiresAt
+) {
+
+  if (!expiresAt) {
+    return {
+      key: "missing",
+      label: "No calibration",
+      tone: "neutral",
+    };
+  }
+
+  const today =
+    new Date();
+
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  const expiry =
+    new Date(
+      `${expiresAt}T00:00:00`
+    );
+
+  if (
+    Number.isNaN(
+      expiry.getTime()
+    )
+  ) {
+    return {
+      key: "missing",
+      label: "No calibration",
+      tone: "neutral",
+    };
+  }
+
+  const daysRemaining =
+    Math.ceil(
+      (
+        expiry.getTime() -
+        today.getTime()
+      ) /
+      86400000
+    );
+
+  if (daysRemaining < 0) {
+    return {
+      key: "expired",
+      label: "Expired",
+      tone: "danger",
+    };
+  }
+
+  if (
+    daysRemaining <= 30
+  ) {
+    return {
+      key: "warning",
+      label:
+        `Expires in ${daysRemaining} d`,
+      tone: "warning",
+    };
+  }
+
+  return {
+    key: "valid",
+    label: "Valid",
+    tone: "success",
+  };
+}
+
+function CalibrationSummaryCard({
+  label,
+  value,
+  tone,
+  active,
+  onClick,
+}) {
+
+  const tones = {
+
+    success: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "#86efac",
+    },
+
+    warning: {
+      background: "#fef3c7",
+      color: "#92400e",
+      border: "#fcd34d",
+    },
+
+    danger: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "#fca5a5",
+    },
+
+    neutral: {
+      background:
+        "var(--surface)",
+      color:
+        "var(--text-h)",
+      border:
+        "var(--border)",
+    },
+  };
+
+  const style =
+    tones[tone] ||
+    tones.neutral;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: 14,
+        border:
+          `2px solid ${
+            active
+              ? style.color
+              : style.border
+          }`,
+        borderRadius: 14,
+        background:
+          style.background,
+        color:
+          style.color,
+        textAlign: "left",
+        cursor: "pointer",
+        boxShadow:
+          active
+            ? "0 0 0 2px rgba(37,99,235,.12)"
+            : "none",
+      }}
+    >
+
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          opacity: 0.85,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          marginTop: 4,
+          fontSize: 24,
+          lineHeight: 1,
+          fontWeight: 800,
+        }}
+      >
+        {value}
+      </div>
+
+    </button>
+  );
+}
+
 function SectionHeading({
   children,
   compact = false,
@@ -3085,6 +3444,18 @@ function MeterCard({
             getCalibrationStatus(
               meter.calibration_expires_at
             ).label,
+          ],
+          [
+            "Certificate Number",
+            meter
+              .calibration_certificate_number ||
+              "—",
+          ],
+          [
+            "Laboratory",
+            meter
+              .calibration_laboratory ||
+              "—",
           ],
           [
             "Last Reading",
