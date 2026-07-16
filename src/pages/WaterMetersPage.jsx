@@ -21,6 +21,10 @@ export default function WaterMetersPage() {
     addWaterMeter,
     loadApartmentRisers,
     uploadCalibrationDocument,
+    loadWaterMeterCalibrations,
+    clearWaterMeterCalibrations,
+    meterCalibrations,
+    meterCalibrationsLoading,
     openCalibrationDocument,
     deactivateMeter,
   } = useWater();
@@ -79,9 +83,16 @@ export default function WaterMetersPage() {
     apartmentRiserId: "",
     type: "cold",
     serialNumber: "",
+    manufacturer: "",
+    model: "",
     installedAt: "",
+    initialReading: "",
+    calibrationSameAsInstallation: true,
     calibrationDate: "",
+    validityPreset: "12",
     validityMonths: "12",
+    certificateNumber: "",
+    calibrationLaboratory: "",
     calibrationNotes: "",
     calibrationDocument: null,
   });
@@ -105,6 +116,33 @@ export default function WaterMetersPage() {
     deactivateSubmitting,
     setDeactivateSubmitting
   ] = useState(false);
+
+  const [
+    calibrationOpen,
+    setCalibrationOpen
+  ] = useState(false);
+
+  const [
+    selectedCalibrationMeter,
+    setSelectedCalibrationMeter
+  ] = useState(null);
+
+  const [
+    calibrationSubmitting,
+    setCalibrationSubmitting
+  ] = useState(false);
+
+  const [
+    calibrationForm,
+    setCalibrationForm
+  ] = useState({
+    calibrationDate: "",
+    validityMonths: "12",
+    certificateNumber: "",
+    calibrationLaboratory: "",
+    notes: "",
+    document: null,
+  });
 
   useEffect(() => {
 
@@ -449,6 +487,40 @@ export default function WaterMetersPage() {
       ]
     );
 
+  const parseReadingValue =
+    (
+      value
+    ) => {
+
+      const normalized =
+        String(
+          value || ""
+        )
+          .trim()
+          .replace(
+            ",",
+            "."
+          );
+
+      if (!normalized) {
+        return null;
+      }
+
+      if (
+        !/^\d+(\.\d{1,3})?$/.test(
+          normalized
+        )
+      ) {
+        return null;
+      }
+
+      return Math.round(
+        Number(
+          normalized
+        ) * 1000
+      );
+    };
+
   const handleAddMeter =
     async () => {
 
@@ -493,6 +565,23 @@ export default function WaterMetersPage() {
           return;
         }
 
+        const initialReading =
+          parseReadingValue(
+            addForm.initialReading
+          );
+
+        if (
+          addForm.initialReading &&
+          initialReading === null
+        ) {
+
+          alert(
+            "Enter initial reading in m³ with up to 3 decimal places"
+          );
+
+          return;
+        }
+
         const meterResult =
           await addWaterMeter({
             apartmentId:
@@ -507,8 +596,20 @@ export default function WaterMetersPage() {
             serialNumber:
               addForm.serialNumber,
 
+            manufacturer:
+              addForm.manufacturer,
+
+            model:
+              addForm.model,
+
             installedAt:
               addForm.installedAt,
+
+            initialReading,
+
+            initialReadingDate:
+              addForm.installedAt ||
+              addForm.calibrationDate,
 
             options: {
               suppressSuccessAlert:
@@ -538,6 +639,12 @@ export default function WaterMetersPage() {
 
             notes:
               addForm.calibrationNotes,
+
+            certificateNumber:
+              addForm.certificateNumber,
+
+            calibrationLaboratory:
+              addForm.calibrationLaboratory,
 
             certificate:
               addForm.calibrationDocument,
@@ -574,6 +681,121 @@ export default function WaterMetersPage() {
       } finally {
 
         setAddSubmitting(false);
+      }
+    };
+
+  const openCalibrationHistory =
+    async (
+      meter
+    ) => {
+
+      setSelectedCalibrationMeter(
+        meter
+      );
+
+      setCalibrationForm({
+        calibrationDate: "",
+        validityMonths: "12",
+        certificateNumber: "",
+        calibrationLaboratory: "",
+        notes: "",
+        document: null,
+      });
+
+      setCalibrationOpen(true);
+
+      await loadWaterMeterCalibrations(
+        meter.id
+      );
+    };
+
+  const closeCalibrationHistory =
+    () => {
+
+      setCalibrationOpen(false);
+      setSelectedCalibrationMeter(null);
+      clearWaterMeterCalibrations();
+    };
+
+  const handleAddCalibration =
+    async () => {
+
+      if (
+        !selectedCalibrationMeter ||
+        calibrationSubmitting
+      ) {
+        return;
+      }
+
+      setCalibrationSubmitting(
+        true
+      );
+
+      try {
+
+        const result =
+          await uploadCalibrationDocument({
+            meterId:
+              selectedCalibrationMeter.id,
+
+            calibrationDate:
+              calibrationForm.calibrationDate,
+
+            validityMonths:
+              Number(
+                calibrationForm.validityMonths
+              ),
+
+            certificateNumber:
+              calibrationForm.certificateNumber,
+
+            calibrationLaboratory:
+              calibrationForm.calibrationLaboratory,
+
+            notes:
+              calibrationForm.notes,
+
+            certificate:
+              calibrationForm.document,
+
+            options: {
+              suppressSuccessAlert:
+                true,
+
+              suppressReload:
+                true,
+            },
+          });
+
+        if (result?.ok) {
+
+          await Promise.all([
+            loadAdminWaterMeters(),
+
+            loadWaterMeterCalibrations(
+              selectedCalibrationMeter.id
+            ),
+          ]);
+
+          setCalibrationForm({
+            calibrationDate: "",
+            validityMonths: "12",
+            certificateNumber: "",
+            calibrationLaboratory: "",
+            notes: "",
+            document: null,
+          });
+
+          alert(
+            "Calibration added"
+          );
+        }
+
+      } finally {
+
+        setCalibrationSubmitting(
+          false
+        );
       }
     };
 
@@ -1105,6 +1327,9 @@ export default function WaterMetersPage() {
                           onOpenDocument={
                             openCalibrationDocument
                           }
+                          onOpenCalibrationHistory={
+                            openCalibrationHistory
+                          }
                         />
 
                       )
@@ -1232,8 +1457,32 @@ export default function WaterMetersPage() {
                     </td>
 
                     <td style={tableCellStrong}>
-                      {meter.serial_number ||
-                        "—"}
+                      <div>
+                        {meter.serial_number ||
+                          "—"}
+                      </div>
+
+                      {(meter.manufacturer ||
+                        meter.model) && (
+
+                        <div
+                          style={{
+                            marginTop: 2,
+                            color:
+                              "var(--text)",
+                            fontSize: 10,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {[
+                            meter.manufacturer,
+                            meter.model,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
+
+                      )}
                     </td>
 
                     <td
@@ -1266,13 +1515,23 @@ export default function WaterMetersPage() {
                     </td>
 
                     <td style={tableCell}>
-                      <CalibrationBadge
-                        status={
-                          getCalibrationStatus(
-                            meter.calibration_expires_at
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openCalibrationHistory(
+                            meter
                           )
                         }
-                      />
+                        style={plainButton}
+                      >
+                        <CalibrationBadge
+                          status={
+                            getCalibrationStatus(
+                              meter.calibration_expires_at
+                            )
+                          }
+                        />
+                      </button>
                     </td>
 
                     <td style={tableCell}>
@@ -1354,6 +1613,10 @@ export default function WaterMetersPage() {
             gap: 12,
           }}
         >
+
+          <SectionHeading>
+            General
+          </SectionHeading>
 
           <FormField
             label="Apartment"
@@ -1556,6 +1819,58 @@ export default function WaterMetersPage() {
           </FormField>
 
           <FormField
+            label="Manufacturer"
+          >
+            <input
+              type="text"
+              value={
+                addForm.manufacturer
+              }
+              disabled={
+                addSubmitting
+              }
+              onChange={(event) =>
+                setAddForm(
+                  (current) => ({
+                    ...current,
+                    manufacturer:
+                      event.target.value,
+                  })
+                )
+              }
+              style={fieldStyle}
+            />
+          </FormField>
+
+          <FormField
+            label="Model"
+          >
+            <input
+              type="text"
+              value={
+                addForm.model
+              }
+              disabled={
+                addSubmitting
+              }
+              onChange={(event) =>
+                setAddForm(
+                  (current) => ({
+                    ...current,
+                    model:
+                      event.target.value,
+                  })
+                )
+              }
+              style={fieldStyle}
+            />
+          </FormField>
+
+          <SectionHeading>
+            Installation
+          </SectionHeading>
+
+          <FormField
             label="Installed Date"
           >
             <input
@@ -1573,11 +1888,55 @@ export default function WaterMetersPage() {
 
                     installedAt:
                       event.target.value,
+
+                    calibrationDate:
+                      current
+                        .calibrationSameAsInstallation
+                        ? event.target.value
+                        : current.calibrationDate,
                   })
                 )
               }
               style={fieldStyle}
             />
+          </FormField>
+
+          <FormField
+            label="Initial Reading, m³"
+          >
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="0,000"
+              value={
+                addForm.initialReading
+              }
+              disabled={
+                addSubmitting
+              }
+              onChange={(event) =>
+                setAddForm(
+                  (current) => ({
+                    ...current,
+
+                    initialReading:
+                      event.target.value,
+                  })
+                )
+              }
+              style={fieldStyle}
+            />
+
+            <span
+              style={{
+                color:
+                  "var(--text)",
+                fontSize: 11,
+              }}
+            >
+              Reading at installation,
+              in cubic metres.
+            </span>
           </FormField>
 
           <div
@@ -1589,17 +1948,54 @@ export default function WaterMetersPage() {
             }}
           >
 
-            <div
-              style={{
-                marginBottom: 10,
-                color:
-                  "var(--text-h)",
-                fontSize: 14,
-                fontWeight: 700,
-              }}
+            <SectionHeading
+              compact
             >
               Calibration
-            </div>
+            </SectionHeading>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+                color:
+                  "var(--text-h)",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  addForm
+                    .calibrationSameAsInstallation
+                }
+                disabled={
+                  addSubmitting
+                }
+                onChange={(event) =>
+                  setAddForm(
+                    (current) => ({
+                      ...current,
+
+                      calibrationSameAsInstallation:
+                        event.target.checked,
+
+                      calibrationDate:
+                        event.target.checked
+                          ? current.installedAt
+                          : current.calibrationDate,
+                    })
+                  )
+                }
+              />
+
+              Calibration performed
+              on installation date
+            </label>
 
             <div
               style={{
@@ -1617,7 +2013,9 @@ export default function WaterMetersPage() {
                     addForm.calibrationDate
                   }
                   disabled={
-                    addSubmitting
+                    addSubmitting ||
+                    addForm
+                      .calibrationSameAsInstallation
                   }
                   onChange={(event) =>
                     setAddForm(
@@ -1634,14 +2032,11 @@ export default function WaterMetersPage() {
               </FormField>
 
               <FormField
-                label="Validity Period, months"
+                label="Validity Period"
               >
-                <input
-                  type="number"
-                  min="1"
-                  max="120"
+                <select
                   value={
-                    addForm.validityMonths
+                    addForm.validityPreset
                   }
                   disabled={
                     addSubmitting
@@ -1651,13 +2046,67 @@ export default function WaterMetersPage() {
                       (current) => ({
                         ...current,
 
-                        validityMonths:
+                        validityPreset:
                           event.target.value,
+
+                        validityMonths:
+                          event.target.value ===
+                            "custom"
+                            ? current.validityMonths
+                            : event.target.value,
                       })
                     )
                   }
                   style={fieldStyle}
-                />
+                >
+                  <option value="12">
+                    12 months
+                  </option>
+                  <option value="24">
+                    24 months
+                  </option>
+                  <option value="48">
+                    48 months
+                  </option>
+                  <option value="60">
+                    60 months
+                  </option>
+                  <option value="72">
+                    72 months
+                  </option>
+                  <option value="custom">
+                    Custom...
+                  </option>
+                </select>
+
+                {addForm.validityPreset ===
+                  "custom" && (
+
+                  <input
+                    type="number"
+                    min="1"
+                    max="120"
+                    value={
+                      addForm.validityMonths
+                    }
+                    disabled={
+                      addSubmitting
+                    }
+                    onChange={(event) =>
+                      setAddForm(
+                        (current) => ({
+                          ...current,
+
+                          validityMonths:
+                            event.target.value,
+                        })
+                      )
+                    }
+                    placeholder="Months"
+                    style={fieldStyle}
+                  />
+
+                )}
               </FormField>
 
               <FormField
@@ -1672,9 +2121,77 @@ export default function WaterMetersPage() {
                   readOnly
                   style={{
                     ...fieldStyle,
+
                     background:
-                      "var(--surface-muted)",
+                      calculatedExpiresAt
+                        ? getCalibrationStatus(
+                            calculatedExpiresAt
+                          ).tone ===
+                            "danger"
+                          ? "#fee2e2"
+                          : getCalibrationStatus(
+                              calculatedExpiresAt
+                            ).tone ===
+                              "warning"
+                            ? "#fef3c7"
+                            : "#dcfce7"
+                        : "var(--surface-muted)",
+
+                    color:
+                      calculatedExpiresAt
+                        ? "#111827"
+                        : "var(--text)",
                   }}
+                />
+              </FormField>
+
+              <FormField
+                label="Certificate Number"
+              >
+                <input
+                  type="text"
+                  value={
+                    addForm.certificateNumber
+                  }
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        certificateNumber:
+                          event.target.value,
+                      })
+                    )
+                  }
+                  style={fieldStyle}
+                />
+              </FormField>
+
+              <FormField
+                label="Calibration Laboratory"
+              >
+                <input
+                  type="text"
+                  value={
+                    addForm.calibrationLaboratory
+                  }
+                  disabled={
+                    addSubmitting
+                  }
+                  onChange={(event) =>
+                    setAddForm(
+                      (current) => ({
+                        ...current,
+
+                        calibrationLaboratory:
+                          event.target.value,
+                      })
+                    )
+                  }
+                  style={fieldStyle}
                 />
               </FormField>
 
@@ -1718,7 +2235,7 @@ export default function WaterMetersPage() {
                 label="Calibration Notes"
               >
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={
                     addForm.calibrationNotes
                   }
@@ -1794,6 +2311,340 @@ export default function WaterMetersPage() {
             </button>
 
           </div>
+
+        </div>
+
+      </Modal>
+
+      <Modal
+        open={calibrationOpen}
+        title={
+          selectedCalibrationMeter
+            ? `Calibration History · ${selectedCalibrationMeter.serial_number || "Meter"}`
+            : "Calibration History"
+        }
+        onClose={
+          closeCalibrationHistory
+        }
+      >
+
+        <div
+          style={{
+            display: "grid",
+            gap: 16,
+          }}
+        >
+
+          <section
+            style={{
+              display: "grid",
+              gap: 10,
+              padding: 12,
+              border:
+                "1px solid var(--border)",
+              borderRadius: 12,
+              background:
+                "var(--surface-soft)",
+            }}
+          >
+
+            <strong
+              style={{
+                color:
+                  "var(--text-h)",
+              }}
+            >
+              Add Calibration
+            </strong>
+
+            <FormField
+              label="Calibration Date"
+            >
+              <input
+                type="date"
+                value={
+                  calibrationForm.calibrationDate
+                }
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      calibrationDate:
+                        event.target.value,
+                    })
+                  )
+                }
+                style={fieldStyle}
+              />
+            </FormField>
+
+            <FormField
+              label="Validity Period, months"
+            >
+              <input
+                type="number"
+                min="1"
+                max="120"
+                value={
+                  calibrationForm.validityMonths
+                }
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      validityMonths:
+                        event.target.value,
+                    })
+                  )
+                }
+                style={fieldStyle}
+              />
+            </FormField>
+
+            <FormField
+              label="Certificate Number"
+            >
+              <input
+                type="text"
+                value={
+                  calibrationForm.certificateNumber
+                }
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      certificateNumber:
+                        event.target.value,
+                    })
+                  )
+                }
+                style={fieldStyle}
+              />
+            </FormField>
+
+            <FormField
+              label="Calibration Laboratory"
+            >
+              <input
+                type="text"
+                value={
+                  calibrationForm.calibrationLaboratory
+                }
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      calibrationLaboratory:
+                        event.target.value,
+                    })
+                  )
+                }
+                style={fieldStyle}
+              />
+            </FormField>
+
+            <FormField
+              label="Calibration Document"
+            >
+              <input
+                type="file"
+                accept=".pdf,.edoc,.asice"
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      document:
+                        event.target.files?.[0] ||
+                        null,
+                    })
+                  )
+                }
+                style={fieldStyle}
+              />
+            </FormField>
+
+            <FormField
+              label="Notes"
+            >
+              <textarea
+                rows={3}
+                value={
+                  calibrationForm.notes
+                }
+                onChange={(event) =>
+                  setCalibrationForm(
+                    (current) => ({
+                      ...current,
+                      notes:
+                        event.target.value,
+                    })
+                  )
+                }
+                style={{
+                  ...fieldStyle,
+                  resize: "vertical",
+                }}
+              />
+            </FormField>
+
+            <button
+              type="button"
+              onClick={
+                handleAddCalibration
+              }
+              disabled={
+                calibrationSubmitting
+              }
+              style={{
+                ...primaryButton,
+                opacity:
+                  calibrationSubmitting
+                    ? 0.65
+                    : 1,
+              }}
+            >
+              {calibrationSubmitting
+                ? "Saving..."
+                : "Add Calibration"}
+            </button>
+
+          </section>
+
+          <section>
+
+            <strong
+              style={{
+                color:
+                  "var(--text-h)",
+              }}
+            >
+              History
+            </strong>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                marginTop: 10,
+              }}
+            >
+
+              {meterCalibrationsLoading ? (
+
+                <div style={emptyState}>
+                  Loading...
+                </div>
+
+              ) : !meterCalibrations
+                  ?.calibrations
+                  ?.length ? (
+
+                <div style={emptyState}>
+                  No calibration history.
+                </div>
+
+              ) : (
+
+                meterCalibrations.calibrations.map(
+                  (item) => (
+
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: 12,
+                        border:
+                          "1px solid var(--border)",
+                        borderRadius: 10,
+                        background:
+                          "var(--surface)",
+                      }}
+                    >
+
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
+
+                        <strong
+                          style={{
+                            color:
+                              "var(--text-h)",
+                          }}
+                        >
+                          {formatDate(
+                            item.calibration_date
+                          )}
+                        </strong>
+
+                        <CalibrationBadge
+                          status={
+                            getCalibrationStatus(
+                              item.expires_at
+                            )
+                          }
+                        />
+
+                      </div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 4,
+                          marginTop: 8,
+                          fontSize: 12,
+                        }}
+                      >
+                        <span>
+                          Expires:{" "}
+                          {formatDate(
+                            item.expires_at
+                          )}
+                        </span>
+
+                        <span>
+                          Certificate:{" "}
+                          {item.certificate_number ||
+                            "—"}
+                        </span>
+
+                        <span>
+                          Laboratory:{" "}
+                          {item.calibration_laboratory ||
+                            "—"}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openCalibrationDocument(
+                            item.id,
+                            item.certificate_file_name
+                          )
+                        }
+                        style={{
+                          ...documentButton,
+                          marginTop: 10,
+                        }}
+                      >
+                        View Document
+                      </button>
+
+                    </div>
+
+                  )
+                )
+
+              )}
+
+            </div>
+
+          </section>
 
         </div>
 
@@ -2021,6 +2872,33 @@ export default function WaterMetersPage() {
   );
 }
 
+function SectionHeading({
+  children,
+  compact = false,
+}) {
+
+  return (
+    <div
+      style={{
+        marginTop:
+          compact ? 0 : 6,
+        paddingTop:
+          compact ? 0 : 14,
+        borderTop:
+          compact
+            ? "none"
+            : "1px solid var(--border)",
+        color:
+          "var(--text-h)",
+        fontSize: 14,
+        fontWeight: 700,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function FormField({
   label,
   children,
@@ -2088,6 +2966,7 @@ function MeterCard({
   formatReading,
   getCalibrationStatus,
   onOpenDocument,
+  onOpenCalibrationHistory,
 }) {
 
   return (
@@ -2167,6 +3046,16 @@ function MeterCard({
           [
             "Serial Number",
             meter.serial_number ||
+              "—",
+          ],
+          [
+            "Manufacturer",
+            meter.manufacturer ||
+              "—",
+          ],
+          [
+            "Model",
+            meter.model ||
               "—",
           ],
           [
@@ -2251,6 +3140,22 @@ function MeterCard({
         )}
 
       </div>
+
+      <button
+        type="button"
+        onClick={() =>
+          onOpenCalibrationHistory(
+            meter
+          )
+        }
+        style={{
+          ...secondaryButton,
+          width: "100%",
+          marginTop: 10,
+        }}
+      >
+        Calibration History
+      </button>
 
       {meter.calibration_id && (
 
@@ -2374,6 +3279,13 @@ const dangerButton = {
   color: "#ffffff",
   fontSize: 13,
   fontWeight: 700,
+  cursor: "pointer",
+};
+
+const plainButton = {
+  padding: 0,
+  border: "none",
+  background: "transparent",
   cursor: "pointer",
 };
 
