@@ -968,6 +968,8 @@ export default function useWater() {
       apartmentRiserId = null,
       type,
       serialNumber,
+      manufacturer = "",
+      model = "",
       installedAt,
       initialReading = null,
       initialReadingDate = null,
@@ -1054,6 +1056,16 @@ export default function useWater() {
 
               serial_number:
                 normalizedSerialNumber,
+
+              manufacturer:
+                String(
+                  manufacturer || ""
+                ).trim() || null,
+
+              model:
+                String(
+                  model || ""
+                ).trim() || null,
 
               installed_at:
                 installedAt || null,
