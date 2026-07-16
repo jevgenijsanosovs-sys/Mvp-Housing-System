@@ -43,6 +43,16 @@ export default function useWater() {
     setAdminWaterMeters
   ] = useState([]);
 
+  const [
+    meterCalibrations,
+    setMeterCalibrations
+  ] = useState(null);
+
+  const [
+    meterCalibrationsLoading,
+    setMeterCalibrationsLoading
+  ] = useState(false);
+
   // =====================================
   // ADMIN MONTHLY REPORT
   // =====================================
@@ -959,6 +969,8 @@ export default function useWater() {
       type,
       serialNumber,
       installedAt,
+      initialReading = null,
+      initialReadingDate = null,
       options = {},
     }) => {
 
@@ -1045,6 +1057,12 @@ export default function useWater() {
 
               installed_at:
                 installedAt || null,
+
+              initial_reading:
+                initialReading,
+
+              initial_reading_date:
+                initialReadingDate || null,
             }),
           }
         );
@@ -1160,6 +1178,8 @@ export default function useWater() {
       calibrationDate,
       validityMonths,
       notes = "",
+      certificateNumber = "",
+      calibrationLaboratory = "",
       certificate,
       options = {},
     }) => {
@@ -1220,6 +1240,20 @@ export default function useWater() {
         "notes",
         String(
           notes || ""
+        )
+      );
+
+      formData.append(
+        "certificate_number",
+        String(
+          certificateNumber || ""
+        )
+      );
+
+      formData.append(
+        "calibration_laboratory",
+        String(
+          calibrationLaboratory || ""
         )
       );
 
@@ -1304,6 +1338,84 @@ export default function useWater() {
 
         return false;
       }
+    };
+
+  // =====================================
+  // LOAD WATER METER CALIBRATIONS
+  // =====================================
+
+  const loadWaterMeterCalibrations =
+    async (
+      meterId
+    ) => {
+
+      if (!meterId) {
+        return null;
+      }
+
+      setMeterCalibrationsLoading(
+        true
+      );
+
+      try {
+
+        const result = await api(
+          `/api/admin/water-meter-calibrations?meter_id=${meterId}`
+        );
+
+        if (result?.error) {
+
+          alert(
+            result.error ||
+            "Calibration history load failed"
+          );
+
+          return null;
+        }
+
+        const data = {
+          meter:
+            result?.meter || null,
+
+          calibrations:
+            Array.isArray(
+              result?.calibrations
+            )
+              ? result.calibrations
+              : [],
+        };
+
+        setMeterCalibrations(
+          data
+        );
+
+        return data;
+
+      } catch (error) {
+
+        console.error(
+          "Load calibration history failed:",
+          error
+        );
+
+        alert(
+          "Calibration history load failed"
+        );
+
+        return null;
+
+      } finally {
+
+        setMeterCalibrationsLoading(
+          false
+        );
+      }
+    };
+
+  const clearWaterMeterCalibrations =
+    () => {
+
+      setMeterCalibrations(null);
     };
 
   // =====================================
@@ -1499,6 +1611,9 @@ export default function useWater() {
     adminWater,
     adminWaterMeters,
 
+    meterCalibrations,
+    meterCalibrationsLoading,
+
     adminMonthlyReport,
     adminMonthlyReportLoading,
     adminMonthlyReportError,
@@ -1528,6 +1643,8 @@ export default function useWater() {
 
     loadApartmentRisers,
     uploadCalibrationDocument,
+    loadWaterMeterCalibrations,
+    clearWaterMeterCalibrations,
     openCalibrationDocument,
 
     deactivateMeter,
