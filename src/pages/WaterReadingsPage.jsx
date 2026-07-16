@@ -461,35 +461,15 @@ export default function WaterReadingsPage() {
 
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
+        <button
+          type="button"
+          onClick={
+            loadHistory
+          }
+          style={secondaryButton}
         >
-
-          <button
-            type="button"
-            onClick={
-              loadHistory
-            }
-            style={secondaryButton}
-          >
-            Refresh
-          </button>
-
-          <button
-            type="button"
-            onClick={
-              exportToXlsx
-            }
-            style={primaryButton}
-          >
-            Export XLSX
-          </button>
-
-        </div>
+          Refresh
+        </button>
 
       </div>
 
@@ -679,6 +659,30 @@ export default function WaterReadingsPage() {
         </div>
 
       </section>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "flex-end",
+          marginBottom: 16,
+        }}
+      >
+
+        <button
+          type="button"
+          onClick={
+            exportToXlsx
+          }
+          style={{
+            ...primaryButton,
+            minWidth: 150,
+          }}
+        >
+          Export XLSX
+        </button>
+
+      </div>
 
       {loading ? (
 
