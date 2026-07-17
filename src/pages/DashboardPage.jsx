@@ -270,29 +270,69 @@ export default function DashboardPage() {
     <div>
 
       <div
-        style={{
-          marginBottom: 24,
-        }}
+        className="dashboard-heading"
       >
 
-        <h1
-          style={{
-            marginBottom: 6,
-          }}
-        >
-          Dashboard
-        </h1>
+        <div>
 
-        <div
-          style={{
-            color:
-              "var(--text)",
-          }}
-        >
-          {mode === "resident"
-            ? "Your home at a glance"
-            : "Building overview and statistics"}
+          <h1
+            style={{
+              margin: 0,
+            }}
+          >
+            Dashboard
+          </h1>
+
+          <div
+            style={{
+              marginTop: 6,
+              color:
+                "var(--text)",
+            }}
+          >
+            {mode === "resident"
+              ? "Your home at a glance"
+              : "Building overview and statistics"}
+          </div>
+
         </div>
+
+        {mode === "resident" && (
+
+          <div
+            className="dashboard-heading-organization"
+          >
+
+            <div
+              style={{
+                color:
+                  "var(--text-h)",
+                fontSize: 15,
+                fontWeight: 800,
+                letterSpacing:
+                  "0.02em",
+              }}
+            >
+              MVX System
+            </div>
+
+            <div
+              style={{
+                marginTop: 4,
+                color:
+                  "var(--text)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing:
+                  "0.04em",
+              }}
+            >
+              DzĪKS IRLAVA 20
+            </div>
+
+          </div>
+
+        )}
 
       </div>
 
@@ -365,32 +405,6 @@ export default function DashboardPage() {
                         }}
                       >
                         {userName}
-                      </div>
-
-                      <div
-                        style={{
-                          marginTop: 10,
-                          color:
-                            "var(--text)",
-                          fontSize: 11,
-                          lineHeight: 1.45,
-                        }}
-                      >
-                        <div
-                          style={{
-                            color:
-                              "var(--text-h)",
-                            fontWeight: 700,
-                          }}
-                        >
-                          DzĪKS Irlava 20
-                        </div>
-
-                        <div>
-                          Irlavas iela 20,
-                          Rīga, LV-1046,
-                          Latvija
-                        </div>
                       </div>
 
                     </div>
@@ -526,17 +540,6 @@ export default function DashboardPage() {
                                       "Meter"}
                                   </div>
 
-                                  <div
-                                    style={{
-                                      marginTop: 2,
-                                      color:
-                                        "var(--text)",
-                                      fontSize: 9,
-                                    }}
-                                  >
-                                    {meter.serial_number ||
-                                      "—"}
-                                  </div>
                                 </td>
 
                                 <td style={readingTd}>
@@ -625,7 +628,7 @@ export default function DashboardPage() {
 
             <HomeTile
               title="Contact Administration"
-              subtitle="DzĪKS IRLAVA 20 contacts"
+              subtitle="DzĪKS Irlava 20"
               accent="#7c3aed"
               wide
             >
@@ -634,76 +637,152 @@ export default function DashboardPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns:
-                    "repeat(auto-fit,minmax(190px,1fr))",
-                  gap: 10,
+                    "minmax(220px,0.85fr) minmax(280px,1.4fr)",
+                  gap: 22,
+                  alignItems: "start",
                 }}
+                className="administration-contact-layout"
               >
 
-                {CONTACTS.map(
-                  (contact) => (
+                <div
+                  style={{
+                    color:
+                      "var(--text)",
+                    fontSize: 11,
+                    lineHeight: 1.55,
+                  }}
+                >
 
-                    <div
-                      key={contact.role}
-                      style={contactPreview}
+                  <div
+                    style={{
+                      color:
+                        "var(--text-h)",
+                      fontSize: 13,
+                      fontWeight: 800,
+                    }}
+                  >
+                    DzĪKS Irlava 20
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 5,
+                    }}
+                  >
+                    Irlavas iela 20,
+                    Rīga, LV-1046,
+                    Latvija
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 9,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 700,
+                      }}
                     >
+                      E-pasts:
+                    </span>{" "}
+
+                    <a
+                      href="mailto:irlavas20@inbox.lv"
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                      style={{
+                        ...contactLink,
+                        marginTop: 0,
+                      }}
+                    >
+                      irlavas20@inbox.lv
+                    </a>
+                  </div>
+
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 0,
+                  }}
+                >
+
+                  {CONTACTS.map(
+                    (
+                      contact,
+                      index
+                    ) => (
 
                       <div
+                        key={contact.role}
                         style={{
-                          color:
-                            "var(--text)",
-                          fontSize: 10,
-                          fontWeight: 700,
+                          display: "grid",
+                          gridTemplateColumns:
+                            "minmax(120px,0.8fr) minmax(150px,1fr) auto",
+                          gap: 12,
+                          alignItems: "center",
+                          padding:
+                            index === 0
+                              ? "0 0 9px"
+                              : "9px 0",
+                          borderTop:
+                            index === 0
+                              ? "none"
+                              : "1px solid var(--border)",
                         }}
+                        className="administration-contact-row"
                       >
-                        {contact.role}
+
+                        <div
+                          style={{
+                            color:
+                              "var(--text-h)",
+                            fontSize: 11,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {contact.role}
+                        </div>
+
+                        <div
+                          style={{
+                            color:
+                              "var(--text)",
+                            fontSize: 11,
+                          }}
+                        >
+                          {contact.name}
+                        </div>
+
+                        <a
+                          href={`tel:${contact.phone.replace(
+                            /\s+/g,
+                            ""
+                          )}`}
+                          onClick={(event) =>
+                            event.stopPropagation()
+                          }
+                          style={{
+                            ...contactLink,
+                            marginTop: 0,
+                            whiteSpace:
+                              "nowrap",
+                          }}
+                        >
+                          {contact.phone}
+                        </a>
+
                       </div>
 
-                      <div
-                        style={{
-                          marginTop: 4,
-                          color:
-                            "var(--text-h)",
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {contact.name}
-                      </div>
+                    )
+                  )}
 
-                      <a
-                        href={`tel:${contact.phone.replace(
-                          /\s+/g,
-                          ""
-                        )}`}
-                        onClick={(event) =>
-                          event.stopPropagation()
-                        }
-                        style={contactLink}
-                      >
-                        {contact.phone}
-                      </a>
-
-                    </div>
-
-                  )
-                )}
+                </div>
 
               </div>
-
-              <a
-                href="mailto:irlavas20@inbox.lv"
-                onClick={(event) =>
-                  event.stopPropagation()
-                }
-                style={{
-                  ...contactLink,
-                  display:
-                    "inline-flex",
-                  marginTop: 12,
-                }}
-              >
-                irlavas20@inbox.lv
-              </a>
 
             </HomeTile>
 
@@ -992,6 +1071,97 @@ function ApartmentDetails({
   apartment,
 }) {
 
+  const details = [
+    {
+      label: "Apartment",
+      value:
+        apartment.number ??
+        "—",
+    },
+    {
+      label: "Section",
+      value:
+        apartment.section ??
+        apartment.entrance ??
+        "—",
+    },
+    {
+      label: "Floor",
+      value:
+        apartment.floor ??
+        "—",
+    },
+    {
+      label: "Rooms",
+      value:
+        apartment.room_count ??
+        apartment.rooms ??
+        "—",
+    },
+    {
+      label: "Residents",
+      value:
+        apartment.residents_count ??
+        apartment.resident_count ??
+        "—",
+    },
+    {
+      label: "Living area",
+      value:
+        formatArea(
+          apartment.living_area
+        ),
+    },
+    {
+      label: "Non-living area",
+      value:
+        formatArea(
+          apartment.non_living_area
+        ),
+    },
+    {
+      label: "Heated area",
+      value:
+        formatArea(
+          apartment.heated_area
+        ),
+    },
+    {
+      label: "Total area",
+      value:
+        formatArea(
+          apartment.total_area
+        ),
+    },
+    {
+      label: "Ownership",
+      value:
+        apartment.ownership_type ??
+        apartment.ownership ??
+        "—",
+    },
+    {
+      label: "Status",
+      value:
+        apartment.status ??
+        (
+          Number(
+            apartment.active ?? 1
+          ) === 1
+            ? "Active"
+            : "Inactive"
+        ),
+    },
+    {
+      label: "Notes",
+      value:
+        apartment.notes ??
+        apartment.comment ??
+        "—",
+      wide: true,
+    },
+  ];
+
   return (
     <div
       style={{
@@ -1009,8 +1179,9 @@ function ApartmentDetails({
           display: "flex",
           justifyContent:
             "space-between",
+          alignItems: "center",
           gap: 10,
-          marginBottom: 12,
+          marginBottom: 14,
         }}
       >
 
@@ -1042,62 +1213,32 @@ function ApartmentDetails({
         }}
       >
 
-        <DetailBox
-          label="Section"
-          value={
-            apartment.section ??
-            "—"
-          }
-        />
+        {details.map(
+          (detail) => (
 
-        <DetailBox
-          label="Floor"
-          value={
-            apartment.floor ??
-            "—"
-          }
-        />
+            <div
+              key={detail.label}
+              style={{
+                gridColumn:
+                  detail.wide
+                    ? "1 / -1"
+                    : "auto",
+              }}
+            >
+              <DetailBox
+                label={detail.label}
+                value={detail.value}
+              />
+            </div>
 
-        <DetailBox
-          label="Rooms"
-          value={
-            apartment.room_count ??
-            "—"
-          }
-        />
-
-        <DetailBox
-          label="Residents"
-          value={
-            apartment.residents_count ??
-            "—"
-          }
-        />
-
-        <DetailBox
-          label="Living area"
-          value={
-            formatArea(
-              apartment.living_area
-            )
-          }
-        />
-
-        <DetailBox
-          label="Heated area"
-          value={
-            formatArea(
-              apartment.heated_area
-            )
-          }
-        />
+          )
+        )}
 
       </div>
 
     </div>
   );
 }
-
 
 function RelationBadge({
   relations = [],
@@ -1612,7 +1753,7 @@ const pillStyle = {
 };
 
 const readingTh = {
-  padding: "6px 7px",
+  padding: "4px 6px",
   borderBottom:
     "1px solid var(--border)",
   color:
@@ -1623,7 +1764,7 @@ const readingTh = {
 };
 
 const readingTd = {
-  padding: "7px",
+  padding: "4px 6px",
   borderBottom:
     "1px solid var(--border-soft)",
   color:
