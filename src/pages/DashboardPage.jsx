@@ -876,6 +876,118 @@ function HomeTile({
 }
 
 
+function ConsumptionLine({
+  label,
+  current,
+  previous,
+}) {
+
+  const hasCurrent =
+    current !== null &&
+    current !== undefined;
+
+  const hasPrevious =
+    previous !== null &&
+    previous !== undefined;
+
+  const difference =
+    hasCurrent &&
+    hasPrevious
+      ? current - previous
+      : null;
+
+  const trendStyle =
+    difference === null
+      ? {
+          color:
+            "var(--text)",
+        }
+      : difference > 0
+        ? {
+            color: "#b91c1c",
+          }
+        : difference < 0
+          ? {
+              color: "#15803d",
+            }
+          : {
+              color:
+                "var(--text)",
+            };
+
+  const trendLabel =
+    difference === null
+      ? "No comparison"
+      : difference > 0
+        ? `+${formatReading(
+            difference
+          )}`
+        : difference < 0
+          ? formatReading(
+              difference
+            )
+          : "No change";
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "minmax(0,1fr) auto",
+        gap: 8,
+        alignItems: "center",
+      }}
+    >
+
+      <div
+        style={{
+          color:
+            "var(--text)",
+          fontSize: 10,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          textAlign: "right",
+        }}
+      >
+        <div
+          style={{
+            color:
+              "var(--text-h)",
+            fontSize: 12,
+            fontWeight: 700,
+          }}
+        >
+          {hasCurrent
+            ? formatReading(
+                current
+              )
+            : "—"}
+        </div>
+
+        <div
+          style={{
+            marginTop: 2,
+            fontSize: 9,
+            fontWeight: 700,
+            ...trendStyle,
+          }}
+        >
+          {trendLabel}
+          {hasPrevious
+            ? " vs previous month"
+            : ""}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
 function ApartmentDetails({
   apartment,
 }) {
