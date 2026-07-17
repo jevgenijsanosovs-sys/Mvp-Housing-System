@@ -278,7 +278,7 @@ export default function DashboardPage() {
           <h1
             style={{
               margin: 0,
-              fontSize: 14,
+              fontSize: 12,
               alignItems: "left",
             }}
           >
