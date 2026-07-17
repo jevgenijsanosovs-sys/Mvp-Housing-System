@@ -162,6 +162,22 @@ code {
   gap: 18px;
 }
 
+.dashboard-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.dashboard-heading-organization {
+  text-align: right;
+}
+
+.administration-contact-layout {
+  display: grid;
+}
+
 @media (max-width: 767px) {
   .resident-home-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -169,5 +185,35 @@ code {
 
   .resident-home-grid > section {
     grid-column: span 1 !important;
+  }
+
+  .dashboard-heading {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .dashboard-heading-organization {
+    text-align: left;
+  }
+
+  .administration-contact-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .administration-contact-row {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 4px 12px !important;
+  }
+
+  .administration-contact-row > :nth-child(2) {
+    grid-column: 1;
+  }
+
+  .administration-contact-row > :nth-child(3) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
   }
 }
