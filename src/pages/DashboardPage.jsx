@@ -16,8 +16,8 @@ import {
 } from "../context/ModeContext";
 
 import {
-  cardStyle,
-} from "../styles/theme";
+  useAuth,
+} from "../context/AuthContext";
 
 import useApartments
   from "../hooks/useApartments";
@@ -29,11 +29,40 @@ import {
   api,
 } from "../services/api";
 
+import Drawer
+  from "../components/Drawer";
+
+import {
+  cardStyle,
+} from "../styles/theme";
+
+const CONTACTS = [
+  {
+    role: "Pārvaldnieks",
+    name: "Jevgēnijs Anosovs",
+    phone: "+371 29228047",
+  },
+  {
+    role: "Grāmatvede",
+    name: "Maija Malmigo",
+    phone: "+371 2983923",
+  },
+  {
+    role: "Siltumtehniķis",
+    name: "Igors Guļko",
+    phone: "+371 28218233",
+  },
+];
+
 export default function DashboardPage() {
 
   const {
     mode,
   } = useMode();
+
+  const {
+    me,
+  } = useAuth();
 
   const navigate =
     useNavigate();
@@ -54,8 +83,8 @@ export default function DashboardPage() {
   } = useWater();
 
   const [
-    myApartments,
-    setMyApartments
+    apartmentRows,
+    setApartmentRows
   ] = useState([]);
 
   const [
@@ -64,9 +93,14 @@ export default function DashboardPage() {
   ] = useState(false);
 
   const [
-    residentError,
-    setResidentError
-  ] = useState("");
+    apartmentOpen,
+    setApartmentOpen
+  ] = useState(false);
+
+  const [
+    contactsOpen,
+    setContactsOpen
+  ] = useState(false);
 
   useEffect(() => {
 
@@ -84,16 +118,15 @@ export default function DashboardPage() {
       return;
     }
 
-    const loadResidentDashboard =
+    const loadResident =
       async () => {
 
         setResidentLoading(true);
-        setResidentError("");
 
         try {
 
           const [
-            apartmentData,
+            result,
           ] = await Promise.all([
             api(
               "/api/my-apartments"
@@ -102,32 +135,10 @@ export default function DashboardPage() {
             loadMyWater(),
           ]);
 
-          if (
-            apartmentData?.error
-          ) {
-
-            throw new Error(
-              apartmentData.error
-            );
-          }
-
-          setMyApartments(
-            Array.isArray(
-              apartmentData
-            )
-              ? apartmentData
+          setApartmentRows(
+            Array.isArray(result)
+              ? result
               : []
-          );
-
-        } catch (error) {
-
-          console.error(
-            "Resident dashboard load failed:",
-            error
-          );
-
-          setResidentError(
-            "Resident dashboard data load failed"
           );
 
         } finally {
@@ -136,9 +147,36 @@ export default function DashboardPage() {
         }
       };
 
-    loadResidentDashboard();
+    loadResident();
 
   }, [mode]);
+
+  const myApartments =
+    useMemo(
+      () =>
+        mergeApartments(
+          apartmentRows
+        ),
+      [apartmentRows]
+    );
+
+  const waterSummary =
+    useMemo(
+      () =>
+        buildWaterSummary(
+          waterMeters
+        ),
+      [waterMeters]
+    );
+
+  const userName =
+    [
+      me?.user?.first_name,
+      me?.user?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Resident";
 
   const livingArea =
     apartments.reduce(
@@ -182,87 +220,12 @@ export default function DashboardPage() {
       0
     );
 
-  const residentWaterSummary =
-    useMemo(
-      () => {
-
-        const activeMeters =
-          waterMeters.filter(
-            (meter) =>
-              Number(
-                meter.active ?? 1
-              ) === 1
-          );
-
-        const coldMeters =
-          activeMeters.filter(
-            (meter) =>
-              meter.type === "cold"
-          );
-
-        const hotMeters =
-          activeMeters.filter(
-            (meter) =>
-              meter.type === "hot"
-          );
-
-        const metersWithReading =
-          activeMeters.filter(
-            (meter) =>
-              meter.last_reading !==
-                null &&
-              meter.last_reading !==
-                undefined
-          );
-
-        const dates =
-          metersWithReading
-            .map(
-              (meter) =>
-                meter.last_date
-            )
-            .filter(Boolean)
-            .sort();
-
-        return {
-          total:
-            activeMeters.length,
-
-          cold:
-            coldMeters.length,
-
-          hot:
-            hotMeters.length,
-
-          withReading:
-            metersWithReading.length,
-
-          withoutReading:
-            activeMeters.length -
-            metersWithReading.length,
-
-          latestDate:
-            dates.length
-              ? dates[
-                  dates.length - 1
-                ]
-              : null,
-        };
-      },
-      [waterMeters]
-    );
-
-  const dashboardSubtitle =
-    mode === "resident"
-      ? "Your apartment and utility overview"
-      : "Building overview and statistics";
-
   return (
     <div>
 
       <div
         style={{
-          marginBottom: 30,
+          marginBottom: 24,
         }}
       >
 
@@ -280,7 +243,9 @@ export default function DashboardPage() {
               "var(--text)",
           }}
         >
-          {dashboardSubtitle}
+          {mode === "resident"
+            ? "Your home at a glance"
+            : "Building overview and statistics"}
         </div>
 
       </div>
@@ -289,127 +254,32 @@ export default function DashboardPage() {
 
         <>
 
-          {residentError && (
-
-            <div
-              style={{
-                ...cardStyle,
-                border:
-                  "1px solid #fca5a5",
-                background:
-                  "#fee2e2",
-                color:
-                  "#991b1b",
-              }}
-            >
-              {residentError}
-            </div>
-
-          )}
-
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: 20,
-            }}
+            className="resident-home-grid"
           >
 
-            <section
-              style={{
-                ...cardStyle,
-                marginBottom: 0,
-              }}
+            <HomeTile
+              title="My Apartment"
+              subtitle="Profile and home information"
+              accent="#2563eb"
+              wide
+              onClick={() =>
+                setApartmentOpen(true)
+              }
             >
-
-              <DashboardSectionHeader
-                title="My Apartment"
-                subtitle={
-                  myApartments.length ===
-                    1
-                    ? "Apartment information"
-                    : `${myApartments.length} linked apartments`
-                }
-              />
 
               {residentLoading ? (
 
-                <EmptyMessage>
-                  Loading apartment data...
-                </EmptyMessage>
+                <Placeholder>
+                  Loading...
+                </Placeholder>
 
               ) : myApartments.length ===
                 0 ? (
 
-                <EmptyMessage>
-                  No apartment is linked
-                  to your account.
-                </EmptyMessage>
-
-              ) : (
-
-                <div
-                  style={{
-                    display: "grid",
-                    gap: 12,
-                  }}
-                >
-
-                  {myApartments.map(
-                    (apartment) => (
-
-                      <ApartmentSummary
-                        key={
-                          apartment.id
-                        }
-                        apartment={
-                          apartment
-                        }
-                      />
-
-                    )
-                  )}
-
-                </div>
-
-              )}
-
-            </section>
-
-            <section
-              onClick={() =>
-                navigate("/water")
-              }
-              style={{
-                ...cardStyle,
-                marginBottom: 0,
-                cursor: "pointer",
-                transition:
-                  "transform .15s ease, box-shadow .15s ease",
-              }}
-            >
-
-              <DashboardSectionHeader
-                title="Water Meters"
-                subtitle="Open meter readings"
-                action="View"
-              />
-
-              {residentLoading ? (
-
-                <EmptyMessage>
-                  Loading water meters...
-                </EmptyMessage>
-
-              ) : residentWaterSummary
-                  .total === 0 ? (
-
-                <EmptyMessage>
-                  No active water meters
-                  are linked to your
-                  apartments.
-                </EmptyMessage>
+                <Placeholder>
+                  No apartment linked.
+                </Placeholder>
 
               ) : (
 
@@ -417,35 +287,47 @@ export default function DashboardPage() {
 
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(3, minmax(0, 1fr))",
-                      gap: 10,
-                      marginBottom: 16,
+                      display: "flex",
+                      justifyContent:
+                        "space-between",
+                      gap: 12,
+                      flexWrap: "wrap",
                     }}
                   >
 
-                    <Metric
-                      label="Total"
-                      value={
-                        residentWaterSummary
-                          .total
-                      }
-                    />
+                    <div>
 
-                    <Metric
-                      label="Cold"
-                      value={
-                        residentWaterSummary
-                          .cold
-                      }
-                    />
+                      <div
+                        style={{
+                          color:
+                            "var(--text-h)",
+                          fontSize: 24,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {formatApartmentTitle(
+                          myApartments
+                        )}
+                      </div>
 
-                    <Metric
-                      label="Hot"
-                      value={
-                        residentWaterSummary
-                          .hot
+                      <div
+                        style={{
+                          marginTop: 5,
+                          color:
+                            "var(--text)",
+                          fontSize: 13,
+                        }}
+                      >
+                        {userName}
+                      </div>
+
+                    </div>
+
+                    <RelationBadge
+                      relations={
+                        collectRelations(
+                          myApartments
+                        )
                       }
                     />
 
@@ -453,36 +335,31 @@ export default function DashboardPage() {
 
                   <div
                     style={{
-                      display: "grid",
+                      display: "flex",
                       gap: 8,
+                      flexWrap: "wrap",
+                      marginTop: 14,
                     }}
                   >
 
-                    <InfoLine
-                      label="With reading"
-                      value={
-                        residentWaterSummary
-                          .withReading
-                      }
-                    />
+                    {myApartments.map(
+                      (apartment) => (
 
-                    <InfoLine
-                      label="Without reading"
-                      value={
-                        residentWaterSummary
-                          .withoutReading
-                      }
-                    />
+                        <span
+                          key={apartment.id}
+                          style={pillStyle}
+                        >
+                          Section{" "}
+                          {apartment.section ??
+                            "—"}
+                          {" · "}
+                          Floor{" "}
+                          {apartment.floor ??
+                            "—"}
+                        </span>
 
-                    <InfoLine
-                      label="Latest reading date"
-                      value={
-                        formatDate(
-                          residentWaterSummary
-                            .latestDate
-                        )
-                      }
-                    />
+                      )
+                    )}
 
                   </div>
 
@@ -490,27 +367,221 @@ export default function DashboardPage() {
 
               )}
 
-            </section>
+            </HomeTile>
 
-            <section
+            <HomeTile
+              title="Readings"
+              subtitle="Water readings overview"
+              accent="#0891b2"
+              onClick={() =>
+                navigate("/water")
+              }
+            >
+
+              {residentLoading ? (
+
+                <Placeholder>
+                  Loading...
+                </Placeholder>
+
+              ) : (
+
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 10,
+                  }}
+                >
+
+                  <ReadingRow
+                    label="Cold Water"
+                    value={
+                      formatReading(
+                        waterSummary.cold
+                      )
+                    }
+                  />
+
+                  <ReadingRow
+                    label="Hot Water"
+                    value={
+                      formatReading(
+                        waterSummary.hot
+                      )
+                    }
+                  />
+
+                  <InfoLine
+                    label="Latest reading"
+                    value={
+                      formatDate(
+                        waterSummary.latestDate
+                      )
+                    }
+                  />
+
+                </div>
+
+              )}
+
+            </HomeTile>
+
+            <HomeTile
+              title="Announcements"
+              subtitle="Building news and notices"
+              accent="#d97706"
+            >
+
+              <Placeholder>
+                <strong
+                  style={{
+                    display: "block",
+                    marginBottom: 5,
+                    color:
+                      "var(--text-h)",
+                  }}
+                >
+                  Everything is up to date
+                </strong>
+
+                No new announcements.
+              </Placeholder>
+
+            </HomeTile>
+
+            <HomeTile
+              title="Contact Administration"
+              subtitle="DzĪKS IRLAVA 20 contacts"
+              accent="#7c3aed"
+              wide
+              onClick={() =>
+                setContactsOpen(true)
+              }
+            >
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit,minmax(170px,1fr))",
+                  gap: 10,
+                }}
+              >
+
+                {CONTACTS.map(
+                  (contact) => (
+
+                    <div
+                      key={contact.role}
+                      style={contactPreview}
+                    >
+
+                      <div
+                        style={{
+                          color:
+                            "var(--text)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {contact.role}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 4,
+                          color:
+                            "var(--text-h)",
+                          fontSize: 12,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {contact.name}
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+              </div>
+
+            </HomeTile>
+
+          </div>
+
+          <Drawer
+            open={apartmentOpen}
+            title="My Apartment"
+            onClose={() =>
+              setApartmentOpen(false)
+            }
+          >
+
+            <div
               style={{
-                ...cardStyle,
-                marginBottom: 0,
+                display: "grid",
+                gap: 14,
               }}
             >
 
-              <DashboardSectionHeader
-                title="Announcements"
-                subtitle="Building news and notices"
-              />
+              <div
+                style={{
+                  color:
+                    "var(--text-h)",
+                  fontSize: 20,
+                  fontWeight: 800,
+                }}
+              >
+                {userName}
+              </div>
 
-              <EmptyMessage>
-                No announcements
-              </EmptyMessage>
+              {myApartments.map(
+                (apartment) => (
 
-            </section>
+                  <ApartmentDetails
+                    key={apartment.id}
+                    apartment={
+                      apartment
+                    }
+                  />
 
-          </div>
+                )
+              )}
+
+            </div>
+
+          </Drawer>
+
+          <Drawer
+            open={contactsOpen}
+            title="Contact Administration"
+            onClose={() =>
+              setContactsOpen(false)
+            }
+          >
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+              }}
+            >
+
+              {CONTACTS.map(
+                (contact) => (
+
+                  <ContactCard
+                    key={contact.role}
+                    contact={contact}
+                  />
+
+                )
+              )}
+
+            </div>
+
+          </Drawer>
 
         </>
 
@@ -518,141 +589,14 @@ export default function DashboardPage() {
 
       {mode === "admin" && (
 
-        <>
-
-          <div
-            style={{
-              marginTop: 30,
-              ...cardStyle,
-            }}
-          >
-
-            <h2
-              style={{
-                marginTop: 0,
-              }}
-            >
-              Building Summary
-            </h2>
-
-            <table
-              style={{
-                width: "100%",
-                borderCollapse:
-                  "collapse",
-                marginTop: 20,
-              }}
-            >
-
-              <tbody>
-
-                <SummaryRow
-                  label="Apartments"
-                  value={
-                    dashboard?.stats
-                      ?.apartments ||
-                    0
-                  }
-                />
-
-                <SummaryRow
-                  label="Residents"
-                  value={
-                    dashboard?.stats
-                      ?.users ||
-                    0
-                  }
-                />
-
-                <SummaryRow
-                  label="Living Area"
-                  value={
-                    `${livingArea.toFixed(
-                      2
-                    )} ㎡`
-                  }
-                />
-
-                <SummaryRow
-                  label="Non Living Area"
-                  value={
-                    `${nonLivingArea.toFixed(
-                      2
-                    )} ㎡`
-                  }
-                />
-
-                <SummaryRow
-                  label="Heated Area"
-                  value={
-                    `${heatedArea.toFixed(
-                      2
-                    )} ㎡`
-                  }
-                />
-
-                <SummaryRow
-                  label="Land Tax Area"
-                  value="—"
-                />
-
-                <SummaryRow
-                  label="Alternative Heating Area"
-                  value="—"
-                />
-
-                <SummaryRow
-                  label="Water Readings (last month)"
-                  value="—"
-                />
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(350px,1fr))",
-              gap: 20,
-              marginTop: 20,
-            }}
-          >
-
-            <div style={cardStyle}>
-              <h3>Announcements</h3>
-              <p>No announcements</p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Repair Tickets</h3>
-              <p>No open tickets</p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Projects</h3>
-              <p>No active projects</p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Water Monitoring</h3>
-              <p>
-                Monitoring module coming
-                soon
-              </p>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Recent Activity</h3>
-              <p>No recent activity</p>
-            </div>
-
-          </div>
-
-        </>
+        <AdminDashboard
+          dashboard={dashboard}
+          livingArea={livingArea}
+          nonLivingArea={
+            nonLivingArea
+          }
+          heatedArea={heatedArea}
+        />
 
       )}
 
@@ -660,10 +604,110 @@ export default function DashboardPage() {
   );
 }
 
-function DashboardSectionHeader({
+function HomeTile({
   title,
   subtitle,
-  action,
+  accent,
+  wide = false,
+  onClick,
+  children,
+}) {
+
+  const clickable =
+    typeof onClick ===
+    "function";
+
+  return (
+    <section
+      onClick={onClick}
+      role={
+        clickable
+          ? "button"
+          : undefined
+      }
+      tabIndex={
+        clickable
+          ? 0
+          : undefined
+      }
+      style={{
+        ...tileStyle,
+        gridColumn:
+          wide
+            ? "span 2"
+            : "span 1",
+        borderTop:
+          `4px solid ${accent}`,
+        cursor:
+          clickable
+            ? "pointer"
+            : "default",
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "flex-start",
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
+
+        <div>
+
+          <h3
+            style={{
+              margin: 0,
+              color:
+                "var(--text-h)",
+              fontSize: 17,
+            }}
+          >
+            {title}
+          </h3>
+
+          <div
+            style={{
+              marginTop: 3,
+              color:
+                "var(--text)",
+              fontSize: 11,
+            }}
+          >
+            {subtitle}
+          </div>
+
+        </div>
+
+        {clickable && (
+
+          <span
+            style={{
+              color: accent,
+              fontSize: 18,
+              fontWeight: 800,
+            }}
+          >
+            →
+          </span>
+
+        )}
+
+      </div>
+
+      {children}
+
+    </section>
+  );
+}
+
+function ReadingRow({
+  label,
+  value,
 }) {
 
   return (
@@ -672,75 +716,44 @@ function DashboardSectionHeader({
         display: "flex",
         justifyContent:
           "space-between",
-        alignItems:
-          "flex-start",
         gap: 12,
-        marginBottom: 16,
+        padding: 11,
+        border:
+          "1px solid var(--border)",
+        borderRadius: 10,
+        background:
+          "var(--surface-soft)",
       }}
     >
 
-      <div>
+      <span
+        style={{
+          color:
+            "var(--text-h)",
+          fontSize: 13,
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </span>
 
-        <h3
-          style={{
-            margin: 0,
-            color:
-              "var(--text-h)",
-          }}
-        >
-          {title}
-        </h3>
-
-        <div
-          style={{
-            marginTop: 4,
-            color:
-              "var(--text)",
-            fontSize: 12,
-          }}
-        >
-          {subtitle}
-        </div>
-
-      </div>
-
-      {action && (
-
-        <span
-          style={{
-            color:
-              "var(--accent)",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          {action} →
-        </span>
-
-      )}
+      <strong
+        style={{
+          color:
+            "var(--text-h)",
+          fontSize: 16,
+        }}
+      >
+        {value}
+      </strong>
 
     </div>
   );
 }
 
-function ApartmentSummary({
+function ApartmentDetails({
   apartment,
 }) {
-
-  const areas = [
-    [
-      "Living area",
-      formatArea(
-        apartment.living_area
-      ),
-    ],
-    [
-      "Heated area",
-      formatArea(
-        apartment.heated_area
-      ),
-    ],
-  ];
 
   return (
     <div
@@ -759,8 +772,6 @@ function ApartmentSummary({
           display: "flex",
           justifyContent:
             "space-between",
-          alignItems:
-            "center",
           gap: 10,
           marginBottom: 12,
         }}
@@ -778,8 +789,8 @@ function ApartmentSummary({
         </strong>
 
         <RelationBadge
-          relation={
-            apartment.relation_type
+          relations={
+            apartment.relations
           }
         />
 
@@ -789,12 +800,12 @@ function ApartmentSummary({
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(2, minmax(0, 1fr))",
+            "repeat(2,minmax(0,1fr))",
           gap: 8,
         }}
       >
 
-        <InfoBox
+        <DetailBox
           label="Section"
           value={
             apartment.section ??
@@ -802,7 +813,7 @@ function ApartmentSummary({
           }
         />
 
-        <InfoBox
+        <DetailBox
           label="Floor"
           value={
             apartment.floor ??
@@ -810,7 +821,7 @@ function ApartmentSummary({
           }
         />
 
-        <InfoBox
+        <DetailBox
           label="Rooms"
           value={
             apartment.room_count ??
@@ -818,7 +829,7 @@ function ApartmentSummary({
           }
         />
 
-        <InfoBox
+        <DetailBox
           label="Residents"
           value={
             apartment.residents_count ??
@@ -826,33 +837,23 @@ function ApartmentSummary({
           }
         />
 
-      </div>
+        <DetailBox
+          label="Living area"
+          value={
+            formatArea(
+              apartment.living_area
+            )
+          }
+        />
 
-      <div
-        style={{
-          display: "grid",
-          gap: 7,
-          marginTop: 12,
-          paddingTop: 12,
-          borderTop:
-            "1px solid var(--border)",
-        }}
-      >
-
-        {areas.map(
-          ([
-            label,
-            value,
-          ]) => (
-
-            <InfoLine
-              key={label}
-              label={label}
-              value={value}
-            />
-
-          )
-        )}
+        <DetailBox
+          label="Heated area"
+          value={
+            formatArea(
+              apartment.heated_area
+            )
+          }
+        />
 
       </div>
 
@@ -860,21 +861,19 @@ function ApartmentSummary({
   );
 }
 
-function Metric({
-  label,
-  value,
+function ContactCard({
+  contact,
 }) {
 
   return (
     <div
       style={{
-        padding: 12,
+        padding: 14,
         border:
           "1px solid var(--border)",
-        borderRadius: 11,
+        borderRadius: 12,
         background:
           "var(--surface-soft)",
-        textAlign: "center",
       }}
     >
 
@@ -882,14 +881,11 @@ function Metric({
         style={{
           color:
             "var(--text)",
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: 700,
-          textTransform:
-            "uppercase",
-          letterSpacing: ".05em",
         }}
       >
-        {label}
+        {contact.role}
       </div>
 
       <div
@@ -897,19 +893,73 @@ function Metric({
           marginTop: 5,
           color:
             "var(--text-h)",
-          fontSize: 24,
+          fontSize: 16,
           fontWeight: 800,
-          lineHeight: 1,
         }}
       >
-        {value}
+        {contact.name}
       </div>
+
+      <a
+        href={`tel:${contact.phone.replace(
+          /\s+/g,
+          ""
+        )}`}
+        style={{
+          display:
+            "inline-flex",
+          marginTop: 10,
+          padding: "9px 12px",
+          borderRadius: 9,
+          background: "#2563eb",
+          color: "#ffffff",
+          fontSize: 13,
+          fontWeight: 700,
+          textDecoration: "none",
+        }}
+      >
+        ☎ {contact.phone}
+      </a>
 
     </div>
   );
 }
 
-function InfoBox({
+function RelationBadge({
+  relations = [],
+}) {
+
+  const label =
+    relations
+      .map(
+        (relation) =>
+          relation === "owner"
+            ? "Owner"
+            : relation === "resident"
+              ? "Resident"
+              : relation
+      )
+      .join(" / ") ||
+    "Resident";
+
+  return (
+    <span
+      style={{
+        padding: "5px 9px",
+        borderRadius: 999,
+        background: "#dbeafe",
+        color: "#1d4ed8",
+        fontSize: 10,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DetailBox({
   label,
   value,
 }) {
@@ -950,6 +1000,28 @@ function InfoBox({
   );
 }
 
+function Placeholder({
+  children,
+}) {
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        border:
+          "1px dashed var(--border)",
+        borderRadius: 10,
+        color:
+          "var(--text)",
+        fontSize: 12,
+        textAlign: "center",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function InfoLine({
   label,
   value,
@@ -961,9 +1033,10 @@ function InfoLine({
         display: "flex",
         justifyContent:
           "space-between",
-        alignItems:
-          "baseline",
         gap: 12,
+        paddingTop: 8,
+        borderTop:
+          "1px solid var(--border)",
       }}
     >
 
@@ -971,7 +1044,7 @@ function InfoLine({
         style={{
           color:
             "var(--text)",
-          fontSize: 12,
+          fontSize: 11,
         }}
       >
         {label}
@@ -981,8 +1054,7 @@ function InfoLine({
         style={{
           color:
             "var(--text-h)",
-          fontSize: 12,
-          textAlign: "right",
+          fontSize: 11,
         }}
       >
         {value}
@@ -992,83 +1064,235 @@ function InfoLine({
   );
 }
 
-function RelationBadge({
-  relation,
-}) {
-
-  const owner =
-    relation === "owner";
-
-  return (
-    <span
-      style={{
-        padding: "5px 9px",
-        borderRadius: 999,
-        background:
-          owner
-            ? "#dbeafe"
-            : "#f3f4f6",
-        color:
-          owner
-            ? "#1d4ed8"
-            : "#374151",
-        fontSize: 10,
-        fontWeight: 700,
-        textTransform:
-          "capitalize",
-      }}
-    >
-      {relation ||
-        "resident"}
-    </span>
-  );
-}
-
-function EmptyMessage({
-  children,
+function AdminDashboard({
+  dashboard,
+  livingArea,
+  nonLivingArea,
+  heatedArea,
 }) {
 
   return (
-    <div
-      style={{
-        padding: 16,
-        border:
-          "1px dashed var(--border)",
-        borderRadius: 11,
-        color:
-          "var(--text)",
-        fontSize: 13,
-        textAlign: "center",
-      }}
-    >
-      {children}
+    <div style={cardStyle}>
+
+      <h2
+        style={{
+          marginTop: 0,
+        }}
+      >
+        Building Summary
+      </h2>
+
+      <InfoLine
+        label="Apartments"
+        value={
+          dashboard?.stats
+            ?.apartments ||
+          0
+        }
+      />
+
+      <InfoLine
+        label="Residents"
+        value={
+          dashboard?.stats
+            ?.users ||
+          0
+        }
+      />
+
+      <InfoLine
+        label="Living Area"
+        value={
+          `${livingArea.toFixed(
+            2
+          )} ㎡`
+        }
+      />
+
+      <InfoLine
+        label="Non Living Area"
+        value={
+          `${nonLivingArea.toFixed(
+            2
+          )} ㎡`
+        }
+      />
+
+      <InfoLine
+        label="Heated Area"
+        value={
+          `${heatedArea.toFixed(
+            2
+          )} ㎡`
+        }
+      />
+
     </div>
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-}) {
+function mergeApartments(
+  rows
+) {
+
+  const map =
+    new Map();
+
+  rows.forEach(
+    (row) => {
+
+      const key =
+        String(
+          row.id ??
+          row.apartment_id ??
+          row.number
+        );
+
+      if (!map.has(key)) {
+
+        map.set(
+          key,
+          {
+            ...row,
+            relations: [],
+          }
+        );
+      }
+
+      const item =
+        map.get(key);
+
+      const relation =
+        row.relation_type ||
+        row.relation ||
+        row.user_relation;
+
+      if (
+        relation &&
+        !item.relations.includes(
+          relation
+        )
+      ) {
+
+        item.relations.push(
+          relation
+        );
+      }
+    }
+  );
+
+  return Array.from(
+    map.values()
+  );
+}
+
+function collectRelations(
+  apartments
+) {
+
+  return Array.from(
+    new Set(
+      apartments.flatMap(
+        (apartment) =>
+          apartment.relations
+      )
+    )
+  );
+}
+
+function buildWaterSummary(
+  meters
+) {
+
+  const active =
+    meters.filter(
+      (meter) =>
+        Number(
+          meter.active ?? 1
+        ) === 1
+    );
+
+  const sumByType =
+    (type) =>
+      active
+        .filter(
+          (meter) =>
+            meter.type === type
+        )
+        .reduce(
+          (
+            sum,
+            meter
+          ) =>
+            sum +
+            (
+              Number(
+                meter.last_reading
+              ) ||
+              0
+            ),
+          0
+        );
+
+  const dates =
+    active
+      .map(
+        (meter) =>
+          meter.last_date
+      )
+      .filter(Boolean)
+      .sort();
+
+  return {
+    cold:
+      sumByType("cold"),
+
+    hot:
+      sumByType("hot"),
+
+    latestDate:
+      dates.length
+        ? dates[
+            dates.length - 1
+          ]
+        : null,
+  };
+}
+
+function formatApartmentTitle(
+  apartments
+) {
+
+  return apartments.length === 1
+    ? `Apartment #${apartments[0].number}`
+    : apartments
+        .map(
+          (apartment) =>
+            `#${apartment.number}`
+        )
+        .join(", ");
+}
+
+function formatReading(
+  value
+) {
+
+  const numeric =
+    Number(value);
+
+  if (
+    !Number.isFinite(
+      numeric
+    )
+  ) {
+    return "—";
+  }
 
   return (
-    <tr>
-
-      <td
-        style={{
-          padding: "10px 0",
-        }}
-      >
-        {label}
-      </td>
-
-      <td>
-        <strong>
-          {value}
-        </strong>
-      </td>
-
-    </tr>
+    (numeric / 1000)
+      .toFixed(3)
+      .replace(".", ",") +
+    " m³"
   );
 }
 
@@ -1076,18 +1300,18 @@ function formatArea(
   value
 ) {
 
-  const number =
+  const numeric =
     Number(value);
 
   if (
     !Number.isFinite(
-      number
+      numeric
     )
   ) {
     return "—";
   }
 
-  return `${number.toFixed(
+  return `${numeric.toFixed(
     2
   )} ㎡`;
 }
@@ -1103,3 +1327,37 @@ function formatDate(
   return String(value)
     .slice(0, 10);
 }
+
+const tileStyle = {
+  minWidth: 0,
+  padding: 18,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 16,
+  background:
+    "var(--surface)",
+  boxShadow:
+    "0 8px 24px rgba(15,23,42,.06)",
+  boxSizing: "border-box",
+};
+
+const pillStyle = {
+  display: "inline-block",
+  padding: "6px 9px",
+  borderRadius: 999,
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text-h)",
+  fontSize: 10,
+  fontWeight: 700,
+};
+
+const contactPreview = {
+  padding: 10,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 10,
+  background:
+    "var(--surface-soft)",
+};
