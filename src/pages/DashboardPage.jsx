@@ -280,7 +280,7 @@ export default function DashboardPage() {
               margin: 0,
             }}
           >
-            Dashboard
+            Dashboard MVX System
           </h1>
 
           <div
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                   "0.02em",
               }}
             >
-              MVX System
+              
             </div>
 
             <div
