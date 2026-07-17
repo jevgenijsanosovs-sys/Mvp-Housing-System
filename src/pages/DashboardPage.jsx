@@ -622,7 +622,7 @@ export default function DashboardPage() {
 
             <HomeTile
               title="Contact Administration"
-              subtitle="DzĪKS Irlava 20"
+              subtitle="                 "
               accent="#7c3aed"
               wide
             >
