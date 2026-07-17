@@ -278,6 +278,7 @@ export default function DashboardPage() {
           <h1
             style={{
               margin: 0,
+              alignItems: "left",
             }}
           >
             Dashboard MVX System
