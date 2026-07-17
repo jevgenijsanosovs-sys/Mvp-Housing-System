@@ -155,3 +155,19 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.resident-home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 767px) {
+  .resident-home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resident-home-grid > section {
+    grid-column: span 1 !important;
+  }
+}
