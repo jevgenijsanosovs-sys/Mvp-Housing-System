@@ -93,13 +93,13 @@ export default function DashboardPage() {
   ] = useState(false);
 
   const [
-    apartmentOpen,
-    setApartmentOpen
-  ] = useState(false);
+    meterHistories,
+    setMeterHistories
+  ] = useState({});
 
   const [
-    contactsOpen,
-    setContactsOpen
+    apartmentOpen,
+    setApartmentOpen
   ] = useState(false);
 
   useEffect(() => {
@@ -141,6 +141,48 @@ export default function DashboardPage() {
               : []
           );
 
+          const meterResult =
+            await api(
+              "/api/my-water-meters"
+            );
+
+          const meters =
+            Array.isArray(
+              meterResult
+            )
+              ? meterResult
+              : [];
+
+          const historyEntries =
+            await Promise.all(
+              meters.map(
+                async (
+                  meter
+                ) => {
+
+                  const history =
+                    await api(
+                      `/api/my-water-meter-history?id=${meter.id}`
+                    );
+
+                  return [
+                    meter.id,
+                    Array.isArray(
+                      history?.readings
+                    )
+                      ? history.readings
+                      : [],
+                  ];
+                }
+              )
+            );
+
+          setMeterHistories(
+            Object.fromEntries(
+              historyEntries
+            )
+          );
+
         } finally {
 
           setResidentLoading(false);
@@ -164,9 +206,13 @@ export default function DashboardPage() {
     useMemo(
       () =>
         buildWaterSummary(
-          waterMeters
+          waterMeters,
+          meterHistories
         ),
-      [waterMeters]
+      [
+        waterMeters,
+        meterHistories,
+      ]
     );
 
   const userName =
@@ -321,6 +367,32 @@ export default function DashboardPage() {
                         {userName}
                       </div>
 
+                      <div
+                        style={{
+                          marginTop: 10,
+                          color:
+                            "var(--text)",
+                          fontSize: 11,
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <div
+                          style={{
+                            color:
+                              "var(--text-h)",
+                            fontWeight: 700,
+                          }}
+                        >
+                          DzĪKS Irlava 20
+                        </div>
+
+                        <div>
+                          Irlavas iela 20,
+                          Rīga, LV-1046,
+                          Latvija
+                        </div>
+                      </div>
+
                     </div>
 
                     <RelationBadge
@@ -371,7 +443,7 @@ export default function DashboardPage() {
 
             <HomeTile
               title="Readings"
-              subtitle="Water readings overview"
+              subtitle="Latest meter values and monthly consumption"
               accent="#0891b2"
               onClick={() =>
                 navigate("/water")
@@ -384,41 +456,143 @@ export default function DashboardPage() {
                   Loading...
                 </Placeholder>
 
+              ) : waterSummary
+                  .meters.length === 0 ? (
+
+                <Placeholder>
+                  No active water meters.
+                </Placeholder>
+
               ) : (
 
                 <div
                   style={{
                     display: "grid",
-                    gap: 10,
+                    gap: 12,
                   }}
                 >
 
-                  <ReadingRow
-                    label="Cold Water"
-                    value={
-                      formatReading(
-                        waterSummary.cold
-                      )
-                    }
-                  />
+                  <div
+                    style={{
+                      overflowX: "auto",
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse:
+                          "collapse",
+                        fontSize: 10,
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <th style={readingTh}>
+                            Meter
+                          </th>
+                          <th style={readingTh}>
+                            Latest
+                          </th>
+                          <th style={readingTh}>
+                            Date
+                          </th>
+                        </tr>
+                      </thead>
 
-                  <ReadingRow
-                    label="Hot Water"
-                    value={
-                      formatReading(
-                        waterSummary.hot
-                      )
-                    }
-                  />
+                      <tbody>
+                        {waterSummary
+                          .meters
+                          .map(
+                            (meter) => (
 
-                  <InfoLine
-                    label="Latest reading"
-                    value={
-                      formatDate(
-                        waterSummary.latestDate
-                      )
-                    }
-                  />
+                              <tr
+                                key={meter.id}
+                              >
+                                <td style={readingTd}>
+                                  <div
+                                    style={{
+                                      color:
+                                        "var(--text-h)",
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {meter.type ===
+                                    "hot"
+                                      ? "Hot"
+                                      : "Cold"}
+                                    {" · "}
+                                    {meter.local_label ||
+                                      meter.riser_code ||
+                                      "Meter"}
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      marginTop: 2,
+                                      color:
+                                        "var(--text)",
+                                      fontSize: 9,
+                                    }}
+                                  >
+                                    {meter.serial_number ||
+                                      "—"}
+                                  </div>
+                                </td>
+
+                                <td style={readingTd}>
+                                  {formatReading(
+                                    meter.last_reading
+                                  )}
+                                </td>
+
+                                <td style={readingTd}>
+                                  {formatDate(
+                                    meter.last_date
+                                  )}
+                                </td>
+                              </tr>
+
+                            )
+                          )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 7,
+                      paddingTop: 10,
+                      borderTop:
+                        "1px solid var(--border)",
+                    }}
+                  >
+
+                    <ConsumptionLine
+                      label="Cold Water consumption"
+                      current={
+                        waterSummary
+                          .coldCurrent
+                      }
+                      previous={
+                        waterSummary
+                          .coldPrevious
+                      }
+                    />
+
+                    <ConsumptionLine
+                      label="Hot Water consumption"
+                      current={
+                        waterSummary
+                          .hotCurrent
+                      }
+                      previous={
+                        waterSummary
+                          .hotPrevious
+                      }
+                    />
+
+                  </div>
 
                 </div>
 
@@ -454,16 +628,13 @@ export default function DashboardPage() {
               subtitle="DzĪKS IRLAVA 20 contacts"
               accent="#7c3aed"
               wide
-              onClick={() =>
-                setContactsOpen(true)
-              }
             >
 
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns:
-                    "repeat(auto-fit,minmax(170px,1fr))",
+                    "repeat(auto-fit,minmax(190px,1fr))",
                   gap: 10,
                 }}
               >
@@ -499,12 +670,40 @@ export default function DashboardPage() {
                         {contact.name}
                       </div>
 
+                      <a
+                        href={`tel:${contact.phone.replace(
+                          /\s+/g,
+                          ""
+                        )}`}
+                        onClick={(event) =>
+                          event.stopPropagation()
+                        }
+                        style={contactLink}
+                      >
+                        {contact.phone}
+                      </a>
+
                     </div>
 
                   )
                 )}
 
               </div>
+
+              <a
+                href="mailto:irlavas20@inbox.lv"
+                onClick={(event) =>
+                  event.stopPropagation()
+                }
+                style={{
+                  ...contactLink,
+                  display:
+                    "inline-flex",
+                  marginTop: 12,
+                }}
+              >
+                irlavas20@inbox.lv
+              </a>
 
             </HomeTile>
 
@@ -553,35 +752,6 @@ export default function DashboardPage() {
 
           </Drawer>
 
-          <Drawer
-            open={contactsOpen}
-            title="Contact Administration"
-            onClose={() =>
-              setContactsOpen(false)
-            }
-          >
-
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-
-              {CONTACTS.map(
-                (contact) => (
-
-                  <ContactCard
-                    key={contact.role}
-                    contact={contact}
-                  />
-
-                )
-              )}
-
-            </div>
-
-          </Drawer>
 
         </>
 
@@ -705,51 +875,6 @@ function HomeTile({
   );
 }
 
-function ReadingRow({
-  label,
-  value,
-}) {
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent:
-          "space-between",
-        gap: 12,
-        padding: 11,
-        border:
-          "1px solid var(--border)",
-        borderRadius: 10,
-        background:
-          "var(--surface-soft)",
-      }}
-    >
-
-      <span
-        style={{
-          color:
-            "var(--text-h)",
-          fontSize: 13,
-          fontWeight: 700,
-        }}
-      >
-        {label}
-      </span>
-
-      <strong
-        style={{
-          color:
-            "var(--text-h)",
-          fontSize: 16,
-        }}
-      >
-        {value}
-      </strong>
-
-    </div>
-  );
-}
 
 function ApartmentDetails({
   apartment,
@@ -861,69 +986,6 @@ function ApartmentDetails({
   );
 }
 
-function ContactCard({
-  contact,
-}) {
-
-  return (
-    <div
-      style={{
-        padding: 14,
-        border:
-          "1px solid var(--border)",
-        borderRadius: 12,
-        background:
-          "var(--surface-soft)",
-      }}
-    >
-
-      <div
-        style={{
-          color:
-            "var(--text)",
-          fontSize: 11,
-          fontWeight: 700,
-        }}
-      >
-        {contact.role}
-      </div>
-
-      <div
-        style={{
-          marginTop: 5,
-          color:
-            "var(--text-h)",
-          fontSize: 16,
-          fontWeight: 800,
-        }}
-      >
-        {contact.name}
-      </div>
-
-      <a
-        href={`tel:${contact.phone.replace(
-          /\s+/g,
-          ""
-        )}`}
-        style={{
-          display:
-            "inline-flex",
-          marginTop: 10,
-          padding: "9px 12px",
-          borderRadius: 9,
-          background: "#2563eb",
-          color: "#ffffff",
-          fontSize: 13,
-          fontWeight: 700,
-          textDecoration: "none",
-        }}
-      >
-        ☎ {contact.phone}
-      </a>
-
-    </div>
-  );
-}
 
 function RelationBadge({
   relations = [],
@@ -1201,7 +1263,8 @@ function collectRelations(
 }
 
 function buildWaterSummary(
-  meters
+  meters,
+  histories
 ) {
 
   const active =
@@ -1212,50 +1275,133 @@ function buildWaterSummary(
         ) === 1
     );
 
-  const sumByType =
-    (type) =>
-      active
-        .filter(
-          (meter) =>
-            meter.type === type
-        )
-        .reduce(
-          (
-            sum,
-            meter
-          ) =>
-            sum +
-            (
-              Number(
-                meter.last_reading
-              ) ||
-              0
-            ),
-          0
-        );
+  const calculateMeterConsumption =
+    (
+      meter
+    ) => {
 
-  const dates =
-    active
-      .map(
-        (meter) =>
-          meter.last_date
-      )
-      .filter(Boolean)
-      .sort();
+      const readings =
+        Array.isArray(
+          histories[meter.id]
+        )
+          ? histories[meter.id]
+          : [];
+
+      const latest =
+        readings[0];
+
+      const previous =
+        readings[1];
+
+      const beforePrevious =
+        readings[2];
+
+      const currentConsumption =
+        latest &&
+        previous
+          ? Number(
+              latest.reading_value
+            ) -
+            Number(
+              previous.reading_value
+            )
+          : null;
+
+      const previousConsumption =
+        previous &&
+        beforePrevious
+          ? Number(
+              previous.reading_value
+            ) -
+            Number(
+              beforePrevious.reading_value
+            )
+          : null;
+
+      return {
+        ...meter,
+        currentConsumption:
+          Number.isFinite(
+            currentConsumption
+          )
+            ? currentConsumption
+            : null,
+
+        previousConsumption:
+          Number.isFinite(
+            previousConsumption
+          )
+            ? previousConsumption
+            : null,
+      };
+    };
+
+  const enriched =
+    active.map(
+      calculateMeterConsumption
+    );
+
+  const sumConsumption =
+    (
+      type,
+      field
+    ) => {
+
+      const values =
+        enriched
+          .filter(
+            (meter) =>
+              meter.type === type &&
+              meter[field] !== null
+          )
+          .map(
+            (meter) =>
+              meter[field]
+          );
+
+      if (
+        values.length === 0
+      ) {
+        return null;
+      }
+
+      return values.reduce(
+        (
+          sum,
+          value
+        ) =>
+          sum + value,
+        0
+      );
+    };
 
   return {
-    cold:
-      sumByType("cold"),
+    meters:
+      enriched,
 
-    hot:
-      sumByType("hot"),
+    coldCurrent:
+      sumConsumption(
+        "cold",
+        "currentConsumption"
+      ),
 
-    latestDate:
-      dates.length
-        ? dates[
-            dates.length - 1
-          ]
-        : null,
+    coldPrevious:
+      sumConsumption(
+        "cold",
+        "previousConsumption"
+      ),
+
+    hotCurrent:
+      sumConsumption(
+        "hot",
+        "currentConsumption"
+      ),
+
+    hotPrevious:
+      sumConsumption(
+        "hot",
+        "previousConsumption"
+      ),
   };
 }
 
@@ -1351,6 +1497,36 @@ const pillStyle = {
     "var(--text-h)",
   fontSize: 10,
   fontWeight: 700,
+};
+
+const readingTh = {
+  padding: "6px 7px",
+  borderBottom:
+    "1px solid var(--border)",
+  color:
+    "var(--text)",
+  textAlign: "left",
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+};
+
+const readingTd = {
+  padding: "7px",
+  borderBottom:
+    "1px solid var(--border-soft)",
+  color:
+    "var(--text)",
+  verticalAlign: "top",
+  whiteSpace: "nowrap",
+};
+
+const contactLink = {
+  display: "inline-block",
+  marginTop: 7,
+  color: "#2563eb",
+  fontSize: 11,
+  fontWeight: 700,
+  textDecoration: "none",
 };
 
 const contactPreview = {
