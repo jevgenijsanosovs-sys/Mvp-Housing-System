@@ -278,6 +278,7 @@ export default function DashboardPage() {
           <h1
             style={{
               margin: 0,
+              fontSize: 14,
               alignItems: "left",
             }}
           >
@@ -326,6 +327,7 @@ export default function DashboardPage() {
                 fontWeight: 700,
                 letterSpacing:
                   "0.04em",
+                alignItems: "left",
               }}
             >
               DzĪKS IRLAVA 20
