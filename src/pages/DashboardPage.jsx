@@ -341,7 +341,6 @@ export default function DashboardPage() {
             <HomeTile
               title="My Apartment"
               subtitle="Profile and home information"
-              accent="#2563eb"
               wide
               onClick={() =>
                 setApartmentOpen(true)
@@ -452,7 +451,6 @@ export default function DashboardPage() {
             <HomeTile
               title="Readings"
               subtitle="Latest meter values and monthly consumption"
-              accent="#0891b2"
               onClick={() =>
                 navigate("/water")
               }
@@ -600,7 +598,6 @@ export default function DashboardPage() {
             <HomeTile
               title="Announcements"
               subtitle="Building news and notices"
-              accent="#d97706"
             >
 
               <Placeholder>
@@ -622,8 +619,7 @@ export default function DashboardPage() {
 
             <HomeTile
               title="Contact Administration"
-              subtitle="                 "
-              accent="#7c3aed"
+              subtitle="DzĪKS Irlava 20"
               wide
             >
 
@@ -850,7 +846,6 @@ export default function DashboardPage() {
 function HomeTile({
   title,
   subtitle,
-  accent,
   wide = false,
   onClick,
   children,
@@ -879,8 +874,6 @@ function HomeTile({
           wide
             ? "span 2"
             : "span 1",
-        borderTop:
-          `4px solid ${accent}`,
         cursor:
           clickable
             ? "pointer"
@@ -930,9 +923,10 @@ function HomeTile({
 
           <span
             style={{
-              color: accent,
+              color:
+                "var(--text)",
               fontSize: 18,
-              fontWeight: 800,
+              fontWeight: 700,
             }}
           >
             →
@@ -1255,9 +1249,13 @@ function RelationBadge({
     <span
       style={{
         padding: "5px 9px",
+        border:
+          "1px solid var(--border)",
         borderRadius: 999,
-        background: "#dbeafe",
-        color: "#1d4ed8",
+        background:
+          "var(--surface-soft)",
+        color:
+          "var(--text-h)",
         fontSize: 10,
         fontWeight: 700,
         whiteSpace: "nowrap",
