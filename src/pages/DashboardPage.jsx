@@ -299,7 +299,7 @@ export default function DashboardPage() {
 
         <div
           style={{
-            marginTop: 4,
+            marginTop: 6,
             color:
               "var(--text)",
             fontSize: 13,
