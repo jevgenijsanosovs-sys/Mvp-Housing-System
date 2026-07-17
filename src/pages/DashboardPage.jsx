@@ -45,7 +45,7 @@ const CONTACTS = [
   {
     role: "Grāmatvede",
     name: "Maija Malmigo",
-    phone: "+371 2983923",
+    phone: "+371 29283923",
   },
   {
     role: "Siltumtehniķis",
