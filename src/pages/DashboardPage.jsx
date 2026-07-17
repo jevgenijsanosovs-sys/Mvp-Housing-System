@@ -270,69 +270,60 @@ export default function DashboardPage() {
     <div>
 
       <div
-        className="dashboard-heading"
+        style={{
+          marginBottom: 24,
+        }}
       >
 
-        <div>
+        <h1
+          style={{
+            margin: 0,
+            lineHeight: 1.2,
+            color:
+              "var(--text-h)",
+          }}
+        >
+          Dashboard{" "}
 
-          <h1
+          <span
             style={{
-              margin: 0,
-              fontSize: 14,
-              alignItems: "left",
-            }}
-          >
-            Dashboard MVX System
-          </h1>
-
-          <div
-            style={{
-              marginTop: 6,
+              fontSize: "0.6em",
+              fontWeight: 700,
               color:
                 "var(--text)",
             }}
           >
-            {mode === "resident"
-              ? "Your home at a glance"
-              : "Building overview and statistics"}
-          </div>
+            MVX System
+          </span>
+        </h1>
 
+        <div
+          style={{
+            marginTop: 6,
+            color:
+              "var(--text)",
+            fontSize: 13,
+          }}
+        >
+          {mode === "resident"
+            ? "Your home at a glance"
+            : "Building overview and statistics"}
         </div>
 
         {mode === "resident" && (
 
           <div
-            className="dashboard-heading-organization"
+            style={{
+              marginTop: 12,
+              color:
+                "var(--text-h)",
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing:
+                "0.04em",
+            }}
           >
-
-            <div
-              style={{
-                color:
-                  "var(--text-h)",
-                fontSize: 15,
-                fontWeight: 800,
-                letterSpacing:
-                  "0.02em",
-              }}
-            >
-              
-            </div>
-
-            <div
-              style={{
-                marginTop: 4,
-                color:
-                  "var(--text)",
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing:
-                  "0.04em",
-                alignItems: "left",
-              }}
-            >
-              DzĪKS IRLAVA 20
-            </div>
-
+            DzĪKS IRLAVA 20
           </div>
 
         )}
