@@ -40,7 +40,7 @@ const CONTACTS = [
   {
     role: "Pārvaldnieks",
     name: "Jevgēnijs Anosovs",
-    phone: "+371 29228047",
+    phone: "+371 27424549",
   },
   {
     role: "Grāmatvede",
