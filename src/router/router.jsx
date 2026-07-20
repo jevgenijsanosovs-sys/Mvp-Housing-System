@@ -34,6 +34,9 @@ import AnnouncementsPage
 import AdminAnnouncementsPage
   from "../pages/AdminAnnouncementsPage";
 
+import AnnouncementDetailsPage
+  from "../pages/AnnouncementDetailsPage";
+
 import ProtectedRoute
   from "../routes/ProtectedRoute";
 
@@ -84,6 +87,12 @@ export const router =
           path: "announcements",
           element:
             <AnnouncementsPage />,
+        },
+
+        {
+          path: "announcement",
+          element:
+            <AnnouncementDetailsPage />,
         },
 
         {
