@@ -18,6 +18,10 @@ import {
 } from "../context/ModeContext";
 
 import {
+  useTranslation,
+} from "../i18n";
+
+import {
   sidebar,
   buttonStyle,
   menuButton,
@@ -143,6 +147,10 @@ export default function Sidebar({
     setMode,
   } = useMode();
 
+  const {
+    t,
+  } = useTranslation();
+
   const navigate =
     useNavigate();
 
@@ -254,7 +262,7 @@ export default function Sidebar({
         </h2>
 
         <div style={sidebarUser}>
-          User:{" "}
+          {t("sidebar.user")}:{" "}
           {me?.user?.first_name}
           {" "}
           {me?.user?.last_name}
@@ -274,7 +282,9 @@ export default function Sidebar({
                 )
               }
             >
-              Resident Mode
+              {t(
+                "sidebar.residentMode"
+              )}
             </button>
           )}
 
@@ -291,7 +301,9 @@ export default function Sidebar({
                 )
               }
             >
-              Admin Mode
+              {t(
+                "sidebar.adminMode"
+              )}
             </button>
           )}
         </div>
@@ -301,21 +313,27 @@ export default function Sidebar({
         {mode === "resident" && (
           <>
             <MenuButton
-              title="Dashboard"
+              title={t(
+                "sidebar.dashboard"
+              )}
               onClick={() =>
                 go("/")
               }
             />
 
             <MenuButton
-              title="Water Meters"
+              title={t(
+                "sidebar.waterMeters"
+              )}
               onClick={() =>
                 go("/water")
               }
             />
 
             <MenuButton
-              title="Announcements"
+              title={t(
+                "sidebar.announcements"
+              )}
               onClick={() =>
                 go(
                   "/announcements"
@@ -328,42 +346,54 @@ export default function Sidebar({
         {mode === "admin" && (
           <>
             <MenuButton
-              title="Dashboard"
+              title={t(
+                "sidebar.dashboard"
+              )}
               onClick={() =>
                 go("/")
               }
             />
 
             <MenuButton
-              title="Users"
+              title={t(
+                "sidebar.users"
+              )}
               onClick={() =>
                 go("/users")
               }
             />
 
             <MenuButton
-              title="Apartments"
+              title={t(
+                "sidebar.apartments"
+              )}
               onClick={() =>
                 go("/apartments")
               }
             />
 
             <MenuButton
-              title="Water Meter Management"
+              title={t(
+                "sidebar.waterMeterManagement"
+              )}
               onClick={() =>
                 go("/water-meters")
               }
             />
 
             <MenuButton
-              title="Water Reading History"
+              title={t(
+                "sidebar.waterReadingHistory"
+              )}
               onClick={() =>
                 go("/water-readings")
               }
             />
 
             <MenuButton
-              title="Announcements"
+              title={t(
+                "sidebar.announcements"
+              )}
               onClick={() =>
                 go(
                   "/admin-announcements"
@@ -372,7 +402,9 @@ export default function Sidebar({
             />
 
             <MenuButton
-              title="Monthly Report"
+              title={t(
+                "sidebar.monthlyReport"
+              )}
               onClick={() =>
                 go("/monthly-report")
               }
@@ -401,7 +433,9 @@ export default function Sidebar({
           onClick={logout}
           style={buttonStyle}
         >
-          Logout
+          {t(
+            "sidebar.logout"
+          )}
         </button>
       </div>
     </div>
