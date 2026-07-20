@@ -31,6 +31,9 @@ import AdminMonthlyReportPage
 import AnnouncementsPage
   from "../pages/AnnouncementsPage";
 
+import AdminAnnouncementsPage
+  from "../pages/AdminAnnouncementsPage";
+
 import ProtectedRoute
   from "../routes/ProtectedRoute";
 
@@ -81,6 +84,12 @@ export const router =
           path: "announcements",
           element:
             <AnnouncementsPage />,
+        },
+
+        {
+          path: "admin-announcements",
+          element:
+            <AdminAnnouncementsPage />,
         },
 
         {
