@@ -41,6 +41,7 @@ const DEFAULT_PATHS = {
 const RESIDENT_PATHS = new Set([
   "/",
   "/water",
+  "/announcements",
 ]);
 
 const ADMIN_PATHS = new Set([
@@ -56,16 +57,13 @@ function isPathAllowedForMode(
   path,
   mode
 ) {
-
   if (mode === "resident") {
-
     return RESIDENT_PATHS.has(
       path
     );
   }
 
   if (mode === "admin") {
-
     return ADMIN_PATHS.has(
       path
     );
@@ -78,7 +76,6 @@ function saveLastPath(
   mode,
   path
 ) {
-
   const key =
     LAST_PATH_KEYS[mode];
 
@@ -101,7 +98,6 @@ function saveLastPath(
 function getLastPath(
   mode
 ) {
-
   const key =
     LAST_PATH_KEYS[mode];
 
@@ -133,7 +129,6 @@ export default function Sidebar({
   sidebarOpen = false,
   setSidebarOpen = () => {},
 }) {
-
   const {
     me,
     logout,
@@ -166,9 +161,7 @@ export default function Sidebar({
 
   const closeMobileSidebar =
     () => {
-
       if (isMobile) {
-
         setSidebarOpen(false);
       }
     };
@@ -176,7 +169,6 @@ export default function Sidebar({
   const go = (
     path
   ) => {
-
     saveLastPath(
       mode,
       path
@@ -190,13 +182,10 @@ export default function Sidebar({
   const switchMode = (
     nextMode
   ) => {
-
     if (
       nextMode === mode
     ) {
-
       closeMobileSidebar();
-
       return;
     }
 
@@ -222,7 +211,6 @@ export default function Sidebar({
   };
 
   const sidebarStyle = {
-
     ...sidebar,
 
     ...(isMobile
@@ -232,12 +220,9 @@ export default function Sidebar({
           left: sidebarOpen
             ? 0
             : -320,
-
           height: "100vh",
           overflowY: "auto",
-
           zIndex: 1800,
-
           transition:
             "left 0.25s ease",
         }
@@ -248,13 +233,9 @@ export default function Sidebar({
   };
 
   return (
-
     <div style={sidebarStyle}>
-
       <div>
-
         <h2 style={sidebarTitle}>
-
           <div
             style={{
               fontSize: "0.8em",
@@ -266,22 +247,17 @@ export default function Sidebar({
           <div>
             DzĪKS IRLAVA 20
           </div>
-
         </h2>
 
         <div style={sidebarUser}>
-
           User:{" "}
           {me?.user?.first_name}
           {" "}
           {me?.user?.last_name}
-
         </div>
 
         <div style={modeBlock}>
-
           {hasResident && (
-
             <button
               style={
                 mode === "resident"
@@ -296,11 +272,9 @@ export default function Sidebar({
             >
               Resident Mode
             </button>
-
           )}
 
           {hasAdmin && (
-
             <button
               style={
                 mode === "admin"
@@ -315,17 +289,13 @@ export default function Sidebar({
             >
               Admin Mode
             </button>
-
           )}
-
         </div>
 
         <hr style={divider} />
 
         {mode === "resident" && (
-
           <>
-
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -340,14 +310,19 @@ export default function Sidebar({
               }
             />
 
+            <MenuButton
+              title="Announcements"
+              onClick={() =>
+                go(
+                  "/announcements"
+                )
+              }
+            />
           </>
-
         )}
 
         {mode === "admin" && (
-
           <>
-
             <MenuButton
               title="Dashboard"
               onClick={() =>
@@ -389,11 +364,8 @@ export default function Sidebar({
                 go("/monthly-report")
               }
             />
-
           </>
-
         )}
-
       </div>
 
       <div
@@ -401,7 +373,6 @@ export default function Sidebar({
           marginTop: "auto",
         }}
       >
-
         <hr style={divider} />
 
         <button
@@ -410,9 +381,7 @@ export default function Sidebar({
         >
           Logout
         </button>
-
       </div>
-
     </div>
   );
 }
