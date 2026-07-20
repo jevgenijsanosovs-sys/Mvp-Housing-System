@@ -50,14 +50,14 @@ function getPreview(content) {
       .trim();
 
   if (
-    normalized.length <= 190
+    normalized.length <= 220
   ) {
     return normalized;
   }
 
   return `${normalized.slice(
     0,
-    187
+    217
   )}...`;
 }
 
@@ -73,7 +73,7 @@ function AnnouncementCard({
   const fullContent =
     String(
       announcement.content || ""
-    );
+    ).trim();
 
   const visibleContent =
     expanded
@@ -82,16 +82,24 @@ function AnnouncementCard({
           fullContent
         );
 
+  const canExpand =
+    fullContent.length > 220;
+
   return (
     <article
       style={{
-        background: "#ffffff",
-        border:
-          "1px solid #e5e7eb",
-        borderRadius: 14,
         padding: 20,
+        border:
+          "1px solid var(--border)",
+        borderLeft:
+          isImportant
+            ? "3px solid #b45353"
+            : "3px solid var(--border)",
+        borderRadius: 12,
+        background:
+          "var(--surface)",
         boxShadow:
-          "0 1px 3px rgba(15, 23, 42, 0.06)",
+          "0 4px 14px rgba(15,23,42,.04)",
       }}
     >
       <div
@@ -100,36 +108,42 @@ function AnnouncementCard({
           alignItems: "center",
           justifyContent:
             "space-between",
-          gap: 16,
+          gap: 12,
           flexWrap: "wrap",
-          marginBottom: 12,
+          marginBottom: 11,
         }}
       >
-        <div
+        <span
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "0.06em",
+            minHeight: 24,
+            padding: "3px 8px",
+            border:
+              isImportant
+                ? "1px solid rgba(180,83,83,.30)"
+                : "1px solid var(--border)",
+            borderRadius: 999,
+            background:
+              isImportant
+                ? "rgba(180,83,83,.07)"
+                : "var(--surface-soft)",
+            color:
+              isImportant
+                ? "#9f3f3f"
+                : "var(--text)",
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing:
+              "0.05em",
             textTransform:
               "uppercase",
-            color: isImportant
-              ? "#991b1b"
-              : "#475569",
           }}
         >
-          <span aria-hidden="true">
-            {isImportant
-              ? "!"
-              : "i"}
-          </span>
-
           {isImportant
             ? "Important"
             : "Information"}
-        </div>
+        </span>
 
         <time
           dateTime={
@@ -138,8 +152,9 @@ function AnnouncementCard({
             ) || undefined
           }
           style={{
-            color: "#64748b",
-            fontSize: 13,
+            color:
+              "var(--text)",
+            fontSize: 11,
           }}
         >
           {formatDate(
@@ -153,10 +168,11 @@ function AnnouncementCard({
       <h2
         style={{
           margin:
-            "0 0 10px 0",
-          color: "#0f172a",
-          fontSize: 20,
-          lineHeight: 1.3,
+            "0 0 9px",
+          color:
+            "var(--text-h)",
+          fontSize: 18,
+          lineHeight: 1.35,
         }}
       >
         {announcement.title}
@@ -164,8 +180,9 @@ function AnnouncementCard({
 
       <div
         style={{
-          color: "#334155",
-          fontSize: 15,
+          color:
+            "var(--text)",
+          fontSize: 13,
           lineHeight: 1.65,
           whiteSpace: "pre-wrap",
           overflowWrap:
@@ -175,20 +192,19 @@ function AnnouncementCard({
         {visibleContent}
       </div>
 
-      {fullContent.trim().length >
-        190 && (
+      {canExpand && (
         <button
           type="button"
           onClick={onToggle}
           style={{
-            marginTop: 16,
+            marginTop: 14,
             padding: 0,
             border: "none",
             background:
               "transparent",
             color: "#2563eb",
-            fontSize: 14,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 700,
             cursor: "pointer",
           }}
         >
@@ -247,7 +263,7 @@ export default function AnnouncementsPage() {
     <div
       style={{
         width: "100%",
-        maxWidth: 900,
+        maxWidth: 860,
         margin: "0 auto",
       }}
     >
@@ -258,18 +274,19 @@ export default function AnnouncementsPage() {
             "flex-start",
           justifyContent:
             "space-between",
-          gap: 20,
+          gap: 18,
           flexWrap: "wrap",
-          marginBottom: 24,
+          marginBottom: 22,
         }}
       >
         <div>
           <h1
             style={{
               margin:
-                "0 0 8px 0",
-              color: "#0f172a",
-              fontSize: 30,
+                "0 0 6px",
+              color:
+                "var(--text-h)",
+              fontSize: 28,
               lineHeight: 1.2,
             }}
           >
@@ -279,7 +296,9 @@ export default function AnnouncementsPage() {
           <p
             style={{
               margin: 0,
-              color: "#64748b",
+              color:
+                "var(--text)",
+              fontSize: 13,
               lineHeight: 1.5,
             }}
           >
@@ -295,16 +314,18 @@ export default function AnnouncementsPage() {
           }
           disabled={loading}
           style={{
-            minHeight: 40,
+            minHeight: 38,
             padding:
-              "9px 14px",
+              "8px 13px",
             border:
-              "1px solid #cbd5e1",
-            borderRadius: 10,
+              "1px solid var(--border)",
+            borderRadius: 9,
             background:
-              "#ffffff",
-            color: "#334155",
-            fontWeight: 600,
+              "var(--surface)",
+            color:
+              "var(--text-h)",
+            fontSize: 12,
+            fontWeight: 700,
             cursor: loading
               ? "default"
               : "pointer",
@@ -323,14 +344,15 @@ export default function AnnouncementsPage() {
         <div
           role="alert"
           style={{
-            marginBottom: 18,
-            padding: 16,
+            marginBottom: 16,
+            padding: 14,
             border:
-              "1px solid #fecaca",
-            borderRadius: 12,
+              "1px solid rgba(180,83,83,.30)",
+            borderRadius: 10,
             background:
-              "#fef2f2",
-            color: "#991b1b",
+              "rgba(180,83,83,.07)",
+            color: "#9f3f3f",
+            fontSize: 13,
           }}
         >
           {error}
@@ -343,13 +365,15 @@ export default function AnnouncementsPage() {
           0 && (
           <div
             style={{
-              padding: 24,
+              padding: 22,
               border:
-                "1px solid #e5e7eb",
-              borderRadius: 14,
+                "1px solid var(--border)",
+              borderRadius: 12,
               background:
-                "#ffffff",
-              color: "#64748b",
+                "var(--surface)",
+              color:
+                "var(--text)",
+              fontSize: 13,
               textAlign: "center",
             }}
           >
@@ -361,7 +385,7 @@ export default function AnnouncementsPage() {
       <div
         style={{
           display: "grid",
-          gap: 16,
+          gap: 14,
         }}
       >
         {announcements.map(
