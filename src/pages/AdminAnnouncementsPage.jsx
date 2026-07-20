@@ -376,7 +376,75 @@ export default function AdminAnnouncementsPage() {
     };
 
   return (
-    <div>
+    <div
+      className="admin-announcements-page"
+    >
+      <style>
+        {`
+          .admin-announcements-page {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: hidden;
+          }
+
+          .announcement-form-grid {
+            width: 100%;
+            min-width: 0;
+          }
+
+          .announcement-form-grid > label {
+            min-width: 0;
+          }
+
+          .announcement-form-grid input,
+          .announcement-form-grid select {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .announcement-form-grid input[type="datetime-local"] {
+            display: block;
+            -webkit-appearance: none;
+            appearance: none;
+          }
+
+          @media (max-width: 700px) {
+            .admin-announcements-page {
+              padding-top: 56px;
+            }
+
+            .admin-announcements-page h1 {
+              font-size: 30px !important;
+              line-height: 1.15 !important;
+              max-width: 280px;
+            }
+
+            .announcement-form-grid {
+              grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .announcement-actions {
+              grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .announcement-actions button {
+              width: 100%;
+            }
+
+            .admin-announcement-panel {
+              padding: 16px !important;
+              border-radius: 12px !important;
+            }
+
+            .announcement-form-grid input[type="datetime-local"] {
+              font-size: 16px !important;
+            }
+          }
+        `}
+      </style>
       <div
         style={{
           marginBottom: 22,
@@ -388,6 +456,7 @@ export default function AdminAnnouncementsPage() {
             color:
               "var(--text-h)",
             lineHeight: 1.2,
+            fontSize: 34,
           }}
         >
           Announcement Management
@@ -425,6 +494,7 @@ export default function AdminAnnouncementsPage() {
       )}
 
       <section
+        className="admin-announcement-panel"
         style={{
           ...panelStyle,
           marginBottom: 20,
@@ -616,6 +686,7 @@ export default function AdminAnnouncementsPage() {
           )}
 
           <div
+            className="announcement-actions"
             style={{
               display: "grid",
               gridTemplateColumns:
@@ -659,6 +730,7 @@ export default function AdminAnnouncementsPage() {
       </section>
 
       <section
+        className="admin-announcement-panel"
         style={panelStyle}
       >
         <div
