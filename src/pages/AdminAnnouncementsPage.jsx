@@ -6,6 +6,10 @@ import {
 import useAdminAnnouncements
   from "../hooks/useAdminAnnouncements";
 
+import {
+  useTranslation,
+} from "../i18n";
+
 const EMPTY_FORM = {
   id: null,
   title: "",
@@ -52,54 +56,6 @@ function toApiDateTime(
   return date.toISOString();
 }
 
-function formatDateTime(
-  value
-) {
-  if (!value) {
-    return "—";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return new Intl.DateTimeFormat(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }
-  ).format(date);
-}
-
-function getStatusLabel(
-  status
-) {
-  if (
-    status === "published"
-  ) {
-    return "Published";
-  }
-
-  if (
-    status === "archived"
-  ) {
-    return "Archived";
-  }
-
-  return "Draft";
-}
-
 function getStatusStyle(
   status
 ) {
@@ -138,6 +94,11 @@ function getStatusStyle(
 }
 
 export default function AdminAnnouncementsPage() {
+  const {
+    t,
+    language,
+  } = useTranslation();
+
   const {
     announcements,
     loading,
@@ -181,6 +142,65 @@ export default function AdminAnnouncementsPage() {
         ).length,
       [announcements]
     );
+
+  const formatDateTime =
+    (value) => {
+      if (!value) {
+        return "—";
+      }
+
+      const date =
+        new Date(value);
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return String(value);
+      }
+
+      const localeMap = {
+        lv: "lv-LV",
+        en: "en-GB",
+        ru: "ru-RU",
+      };
+
+      return new Intl.DateTimeFormat(
+        localeMap[language] ||
+          "en-GB",
+        {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      ).format(date);
+    };
+
+  const getStatusLabel =
+    (status) => {
+      if (
+        status === "published"
+      ) {
+        return t(
+          "announcements.admin.status.published"
+        );
+      }
+
+      if (
+        status === "archived"
+      ) {
+        return t(
+          "announcements.admin.status.archived"
+        );
+      }
+
+      return t(
+        "announcements.admin.status.draft"
+      );
+    };
 
   const resetForm =
     () => {
@@ -250,14 +270,18 @@ export default function AdminAnnouncementsPage() {
 
       if (!title) {
         setFormError(
-          "Enter a title."
+          t(
+            "announcements.admin.validation.title"
+          )
         );
         return;
       }
 
       if (!content) {
         setFormError(
-          "Enter announcement text."
+          t(
+            "announcements.admin.validation.content"
+          )
         );
         return;
       }
@@ -273,7 +297,9 @@ export default function AdminAnnouncementsPage() {
           )
       ) {
         setFormError(
-          "The end date cannot be earlier than the start date."
+          t(
+            "announcements.admin.validation.dateOrder"
+          )
         );
         return;
       }
@@ -298,16 +324,24 @@ export default function AdminAnnouncementsPage() {
 
         setNotice(
           publishImmediately
-            ? "Announcement published."
+            ? t(
+                "announcements.admin.notice.published"
+              )
             : isEditing
-              ? "Announcement updated."
-              : "Draft saved."
+              ? t(
+                  "announcements.admin.notice.updated"
+                )
+              : t(
+                  "announcements.admin.notice.draftSaved"
+                )
         );
 
         resetForm();
       } catch {
         setFormError(
-          "The announcement could not be saved. Check the message above."
+          t(
+            "announcements.admin.validation.saveFailed"
+          )
         );
       }
     };
@@ -318,7 +352,13 @@ export default function AdminAnnouncementsPage() {
     ) => {
       const approved =
         window.confirm(
-          `Publish "${announcement.title}"?`
+          t(
+            "announcements.admin.confirm.publish",
+            {
+              title:
+                announcement.title,
+            }
+          )
         );
 
       if (!approved) {
@@ -333,7 +373,9 @@ export default function AdminAnnouncementsPage() {
         );
 
         setNotice(
-          "Announcement published."
+          t(
+            "announcements.admin.notice.published"
+          )
         );
       } catch {
         // The hook exposes the backend error.
@@ -346,7 +388,13 @@ export default function AdminAnnouncementsPage() {
     ) => {
       const approved =
         window.confirm(
-          `Archive "${announcement.title}"? Residents will no longer see it.`
+          t(
+            "announcements.admin.confirm.archive",
+            {
+              title:
+                announcement.title,
+            }
+          )
         );
 
       if (!approved) {
@@ -368,7 +416,9 @@ export default function AdminAnnouncementsPage() {
         }
 
         setNotice(
-          "Announcement archived."
+          t(
+            "announcements.admin.notice.archived"
+          )
         );
       } catch {
         // The hook exposes the backend error.
@@ -445,6 +495,7 @@ export default function AdminAnnouncementsPage() {
           }
         `}
       </style>
+
       <div
         style={{
           marginBottom: 22,
@@ -459,7 +510,9 @@ export default function AdminAnnouncementsPage() {
             fontSize: 34,
           }}
         >
-          Announcement Management
+          {t(
+            "announcements.admin.title"
+          )}
         </h1>
 
         <div
@@ -470,8 +523,9 @@ export default function AdminAnnouncementsPage() {
             fontSize: 13,
           }}
         >
-          Create and publish notices
-          for residents.
+          {t(
+            "announcements.admin.subtitle"
+          )}
         </div>
       </div>
 
@@ -522,8 +576,12 @@ export default function AdminAnnouncementsPage() {
               }}
             >
               {isEditing
-                ? "Edit Announcement"
-                : "New Announcement"}
+                ? t(
+                    "announcements.admin.editAnnouncement"
+                  )
+                : t(
+                    "announcements.admin.newAnnouncement"
+                  )}
             </h2>
 
             <div
@@ -534,8 +592,9 @@ export default function AdminAnnouncementsPage() {
                 fontSize: 11,
               }}
             >
-              Save as a draft or
-              publish immediately.
+              {t(
+                "announcements.admin.formHint"
+              )}
             </div>
           </div>
 
@@ -547,7 +606,9 @@ export default function AdminAnnouncementsPage() {
                 secondaryButton
               }
             >
-              Cancel editing
+              {t(
+                "announcements.admin.cancelEditing"
+              )}
             </button>
           )}
         </div>
@@ -561,7 +622,10 @@ export default function AdminAnnouncementsPage() {
           <label
             style={labelStyle}
           >
-            Title
+            {t(
+              "announcements.admin.fields.title"
+            )}
+
             <input
               type="text"
               value={form.title}
@@ -573,14 +637,19 @@ export default function AdminAnnouncementsPage() {
                 )
               }
               style={inputStyle}
-              placeholder="Announcement title"
+              placeholder={t(
+                "announcements.admin.placeholders.title"
+              )}
             />
           </label>
 
           <label
             style={labelStyle}
           >
-            Text
+            {t(
+              "announcements.admin.fields.text"
+            )}
+
             <textarea
               value={form.content}
               onChange={(event) =>
@@ -595,7 +664,9 @@ export default function AdminAnnouncementsPage() {
                 resize: "vertical",
                 lineHeight: 1.55,
               }}
-              placeholder="Information for residents"
+              placeholder={t(
+                "announcements.admin.placeholders.text"
+              )}
             />
           </label>
 
@@ -611,7 +682,10 @@ export default function AdminAnnouncementsPage() {
             <label
               style={labelStyle}
             >
-              Priority
+              {t(
+                "announcements.admin.fields.priority"
+              )}
+
               <select
                 value={
                   form.priority
@@ -625,10 +699,15 @@ export default function AdminAnnouncementsPage() {
                 style={inputStyle}
               >
                 <option value="normal">
-                  Normal
+                  {t(
+                    "announcements.common.normal"
+                  )}
                 </option>
+
                 <option value="important">
-                  Important
+                  {t(
+                    "announcements.common.important"
+                  )}
                 </option>
               </select>
             </label>
@@ -636,7 +715,10 @@ export default function AdminAnnouncementsPage() {
             <label
               style={labelStyle}
             >
-              Visible from
+              {t(
+                "announcements.admin.fields.visibleFrom"
+              )}
+
               <input
                 type="datetime-local"
                 value={
@@ -655,7 +737,10 @@ export default function AdminAnnouncementsPage() {
             <label
               style={labelStyle}
             >
-              Visible until
+              {t(
+                "announcements.admin.fields.visibleUntil"
+              )}
+
               <input
                 type="datetime-local"
                 value={
@@ -705,10 +790,16 @@ export default function AdminAnnouncementsPage() {
               }
             >
               {saving
-                ? "Saving..."
+                ? t(
+                    "announcements.common.saving"
+                  )
                 : isEditing
-                  ? "Save changes"
-                  : "Save draft"}
+                  ? t(
+                      "announcements.admin.saveChanges"
+                    )
+                  : t(
+                      "announcements.admin.saveDraft"
+                    )}
             </button>
 
             <button
@@ -722,8 +813,12 @@ export default function AdminAnnouncementsPage() {
               }
             >
               {saving
-                ? "Saving..."
-                : "Save and publish"}
+                ? t(
+                    "announcements.common.saving"
+                  )
+                : t(
+                    "announcements.admin.saveAndPublish"
+                  )}
             </button>
           </div>
         </div>
@@ -753,7 +848,9 @@ export default function AdminAnnouncementsPage() {
                 fontSize: 18,
               }}
             >
-              Announcements
+              {t(
+                "announcements.admin.listTitle"
+              )}
             </h2>
 
             <div
@@ -764,10 +861,15 @@ export default function AdminAnnouncementsPage() {
                 fontSize: 11,
               }}
             >
-              {activeCount} active or
-              draft,{" "}
-              {announcements.length}
-              {" "}total
+              {t(
+                "announcements.admin.summary",
+                {
+                  active:
+                    activeCount,
+                  total:
+                    announcements.length,
+                }
+              )}
             </div>
           </div>
 
@@ -782,19 +884,27 @@ export default function AdminAnnouncementsPage() {
             }
           >
             {loading
-              ? "Loading..."
-              : "Refresh"}
+              ? t(
+                  "announcements.common.loading"
+                )
+              : t(
+                  "announcements.common.refresh"
+                )}
           </button>
         </div>
 
         {loading ? (
           <EmptyState>
-            Loading announcements...
+            {t(
+              "announcements.admin.loadingAnnouncements"
+            )}
           </EmptyState>
         ) : announcements.length ===
           0 ? (
           <EmptyState>
-            No announcements created.
+            {t(
+              "announcements.admin.noAnnouncements"
+            )}
           </EmptyState>
         ) : (
           <div
@@ -885,8 +995,12 @@ export default function AdminAnnouncementsPage() {
                           >
                             {announcement.priority ===
                             "important"
-                              ? "Important"
-                              : "Normal"}
+                              ? t(
+                                  "announcements.common.important"
+                                )
+                              : t(
+                                  "announcements.common.normal"
+                                )}
                           </span>
                         </div>
 
@@ -930,21 +1044,30 @@ export default function AdminAnnouncementsPage() {
                           }}
                         >
                           <span>
-                            Updated:{" "}
+                            {t(
+                              "announcements.admin.updated"
+                            )}
+                            {": "}
                             {formatDateTime(
                               announcement.updated_at
                             )}
                           </span>
 
                           <span>
-                            From:{" "}
+                            {t(
+                              "announcements.admin.from"
+                            )}
+                            {": "}
                             {formatDateTime(
                               announcement.publish_from
                             )}
                           </span>
 
                           <span>
-                            Until:{" "}
+                            {t(
+                              "announcements.admin.until"
+                            )}
+                            {": "}
                             {formatDateTime(
                               announcement.publish_until
                             )}
@@ -974,7 +1097,9 @@ export default function AdminAnnouncementsPage() {
                               secondaryButton
                             }
                           >
-                            Edit
+                            {t(
+                              "announcements.admin.edit"
+                            )}
                           </button>
                         )}
 
@@ -994,8 +1119,12 @@ export default function AdminAnnouncementsPage() {
                               }
                             >
                               {busy
-                                ? "Working..."
-                                : "Publish"}
+                                ? t(
+                                    "announcements.common.working"
+                                  )
+                                : t(
+                                    "announcements.admin.publish"
+                                  )}
                             </button>
                           )}
 
@@ -1013,8 +1142,12 @@ export default function AdminAnnouncementsPage() {
                             }
                           >
                             {busy
-                              ? "Working..."
-                              : "Archive"}
+                              ? t(
+                                  "announcements.common.working"
+                                )
+                              : t(
+                                  "announcements.admin.archive"
+                                )}
                           </button>
                         )}
                       </div>
