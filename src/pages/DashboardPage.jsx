@@ -627,7 +627,11 @@ export default function DashboardPage() {
               subtitle="Building news and notices"
               onClick={() =>
                 navigate(
-                  "/announcements"
+                  latestAnnouncement
+                    ? `/announcement?id=${encodeURIComponent(
+                        latestAnnouncement.id
+                      )}`
+                    : "/announcements"
                 )
               }
             >
@@ -644,6 +648,15 @@ export default function DashboardPage() {
                   announcement={
                     latestAnnouncement
                   }
+                  onViewAll={(
+                    event
+                  ) => {
+                    event.stopPropagation();
+
+                    navigate(
+                      "/announcements"
+                    );
+                  }}
                 />
 
               ) : (
@@ -995,6 +1008,7 @@ function HomeTile({
 
 function AnnouncementPreview({
   announcement,
+  onViewAll,
 }) {
 
   const isImportant =
@@ -1080,16 +1094,43 @@ function AnnouncementPreview({
 
       <div
         style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems: "center",
+          gap: 12,
           paddingTop: 8,
           borderTop:
             "1px solid var(--border)",
-          color: "#2563eb",
-          fontSize: 11,
-          fontWeight: 700,
-          textAlign: "right",
         }}
       >
-        View all →
+        <span
+          style={{
+            color: "#2563eb",
+            fontSize: 11,
+            fontWeight: 700,
+          }}
+        >
+          Open announcement →
+        </span>
+
+        <button
+          type="button"
+          onClick={onViewAll}
+          style={{
+            padding: 0,
+            border: "none",
+            background:
+              "transparent",
+            color:
+              "var(--text)",
+            fontSize: 10,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          View all
+        </button>
       </div>
 
     </div>
