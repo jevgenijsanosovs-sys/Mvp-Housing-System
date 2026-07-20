@@ -88,6 +88,11 @@ export default function DashboardPage() {
   ] = useState([]);
 
   const [
+    announcementRows,
+    setAnnouncementRows
+  ] = useState([]);
+
+  const [
     residentLoading,
     setResidentLoading
   ] = useState(false);
@@ -127,9 +132,14 @@ export default function DashboardPage() {
 
           const [
             result,
+            announcementsResult,
           ] = await Promise.all([
             api(
               "/api/my-apartments"
+            ),
+
+            api(
+              "/api/announcements"
             ),
 
             loadMyWater(),
@@ -138,6 +148,14 @@ export default function DashboardPage() {
           setApartmentRows(
             Array.isArray(result)
               ? result
+              : []
+          );
+
+          setAnnouncementRows(
+            Array.isArray(
+              announcementsResult
+            )
+              ? announcementsResult
               : []
           );
 
@@ -213,6 +231,15 @@ export default function DashboardPage() {
         waterMeters,
         meterHistories,
       ]
+    );
+
+  const latestAnnouncement =
+    useMemo(
+      () =>
+        getLatestAnnouncement(
+          announcementRows
+        ),
+      [announcementRows]
     );
 
   const userName =
@@ -598,22 +625,45 @@ export default function DashboardPage() {
             <HomeTile
               title="Announcements"
               subtitle="Building news and notices"
+              onClick={() =>
+                navigate(
+                  "/announcements"
+                )
+              }
             >
 
-              <Placeholder>
-                <strong
-                  style={{
-                    display: "block",
-                    marginBottom: 5,
-                    color:
-                      "var(--text-h)",
-                  }}
-                >
-                  Everything is up to date
-                </strong>
+              {residentLoading ? (
 
-                No new announcements.
-              </Placeholder>
+                <Placeholder>
+                  Loading...
+                </Placeholder>
+
+              ) : latestAnnouncement ? (
+
+                <AnnouncementPreview
+                  announcement={
+                    latestAnnouncement
+                  }
+                />
+
+              ) : (
+
+                <Placeholder>
+                  <strong
+                    style={{
+                      display: "block",
+                      marginBottom: 5,
+                      color:
+                        "var(--text-h)",
+                    }}
+                  >
+                    Everything is up to date
+                  </strong>
+
+                  No new announcements.
+                </Placeholder>
+
+              )}
 
             </HomeTile>
 
@@ -939,6 +989,110 @@ function HomeTile({
       {children}
 
     </section>
+  );
+}
+
+
+function AnnouncementPreview({
+  announcement,
+}) {
+
+  const isImportant =
+    announcement.priority ===
+    "important";
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gap: 10,
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+
+        <span
+          style={{
+            color: isImportant
+              ? "#b91c1c"
+              : "var(--text)",
+            fontSize: 10,
+            fontWeight: 800,
+            textTransform:
+              "uppercase",
+            letterSpacing:
+              "0.06em",
+          }}
+        >
+          {isImportant
+            ? "Important"
+            : "Information"}
+        </span>
+
+        <span
+          style={{
+            color:
+              "var(--text)",
+            fontSize: 10,
+          }}
+        >
+          {formatAnnouncementDate(
+            getAnnouncementDate(
+              announcement
+            )
+          )}
+        </span>
+
+      </div>
+
+      <strong
+        style={{
+          color:
+            "var(--text-h)",
+          fontSize: 15,
+          lineHeight: 1.35,
+        }}
+      >
+        {announcement.title}
+      </strong>
+
+      <div
+        style={{
+          color:
+            "var(--text)",
+          fontSize: 11,
+          lineHeight: 1.55,
+        }}
+      >
+        {getAnnouncementPreview(
+          announcement.content
+        )}
+      </div>
+
+      <div
+        style={{
+          paddingTop: 8,
+          borderTop:
+            "1px solid var(--border)",
+          color: "#2563eb",
+          fontSize: 11,
+          fontWeight: 700,
+          textAlign: "right",
+        }}
+      >
+        View all →
+      </div>
+
+    </div>
   );
 }
 
@@ -1649,6 +1803,110 @@ function buildWaterSummary(
       ),
   };
 }
+
+function getLatestAnnouncement(
+  announcements
+) {
+
+  if (
+    !Array.isArray(
+      announcements
+    ) ||
+    announcements.length === 0
+  ) {
+    return null;
+  }
+
+  return [...announcements]
+    .sort(
+      (left, right) =>
+        getAnnouncementTime(
+          right
+        ) -
+        getAnnouncementTime(
+          left
+        )
+    )[0];
+}
+
+function getAnnouncementTime(
+  announcement
+) {
+
+  const value =
+    getAnnouncementDate(
+      announcement
+    );
+
+  const time =
+    new Date(value).getTime();
+
+  return Number.isFinite(time)
+    ? time
+    : 0;
+}
+
+function getAnnouncementDate(
+  announcement
+) {
+
+  return (
+    announcement.published_at ||
+    announcement.publish_from ||
+    announcement.created_at ||
+    ""
+  );
+}
+
+function formatAnnouncementDate(
+  value
+) {
+
+  if (!value) {
+    return "";
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return String(value)
+      .slice(0, 10);
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  ).format(date);
+}
+
+function getAnnouncementPreview(
+  content
+) {
+
+  const normalized =
+    String(content || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  if (normalized.length <= 145) {
+    return normalized;
+  }
+
+  return `${normalized.slice(
+    0,
+    142
+  )}...`;
+}
+
 
 function formatApartmentTitle(
   apartments
