@@ -533,7 +533,7 @@ export default function AdminAnnouncementsPage() {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(3,minmax(0,1fr))",
+                "repeat(auto-fit,minmax(210px,1fr))",
               gap: 12,
             }}
             className="announcement-form-grid"
@@ -617,9 +617,10 @@ export default function AdminAnnouncementsPage() {
 
           <div
             style={{
-              display: "flex",
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(150px,1fr))",
               gap: 10,
-              flexWrap: "wrap",
             }}
           >
             <button
@@ -991,6 +992,7 @@ const panelStyle = {
 
 const labelStyle = {
   display: "grid",
+  minWidth: 0,
   gap: 6,
   color:
     "var(--text-h)",
@@ -1000,6 +1002,8 @@ const labelStyle = {
 
 const inputStyle = {
   width: "100%",
+  minWidth: 0,
+  maxWidth: "100%",
   minHeight: 40,
   boxSizing: "border-box",
   padding: "9px 11px",
