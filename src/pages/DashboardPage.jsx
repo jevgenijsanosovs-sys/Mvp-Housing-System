@@ -19,6 +19,10 @@ import {
   useAuth,
 } from "../context/AuthContext";
 
+import {
+  useTranslation,
+} from "../i18n";
+
 import useApartments
   from "../hooks/useApartments";
 
@@ -38,17 +42,17 @@ import {
 
 const CONTACTS = [
   {
-    role: "Pārvaldnieks",
+    roleKey: "manager",
     name: "Jevgēnijs Anosovs",
     phone: "+371 27424549",
   },
   {
-    role: "Grāmatvede",
+    roleKey: "accountant",
     name: "Maija Malmigo",
     phone: "+371 29283923",
   },
   {
-    role: "Siltumtehniķis",
+    roleKey: "heatingTechnician",
     name: "Igors Guļko",
     phone: "+371 28218233",
   },
@@ -63,6 +67,10 @@ export default function DashboardPage() {
   const {
     me,
   } = useAuth();
+
+  const {
+    t,
+  } = useTranslation();
 
   const navigate =
     useNavigate();
@@ -249,7 +257,7 @@ export default function DashboardPage() {
     ]
       .filter(Boolean)
       .join(" ") ||
-    "Resident";
+    t("dashboard.relations.resident");
 
   const livingArea =
     apartments.reduce(
@@ -310,7 +318,7 @@ export default function DashboardPage() {
               "var(--text-h)",
           }}
         >
-          Dashboard{" "}
+          {t("dashboard.title")}{" "}
 
           <span
             style={{
@@ -333,8 +341,8 @@ export default function DashboardPage() {
           }}
         >
           {mode === "resident"
-            ? "Your home at a glance"
-            : "Building overview and statistics"}
+            ? t("dashboard.subtitleResident")
+            : t("dashboard.subtitleAdmin")}
         </div>
 
         {mode === "resident" && (
@@ -366,8 +374,8 @@ export default function DashboardPage() {
           >
 
             <HomeTile
-              title="My Apartment"
-              subtitle="Profile and home information"
+              title={t("dashboard.myApartment.title")}
+              subtitle={t("dashboard.myApartment.subtitle")}
               wide
               onClick={() =>
                 setApartmentOpen(true)
@@ -377,14 +385,14 @@ export default function DashboardPage() {
               {residentLoading ? (
 
                 <Placeholder>
-                  Loading...
+                  {t("dashboard.common.loading")}
                 </Placeholder>
 
               ) : myApartments.length ===
                 0 ? (
 
                 <Placeholder>
-                  No apartment linked.
+                  {t("dashboard.myApartment.noApartment")}
                 </Placeholder>
 
               ) : (
@@ -412,7 +420,8 @@ export default function DashboardPage() {
                         }}
                       >
                         {formatApartmentTitle(
-                          myApartments
+                          myApartments,
+                          t
                         )}
                       </div>
 
@@ -455,11 +464,15 @@ export default function DashboardPage() {
                           key={apartment.id}
                           style={pillStyle}
                         >
-                          Section{" "}
+                          {t(
+                            "dashboard.apartment.section"
+                          )}{" "}
                           {apartment.section ??
                             "—"}
                           {" · "}
-                          Floor{" "}
+                          {t(
+                            "dashboard.apartment.floor"
+                          )}{" "}
                           {apartment.floor ??
                             "—"}
                         </span>
@@ -476,8 +489,8 @@ export default function DashboardPage() {
             </HomeTile>
 
             <HomeTile
-              title="Readings"
-              subtitle="Latest meter values and monthly consumption"
+              title={t("dashboard.readings.title")}
+              subtitle={t("dashboard.readings.subtitle")}
               onClick={() =>
                 navigate("/water")
               }
@@ -486,14 +499,14 @@ export default function DashboardPage() {
               {residentLoading ? (
 
                 <Placeholder>
-                  Loading...
+                  {t("dashboard.common.loading")}
                 </Placeholder>
 
               ) : waterSummary
                   .meters.length === 0 ? (
 
                 <Placeholder>
-                  No active water meters.
+                  {t("dashboard.readings.noMeters")}
                 </Placeholder>
 
               ) : (
@@ -521,13 +534,13 @@ export default function DashboardPage() {
                       <thead>
                         <tr>
                           <th style={readingTh}>
-                            Meter
+                            {t("dashboard.readings.meter")}
                           </th>
                           <th style={readingTh}>
-                            Latest
+                            {t("dashboard.readings.latest")}
                           </th>
                           <th style={readingTh}>
-                            Date
+                            {t("dashboard.readings.date")}
                           </th>
                         </tr>
                       </thead>
@@ -551,12 +564,12 @@ export default function DashboardPage() {
                                   >
                                     {meter.type ===
                                     "hot"
-                                      ? "Hot"
-                                      : "Cold"}
+                                      ? t("dashboard.readings.hot")
+                                      : t("dashboard.readings.cold")}
                                     {" · "}
                                     {meter.local_label ||
                                       meter.riser_code ||
-                                      "Meter"}
+                                      t("dashboard.readings.meter")}
                                   </div>
 
                                 </td>
@@ -591,7 +604,7 @@ export default function DashboardPage() {
                   >
 
                     <ConsumptionLine
-                      label="Cold Water consumption"
+                      label={t("dashboard.readings.coldConsumption")}
                       current={
                         waterSummary
                           .coldCurrent
@@ -603,7 +616,7 @@ export default function DashboardPage() {
                     />
 
                     <ConsumptionLine
-                      label="Hot Water consumption"
+                      label={t("dashboard.readings.hotConsumption")}
                       current={
                         waterSummary
                           .hotCurrent
@@ -623,8 +636,8 @@ export default function DashboardPage() {
             </HomeTile>
 
             <HomeTile
-              title="Announcements"
-              subtitle="Building news and notices"
+              title={t("dashboard.announcements.title")}
+              subtitle={t("dashboard.announcements.subtitle")}
               onClick={() =>
                 navigate(
                   latestAnnouncement
@@ -639,7 +652,7 @@ export default function DashboardPage() {
               {residentLoading ? (
 
                 <Placeholder>
-                  Loading...
+                  {t("dashboard.common.loading")}
                 </Placeholder>
 
               ) : latestAnnouncement ? (
@@ -670,10 +683,10 @@ export default function DashboardPage() {
                         "var(--text-h)",
                     }}
                   >
-                    Everything is up to date
+                    {t("dashboard.announcements.upToDate")}
                   </strong>
 
-                  No new announcements.
+                  {t("dashboard.announcements.noNew")}
                 </Placeholder>
 
               )}
@@ -681,7 +694,7 @@ export default function DashboardPage() {
             </HomeTile>
 
             <HomeTile
-              title="Contact Administration"
+              title={t("dashboard.contacts.title")}
               subtitle="DzĪKS Irlava 20"
               wide
             >
@@ -737,7 +750,7 @@ export default function DashboardPage() {
                         fontWeight: 700,
                       }}
                     >
-                      E-pasts:
+                      {t("dashboard.contacts.email")}:
                     </span>{" "}
 
                     <a
@@ -770,7 +783,7 @@ export default function DashboardPage() {
                     ) => (
 
                       <div
-                        key={contact.role}
+                        key={contact.roleKey}
                         style={{
                           display: "grid",
                           gridTemplateColumns:
@@ -797,7 +810,7 @@ export default function DashboardPage() {
                             fontWeight: 800,
                           }}
                         >
-                          {contact.role}
+                          {t(`dashboard.contacts.${contact.roleKey}`)}
                         </div>
 
                         <div
@@ -843,7 +856,7 @@ export default function DashboardPage() {
 
           <Drawer
             open={apartmentOpen}
-            title="My Apartment"
+            title={t("dashboard.myApartment.title")}
             onClose={() =>
               setApartmentOpen(false)
             }
@@ -1011,6 +1024,10 @@ function AnnouncementPreview({
   onViewAll,
 }) {
 
+  const {
+    t,
+  } = useTranslation();
+
   const isImportant =
     announcement.priority ===
     "important";
@@ -1048,8 +1065,8 @@ function AnnouncementPreview({
           }}
         >
           {isImportant
-            ? "Important"
-            : "Information"}
+            ? t("dashboard.announcements.important")
+            : t("dashboard.announcements.information")}
         </span>
 
         <span
@@ -1111,7 +1128,7 @@ function AnnouncementPreview({
             fontWeight: 700,
           }}
         >
-          Open announcement →
+          {t("dashboard.announcements.open")} →
         </span>
 
         <button
@@ -1129,7 +1146,7 @@ function AnnouncementPreview({
             cursor: "pointer",
           }}
         >
-          View all
+          {t("dashboard.announcements.viewAll")}
         </button>
       </div>
 
@@ -1143,6 +1160,10 @@ function ConsumptionLine({
   current,
   previous,
 }) {
+
+  const {
+    t,
+  } = useTranslation();
 
   const hasCurrent =
     current !== null &&
@@ -1179,7 +1200,7 @@ function ConsumptionLine({
 
   const trendLabel =
     difference === null
-      ? "No comparison"
+      ? t("dashboard.readings.noComparison")
       : difference > 0
         ? `+${formatReading(
             difference
@@ -1188,7 +1209,7 @@ function ConsumptionLine({
           ? formatReading(
               difference
             )
-          : "No change";
+          : t("dashboard.readings.noChange");
 
   return (
     <div
@@ -1241,7 +1262,9 @@ function ConsumptionLine({
         >
           {trendLabel}
           {hasPrevious
-            ? " vs previous month"
+            ? ` ${t(
+                "dashboard.readings.vsPreviousMonth"
+              )}`
             : ""}
         </div>
       </div>
@@ -1254,89 +1277,93 @@ function ApartmentDetails({
   apartment,
 }) {
 
+  const {
+    t,
+  } = useTranslation();
+
   const details = [
     {
-      label: "Apartment",
+      label: t("dashboard.apartment.apartment"),
       value:
         apartment.number ??
         "—",
     },
     {
-      label: "Section",
+      label: t("dashboard.apartment.section"),
       value:
         apartment.section ??
         apartment.entrance ??
         "—",
     },
     {
-      label: "Floor",
+      label: t("dashboard.apartment.floor"),
       value:
         apartment.floor ??
         "—",
     },
     {
-      label: "Rooms",
+      label: t("dashboard.apartment.rooms"),
       value:
         apartment.room_count ??
         apartment.rooms ??
         "—",
     },
     {
-      label: "Residents",
+      label: t("dashboard.apartment.residents"),
       value:
         apartment.residents_count ??
         apartment.resident_count ??
         "—",
     },
     {
-      label: "Living area",
+      label: t("dashboard.apartment.livingArea"),
       value:
         formatArea(
           apartment.living_area
         ),
     },
     {
-      label: "Non-living area",
+      label: t("dashboard.apartment.nonLivingArea"),
       value:
         formatArea(
           apartment.non_living_area
         ),
     },
     {
-      label: "Heated area",
+      label: t("dashboard.apartment.heatedArea"),
       value:
         formatArea(
           apartment.heated_area
         ),
     },
     {
-      label: "Total area",
+      label: t("dashboard.apartment.totalArea"),
       value:
         formatArea(
           apartment.total_area
         ),
     },
     {
-      label: "Ownership",
+      label: t("dashboard.apartment.ownership"),
       value:
         apartment.ownership_type ??
         apartment.ownership ??
         "—",
     },
     {
-      label: "Status",
+      label: t("dashboard.apartment.status"),
       value:
         apartment.status ??
         (
           Number(
             apartment.active ?? 1
           ) === 1
-            ? "Active"
-            : "Inactive"
+            ? t("dashboard.apartment.active")
+            : t("dashboard.apartment.inactive")
         ),
     },
     {
-      label: "Notes",
+      label: t("dashboard.apartment.notes"),
       value:
         apartment.notes ??
         apartment.comment ??
@@ -1375,8 +1402,9 @@ function ApartmentDetails({
             fontSize: 17,
           }}
         >
-          Apartment #
-          {apartment.number}
+          {t("dashboard.apartment.number", {
+            number: apartment.number,
+          })}
         </strong>
 
         <RelationBadge
@@ -1427,18 +1455,22 @@ function RelationBadge({
   relations = [],
 }) {
 
+  const {
+    t,
+  } = useTranslation();
+
   const label =
     relations
       .map(
         (relation) =>
           relation === "owner"
-            ? "Owner"
+            ? t("dashboard.relations.owner")
             : relation === "resident"
-              ? "Resident"
+              ? t("dashboard.relations.resident")
               : relation
       )
       .join(" / ") ||
-    "Resident";
+    t("dashboard.relations.resident");
 
   return (
     <span
@@ -1573,6 +1605,10 @@ function AdminDashboard({
   heatedArea,
 }) {
 
+  const {
+    t,
+  } = useTranslation();
+
   return (
     <div style={cardStyle}>
 
@@ -1581,11 +1617,11 @@ function AdminDashboard({
           marginTop: 0,
         }}
       >
-        Building Summary
+        {t("dashboard.admin.buildingSummary")}
       </h2>
 
       <InfoLine
-        label="Apartments"
+        label={t("dashboard.admin.apartments")}
         value={
           dashboard?.stats
             ?.apartments ||
@@ -1594,7 +1630,7 @@ function AdminDashboard({
       />
 
       <InfoLine
-        label="Residents"
+        label={t("dashboard.admin.residents")}
         value={
           dashboard?.stats
             ?.users ||
@@ -1603,7 +1639,7 @@ function AdminDashboard({
       />
 
       <InfoLine
-        label="Living Area"
+        label={t("dashboard.admin.livingArea")}
         value={
           `${livingArea.toFixed(
             2
@@ -1612,7 +1648,7 @@ function AdminDashboard({
       />
 
       <InfoLine
-        label="Non Living Area"
+        label={t("dashboard.admin.nonLivingArea")}
         value={
           `${nonLivingArea.toFixed(
             2
@@ -1621,7 +1657,7 @@ function AdminDashboard({
       />
 
       <InfoLine
-        label="Heated Area"
+        label={t("dashboard.admin.heatedArea")}
         value={
           `${heatedArea.toFixed(
             2
@@ -1950,11 +1986,18 @@ function getAnnouncementPreview(
 
 
 function formatApartmentTitle(
-  apartments
+  apartments,
+  t
 ) {
 
   return apartments.length === 1
-    ? `Apartment #${apartments[0].number}`
+    ? t(
+        "dashboard.apartment.number",
+        {
+          number:
+            apartments[0].number,
+        }
+      )
     : apartments
         .map(
           (apartment) =>
