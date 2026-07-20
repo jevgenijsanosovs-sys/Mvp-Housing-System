@@ -2,6 +2,10 @@ import {
   useState,
 } from "react";
 
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import useAnnouncements
   from "../hooks/useAnnouncements";
 
@@ -65,6 +69,7 @@ function AnnouncementCard({
   announcement,
   expanded,
   onToggle,
+  onOpen,
 }) {
   const isImportant =
     announcement.priority ===
@@ -192,32 +197,42 @@ function AnnouncementCard({
         {visibleContent}
       </div>
 
-      {canExpand && (
+      <div
+        style={{
+          display: "flex",
+          gap: 14,
+          flexWrap: "wrap",
+          marginTop: 14,
+        }}
+      >
+        {canExpand && (
+          <button
+            type="button"
+            onClick={onToggle}
+            style={textButtonStyle}
+          >
+            {expanded
+              ? "Show less"
+              : "Read preview"}
+          </button>
+        )}
+
         <button
           type="button"
-          onClick={onToggle}
-          style={{
-            marginTop: 14,
-            padding: 0,
-            border: "none",
-            background:
-              "transparent",
-            color: "#2563eb",
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          onClick={onOpen}
+          style={textButtonStyle}
         >
-          {expanded
-            ? "Show less"
-            : "Read more"}
+          Open announcement →
         </button>
-      )}
+      </div>
     </article>
   );
 }
 
 export default function AnnouncementsPage() {
+  const navigate =
+    useNavigate();
+
   const {
     announcements,
     loading,
@@ -407,6 +422,13 @@ export default function AnnouncementsPage() {
                   announcement.id
                 )
               }
+              onOpen={() =>
+                navigate(
+                  `/announcement?id=${encodeURIComponent(
+                    announcement.id
+                  )}`
+                )
+              }
             />
           )
         )}
@@ -414,3 +436,14 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
+
+const textButtonStyle = {
+  padding: 0,
+  border: "none",
+  background:
+    "transparent",
+  color: "#2563eb",
+  fontSize: 12,
+  fontWeight: 700,
+  cursor: "pointer",
+};
