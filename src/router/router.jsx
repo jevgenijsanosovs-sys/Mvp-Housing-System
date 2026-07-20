@@ -28,6 +28,9 @@ import WaterMetersPage
 import AdminMonthlyReportPage
   from "../pages/AdminMonthlyReportPage";
 
+import AnnouncementsPage
+  from "../pages/AnnouncementsPage";
+
 import ProtectedRoute
   from "../routes/ProtectedRoute";
 
@@ -72,6 +75,12 @@ export const router =
           path: "water",
           element:
             <ResidentWaterPage />,
+        },
+
+        {
+          path: "announcements",
+          element:
+            <AnnouncementsPage />,
         },
 
         {
