@@ -3,7 +3,15 @@ import {
   useState,
 } from "react";
 
-import Modal from "./Modal";
+import Modal
+  from "./Modal";
+
+import {
+  useTranslation,
+} from "../i18n";
+
+const DEFAULT_REASON =
+  "incorrectDigit";
 
 export default function MeterHistoryModal({
   open,
@@ -12,6 +20,10 @@ export default function MeterHistoryModal({
   onCorrect,
   onClose,
 }) {
+
+  const {
+    t,
+  } = useTranslation();
 
   const [
     correctionOpen,
@@ -27,7 +39,7 @@ export default function MeterHistoryModal({
     correctionReason,
     setCorrectionReason
   ] = useState(
-    "Incorrect digit entered"
+    DEFAULT_REASON
   );
 
   const [
@@ -59,7 +71,7 @@ export default function MeterHistoryModal({
     setCorrectedValue("");
 
     setCorrectionReason(
-      "Incorrect digit entered"
+      DEFAULT_REASON
     );
 
     setOtherReason("");
@@ -160,21 +172,35 @@ export default function MeterHistoryModal({
           .toLowerCase();
 
       if (normalizedType === "cold") {
-        return "Cold Water";
+        return t(
+          "water.card.coldWater"
+        );
       }
 
       if (normalizedType === "hot") {
-        return "Hot Water";
+        return t(
+          "water.card.hotWater"
+        );
       }
 
-      return "Water Meter";
+      return t(
+        "water.history.waterMeter"
+      );
     };
 
   const title = meter
-    ? `${formatMeterType(
-        meter.type
-      )} History`
-    : "Meter History";
+    ? t(
+        "water.history.typeHistory",
+        {
+          type:
+            formatMeterType(
+              meter.type
+            ),
+        }
+      )
+    : t(
+        "water.history.title"
+      );
 
   const handleOpenCorrection =
     () => {
@@ -190,7 +216,7 @@ export default function MeterHistoryModal({
       );
 
       setCorrectionReason(
-        "Incorrect digit entered"
+        DEFAULT_REASON
       );
 
       setOtherReason("");
@@ -204,7 +230,7 @@ export default function MeterHistoryModal({
       setCorrectedValue("");
 
       setCorrectionReason(
-        "Incorrect digit entered"
+        DEFAULT_REASON
       );
 
       setOtherReason("");
@@ -238,7 +264,7 @@ export default function MeterHistoryModal({
       );
 
       if (
-        selectedReason !== "Other"
+        selectedReason !== "other"
       ) {
         setOtherReason("");
       }
@@ -248,14 +274,16 @@ export default function MeterHistoryModal({
     () => {
 
       if (
-        correctionReason === "Other"
+        correctionReason === "other"
       ) {
         return String(
           otherReason
         ).trim();
       }
 
-      return correctionReason;
+      return t(
+        `water.history.reasons.${correctionReason}`
+      );
     };
 
   const handleSaveCorrection =
@@ -274,7 +302,9 @@ export default function MeterHistoryModal({
       if (!finalReason) {
 
         alert(
-          "Enter correction reason"
+          t(
+            "water.history.enterCorrectionReason"
+          )
         );
 
         return;
@@ -297,7 +327,7 @@ export default function MeterHistoryModal({
           setCorrectedValue("");
 
           setCorrectionReason(
-            "Incorrect digit entered"
+            DEFAULT_REASON
           );
 
           setOtherReason("");
@@ -361,7 +391,9 @@ export default function MeterHistoryModal({
             fontSize: 14,
           }}
         >
-          Loading history...
+          {t(
+            "water.history.loading"
+          )}
         </div>
 
       ) : (
@@ -408,7 +440,9 @@ export default function MeterHistoryModal({
               >
 
                 <span>
-                  Apartment
+                  {t(
+                    "water.history.apartment"
+                  )}
                 </span>
 
                 <span
@@ -424,7 +458,9 @@ export default function MeterHistoryModal({
                 </span>
 
                 <span>
-                  Riser
+                  {t(
+                    "water.card.riser"
+                  )}
                 </span>
 
                 <span
@@ -443,7 +479,9 @@ export default function MeterHistoryModal({
                 </span>
 
                 <span>
-                  Serial number
+                  {t(
+                    "water.card.serialNumber"
+                  )}
                 </span>
 
                 <span
@@ -473,7 +511,9 @@ export default function MeterHistoryModal({
                 fontSize: 13,
               }}
             >
-              No previous readings.
+              {t(
+                "water.history.noPreviousReadings"
+              )}
             </div>
 
           ) : (
@@ -533,7 +573,9 @@ export default function MeterHistoryModal({
                         textAlign: "left",
                       }}
                     >
-                      Date
+                      {t(
+                        "water.history.date"
+                      )}
                     </th>
 
                     <th
@@ -542,7 +584,9 @@ export default function MeterHistoryModal({
                         textAlign: "right",
                       }}
                     >
-                      Reading
+                      {t(
+                        "water.history.reading"
+                      )}
                       <br />
 
                       <span
@@ -561,7 +605,9 @@ export default function MeterHistoryModal({
                         textAlign: "right",
                       }}
                     >
-                      Consumption
+                      {t(
+                        "water.history.consumption"
+                      )}
                       <br />
 
                       <span
@@ -658,7 +704,9 @@ export default function MeterHistoryModal({
                                   cursor: "pointer",
                                 }}
                               >
-                                Correct
+                                {t(
+                                  "water.history.correct"
+                                )}
                               </button>
 
                             )}
@@ -742,7 +790,9 @@ export default function MeterHistoryModal({
                   fontWeight: 700,
                 }}
               >
-                Correct latest reading
+                {t(
+                  "water.history.correctLatestReading"
+                )}
               </div>
 
               <label
@@ -754,7 +804,9 @@ export default function MeterHistoryModal({
                   fontWeight: 600,
                 }}
               >
-                Corrected reading, m³
+                {t(
+                  "water.history.correctedReading"
+                )}
               </label>
 
               <input
@@ -781,7 +833,9 @@ export default function MeterHistoryModal({
                   fontWeight: 600,
                 }}
               >
-                Correction reason
+                {t(
+                  "water.history.correctionReason"
+                )}
               </label>
 
               <select
@@ -799,30 +853,38 @@ export default function MeterHistoryModal({
                 }}
               >
                 <option
-                  value="Incorrect digit entered"
+                  value="incorrectDigit"
                 >
-                  Incorrect digit entered
+                  {t(
+                    "water.history.reasons.incorrectDigit"
+                  )}
                 </option>
 
                 <option
-                  value="Wrong meter selected"
+                  value="wrongMeter"
                 >
-                  Wrong meter selected
+                  {t(
+                    "water.history.reasons.wrongMeter"
+                  )}
                 </option>
 
                 <option
-                  value="Decimal point error"
+                  value="decimalPoint"
                 >
-                  Decimal point error
+                  {t(
+                    "water.history.reasons.decimalPoint"
+                  )}
                 </option>
 
-                <option value="Other">
-                  Other
+                <option value="other">
+                  {t(
+                    "water.history.reasons.other"
+                  )}
                 </option>
               </select>
 
               {correctionReason ===
-                "Other" && (
+                "other" && (
 
                 <>
 
@@ -836,7 +898,9 @@ export default function MeterHistoryModal({
                       fontWeight: 600,
                     }}
                   >
-                    Other reason
+                    {t(
+                      "water.history.otherReason"
+                    )}
                   </label>
 
                   <input
@@ -845,7 +909,9 @@ export default function MeterHistoryModal({
                     disabled={
                       isCorrecting
                     }
-                    placeholder="Describe the reason"
+                    placeholder={t(
+                      "water.history.describeReason"
+                    )}
                     onChange={(event) =>
                       setOtherReason(
                         event.target.value
@@ -891,7 +957,9 @@ export default function MeterHistoryModal({
                         : "pointer",
                   }}
                 >
-                  Cancel
+                  {t(
+                    "water.history.cancel"
+                  )}
                 </button>
 
                 <button
@@ -919,8 +987,12 @@ export default function MeterHistoryModal({
                   }}
                 >
                   {isCorrecting
-                    ? "Saving..."
-                    : "Save correction"}
+                    ? t(
+                        "water.history.saving"
+                      )
+                    : t(
+                        "water.history.saveCorrection"
+                      )}
                 </button>
 
               </div>
@@ -946,7 +1018,9 @@ export default function MeterHistoryModal({
               cursor: "pointer",
             }}
           >
-            Close
+            {t(
+              "water.history.close"
+            )}
           </button>
 
         </>
