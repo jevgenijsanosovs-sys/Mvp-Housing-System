@@ -12,31 +12,9 @@ import {
   getAnnouncement,
 } from "../api/announcements";
 
-function formatDate(value) {
-  if (!value) {
-    return "—";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return new Intl.DateTimeFormat(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }
-  ).format(date);
-}
+import {
+  useTranslation,
+} from "../i18n";
 
 function getAnnouncementDate(
   announcement
@@ -51,6 +29,11 @@ function getAnnouncementDate(
 export default function AnnouncementDetailsPage() {
   const navigate =
     useNavigate();
+
+  const {
+    t,
+    language,
+  } = useTranslation();
 
   const [
     searchParams,
@@ -74,6 +57,40 @@ export default function AnnouncementDetailsPage() {
     setError,
   ] = useState("");
 
+  const formatDate =
+    (value) => {
+      if (!value) {
+        return "—";
+      }
+
+      const date =
+        new Date(value);
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return String(value);
+      }
+
+      const localeMap = {
+        lv: "lv-LV",
+        en: "en-GB",
+        ru: "ru-RU",
+      };
+
+      return new Intl.DateTimeFormat(
+        localeMap[language] ||
+          "en-GB",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }
+      ).format(date);
+    };
+
   useEffect(() => {
     let active = true;
 
@@ -84,7 +101,9 @@ export default function AnnouncementDetailsPage() {
 
         if (!announcementId) {
           setError(
-            "Announcement identifier is missing."
+            t(
+              "announcements.details.missingIdentifier"
+            )
           );
           setLoading(false);
           return;
@@ -106,7 +125,9 @@ export default function AnnouncementDetailsPage() {
           ) {
             throw new Error(
               result?.error ||
-              "Announcement not found."
+              t(
+                "announcements.details.notFound"
+              )
             );
           }
 
@@ -125,7 +146,9 @@ export default function AnnouncementDetailsPage() {
 
           setError(
             loadError?.message ||
-            "Announcement could not be loaded."
+            t(
+              "announcements.details.loadFailed"
+            )
           );
         } finally {
           if (active) {
@@ -139,7 +162,10 @@ export default function AnnouncementDetailsPage() {
     return () => {
       active = false;
     };
-  }, [announcementId]);
+  }, [
+    announcementId,
+    t,
+  ]);
 
   return (
     <div
@@ -158,12 +184,16 @@ export default function AnnouncementDetailsPage() {
         }
         style={backButtonStyle}
       >
-        ← Back to announcements
+        {t(
+          "announcements.details.back"
+        )}
       </button>
 
       {loading && (
         <div style={stateStyle}>
-          Loading announcement...
+          {t(
+            "announcements.details.loading"
+          )}
         </div>
       )}
 
@@ -240,8 +270,12 @@ export default function AnnouncementDetailsPage() {
               >
                 {announcement.priority ===
                 "important"
-                  ? "Important"
-                  : "Information"}
+                  ? t(
+                      "announcements.common.important"
+                    )
+                  : t(
+                      "announcements.common.information"
+                    )}
               </span>
 
               <time
