@@ -1,10 +1,8 @@
 import { useState } from "react";
-
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "../i18n";
 
 import {
   buttonStyle,
@@ -12,24 +10,16 @@ import {
 } from "../styles/theme";
 
 export default function LoginPage() {
-
   const { login } = useAuth();
+  const { t } = useTranslation();
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const submit = async () => {
-
-    const ok = await login(
-      email,
-      password
-    );
+    const ok = await login(email, password);
 
     if (!ok) {
       return;
@@ -39,7 +29,6 @@ export default function LoginPage() {
   };
 
   return (
-
     <div
       style={{
         minHeight: "100vh",
@@ -48,40 +37,39 @@ export default function LoginPage() {
         alignItems: "center",
       }}
     >
-
       <div
         style={{
           width: 400,
           padding: 30,
           border: "1px solid #ccc",
           borderRadius: 10,
-          
         }}
       >
-
-        <h1 style={{ lineHeight: 1.2, textAlign: "center" }}>
+        <h1
+          style={{
+            lineHeight: 1.2,
+            textAlign: "center",
+          }}
+        >
           <div style={{ fontSize: "0.8em" }}>
             MVX System
           </div>
+
           <div>DzĪKS IRLAVA 20</div>
         </h1>
 
         <input
-          placeholder="Email"
+          placeholder={t("login.placeholders.email")}
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          onChange={(e) => setEmail(e.target.value)}
           style={inputStyle}
         />
 
         <input
           type="password"
-          placeholder="Password"
+          placeholder={t("login.placeholders.password")}
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          onChange={(e) => setPassword(e.target.value)}
           style={inputStyle}
         />
 
@@ -89,12 +77,9 @@ export default function LoginPage() {
           onClick={submit}
           style={buttonStyle}
         >
-          Login
+          {t("login.login")}
         </button>
-
       </div>
-
     </div>
-
   );
 }
