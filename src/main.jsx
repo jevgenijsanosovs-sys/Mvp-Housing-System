@@ -17,23 +17,31 @@ import {
   ModeProvider,
 } from "./context/ModeContext";
 
+import {
+  LanguageProvider,
+} from "./i18n";
+
 createRoot(
   document.getElementById("root")
 ).render(
 
   <StrictMode>
 
-    <AuthProvider>
+    <LanguageProvider>
 
-      <ModeProvider>
+      <AuthProvider>
 
-        <RouterProvider
-          router={router}
-        />
+        <ModeProvider>
 
-      </ModeProvider>
+          <RouterProvider
+            router={router}
+          />
 
-    </AuthProvider>
+        </ModeProvider>
+
+      </AuthProvider>
+
+    </LanguageProvider>
 
   </StrictMode>
 
