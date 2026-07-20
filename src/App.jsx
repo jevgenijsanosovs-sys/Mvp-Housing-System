@@ -1,7 +1,17 @@
-import { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import Sidebar from "./components/Sidebar";
+import {
+  Outlet,
+} from "react-router-dom";
+
+import Sidebar
+  from "./components/Sidebar";
+
+import LanguageSelector
+  from "./components/LanguageSelector";
 
 import {
   layout,
@@ -10,11 +20,17 @@ import {
 
 export default function App() {
 
-  const [isMobile, setIsMobile] =
-    useState(window.innerWidth < 768);
+  const [
+    isMobile,
+    setIsMobile,
+  ] = useState(
+    window.innerWidth < 768
+  );
 
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false);
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
 
   useEffect(() => {
 
@@ -53,33 +69,48 @@ export default function App() {
 
         <>
 
-          <button
-            onClick={() =>
-              setSidebarOpen(
-                !sidebarOpen
-              )
-            }
+          <div
             style={{
               position: "fixed",
               top: 20,
               left: 20,
               zIndex: 1000,
 
-              width: 44,
-              height: 44,
-
-              border: "none",
-              borderRadius: 10,
-
-              fontSize: 22,
-              cursor: "pointer",
-
-              background: "#2563eb",
-              color: "white",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
             }}
           >
-            ☰
-          </button>
+
+            <button
+              onClick={() =>
+                setSidebarOpen(
+                  !sidebarOpen
+                )
+              }
+              aria-label="Open menu"
+              style={{
+                width: 44,
+                height: 44,
+
+                border: "none",
+                borderRadius: 10,
+
+                fontSize: 22,
+                cursor: "pointer",
+
+                background: "#2563eb",
+                color: "white",
+              }}
+            >
+              ☰
+            </button>
+
+            <LanguageSelector
+              variant="compact"
+            />
+
+          </div>
 
           {sidebarOpen && (
 
@@ -119,7 +150,7 @@ export default function App() {
           width: "100%",
 
           paddingTop:
-            isMobile ? 70 : 30,
+            isMobile ? 80 : 30,
         }}
       >
 
