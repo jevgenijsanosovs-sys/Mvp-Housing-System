@@ -51,6 +51,7 @@ const ADMIN_PATHS = new Set([
   "/water-meters",
   "/water-readings",
   "/monthly-report",
+  "/admin-announcements",
 ]);
 
 function isPathAllowedForMode(
@@ -355,6 +356,15 @@ export default function Sidebar({
               title="Water Reading History"
               onClick={() =>
                 go("/water-readings")
+              }
+            />
+
+            <MenuButton
+              title="Announcements"
+              onClick={() =>
+                go(
+                  "/admin-announcements"
+                )
               }
             />
 
