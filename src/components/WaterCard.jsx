@@ -1,15 +1,25 @@
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
 import {
   inputStyle,
   buttonStyle,
 } from "../styles/theme";
 
+import {
+  useTranslation,
+} from "../i18n";
+
 export default function WaterCard({
   meter,
   onSubmit,
   onHistory,
 }) {
+
+  const {
+    t,
+  } = useTranslation();
 
   const [value, setValue] =
     useState("");
@@ -115,7 +125,9 @@ export default function WaterCard({
     (type) => {
 
       if (!type) {
-        return "Water";
+        return t(
+          "water.card.water"
+        );
       }
 
       const normalizedType =
@@ -124,14 +136,23 @@ export default function WaterCard({
           .toLowerCase();
 
       if (normalizedType === "cold") {
-        return "Cold Water";
+        return t(
+          "water.card.coldWater"
+        );
       }
 
       if (normalizedType === "hot") {
-        return "Hot Water";
+        return t(
+          "water.card.hotWater"
+        );
       }
 
-      return `${type} Water`;
+      return t(
+        "water.card.customWater",
+        {
+          type,
+        }
+      );
     };
 
   const normalizedMeterType =
@@ -289,7 +310,7 @@ export default function WaterCard({
             whiteSpace: "nowrap",
           }}
         >
-          {formatValue(
+          {formatMeterType(
             meter.type
           )}
         </span>
@@ -308,7 +329,9 @@ export default function WaterCard({
         <div style={rowStyle}>
 
           <span style={labelStyle}>
-            Riser
+            {t(
+              "water.card.riser"
+            )}
           </span>
 
           <span
@@ -329,7 +352,9 @@ export default function WaterCard({
         <div style={rowStyle}>
 
           <span style={labelStyle}>
-            Serial number
+            {t(
+              "water.card.serialNumber"
+            )}
           </span>
 
           <span style={valueStyle}>
@@ -343,7 +368,9 @@ export default function WaterCard({
         <div style={rowStyle}>
 
           <span style={labelStyle}>
-            Current reading
+            {t(
+              "water.card.currentReading"
+            )}
           </span>
 
           <span
@@ -362,7 +389,9 @@ export default function WaterCard({
         <div style={rowStyle}>
 
           <span style={labelStyle}>
-            Last submitted
+            {t(
+              "water.card.lastSubmitted"
+            )}
           </span>
 
           <span style={valueStyle}>
@@ -384,7 +413,9 @@ export default function WaterCard({
           color: "#374151",
         }}
       >
-        New reading, m³
+        {t(
+          "water.card.newReading"
+        )}
       </label>
 
       <div
@@ -438,8 +469,12 @@ export default function WaterCard({
           }}
         >
           {isSubmitting
-            ? "Submitting..."
-            : "Submit"}
+            ? t(
+                "water.card.submitting"
+              )
+            : t(
+                "water.card.submit"
+              )}
         </button>
 
       </div>
@@ -452,10 +487,9 @@ export default function WaterCard({
           lineHeight: 1.4,
         }}
       >
-        Enter the full meter value.
-        Digits before the comma are
-        cubic metres; three digits
-        after it are litres.
+        {t(
+          "water.card.inputHint"
+        )}
       </div>
 
       <button
@@ -474,7 +508,9 @@ export default function WaterCard({
           cursor: "pointer",
         }}
       >
-        View history
+        {t(
+          "water.card.viewHistory"
+        )}
       </button>
 
     </div>
