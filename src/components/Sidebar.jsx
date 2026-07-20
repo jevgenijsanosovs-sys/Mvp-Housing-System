@@ -6,6 +6,9 @@ import {
 import MenuButton
   from "./MenuButton";
 
+import LanguageSelector
+  from "./LanguageSelector";
+
 import {
   useAuth,
 } from "../context/AuthContext";
@@ -384,6 +387,15 @@ export default function Sidebar({
         }}
       >
         <hr style={divider} />
+
+        {!isMobile && (
+          <LanguageSelector
+            variant="sidebar"
+            style={{
+              marginBottom: 14,
+            }}
+          />
+        )}
 
         <button
           onClick={logout}
