@@ -47,6 +47,26 @@ const announcements = {
     publish: "Publicēt",
     archive: "Arhivēt",
 
+
+    recipients: {
+      title: "Saņēmēji",
+      hint: "Apvienojiet kāpņu telpas, dzīvokļus, lomas un konkrētus lietotājus. Izvēle “Visiem” aizstāj pārējos saņēmējus.",
+      everyone: "Visiem",
+      section: "Kāpņu telpa",
+      apartment: "Dzīvoklis",
+      role: "Loma",
+      user: "Lietotājs",
+      sections: "Kāpņu telpas",
+      apartments: "Dzīvokļi",
+      roles: "Lomas",
+      users: "Lietotāji",
+      loading: "Saņēmēji tiek ielādēti...",
+      select: "Izvēlieties saņēmēju",
+      add: "Pievienot",
+      setEveryone: "Nosūtīt visiem",
+      remove: "Noņemt saņēmēju",
+    },
+
     fields: {
       title: "Virsraksts",
       text: "Teksts",
@@ -69,6 +89,7 @@ const announcements = {
     validation: {
       title: "Ievadiet virsrakstu.",
       content: "Ievadiet paziņojuma tekstu.",
+      recipients: "Izvēlieties vismaz vienu saņēmēju.",
       dateOrder: "Beigu datums nevar būt agrāks par sākuma datumu.",
       saveFailed: "Paziņojumu neizdevās saglabāt. Pārbaudiet iepriekš redzamo ziņojumu.",
     },
