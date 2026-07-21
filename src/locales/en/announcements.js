@@ -47,6 +47,26 @@ const announcements = {
     publish: "Publish",
     archive: "Archive",
 
+
+    recipients: {
+      title: "Recipients",
+      hint: "Combine sections, apartments, roles and individual users. Everyone overrides other recipients.",
+      everyone: "Everyone",
+      section: "Section",
+      apartment: "Apartment",
+      role: "Role",
+      user: "User",
+      sections: "Sections",
+      apartments: "Apartments",
+      roles: "Roles",
+      users: "Users",
+      loading: "Loading recipients...",
+      select: "Select a recipient",
+      add: "Add",
+      setEveryone: "Send to everyone",
+      remove: "Remove recipient",
+    },
+
     fields: {
       title: "Title",
       text: "Text",
@@ -69,6 +89,7 @@ const announcements = {
     validation: {
       title: "Enter a title.",
       content: "Enter announcement text.",
+      recipients: "Select at least one recipient.",
       dateOrder: "The end date cannot be earlier than the start date.",
       saveFailed: "The announcement could not be saved. Check the message above.",
     },
