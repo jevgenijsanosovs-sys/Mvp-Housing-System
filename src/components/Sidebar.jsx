@@ -173,6 +173,12 @@ export default function Sidebar({
   const roles =
     me?.roles || [];
 
+  const mustChangePassword =
+    Number(
+      me?.user
+        ?.must_change_password
+    ) === 1;
+
   const hasResident =
     roles.includes("resident") ||
     roles.includes("owner");
@@ -281,7 +287,8 @@ export default function Sidebar({
           {me?.user?.last_name}
         </div>
 
-        <div style={modeBlock}>
+        {!mustChangePassword && (
+          <div style={modeBlock}>
           {hasResident && (
             <button
               style={
@@ -319,11 +326,13 @@ export default function Sidebar({
               )}
             </button>
           )}
-        </div>
+          </div>
+        )}
 
         <hr style={divider} />
 
-        {mode === "resident" && (
+        {!mustChangePassword &&
+          mode === "resident" && (
           <>
             <MenuButton
               title={t(
@@ -356,7 +365,8 @@ export default function Sidebar({
           </>
         )}
 
-        {mode === "admin" && (
+        {!mustChangePassword &&
+          mode === "admin" && (
           <>
             <MenuButton
               title={t(
@@ -426,6 +436,29 @@ export default function Sidebar({
         )}
 
         <hr style={divider} />
+
+        {mustChangePassword && (
+          <div
+            style={{
+              margin:
+                "0 8px 12px",
+              padding: 10,
+              borderRadius: 9,
+              background:
+                "rgba(180,83,83,.10)",
+              color:
+                "var(--text-h)",
+              fontSize: 11,
+              lineHeight: 1.45,
+            }}
+          >
+            {language === "lv"
+              ? "Lai turpinātu, nomainiet pagaidu paroli."
+              : language === "ru"
+                ? "Для продолжения смените временный пароль."
+                : "Change the temporary password to continue."}
+          </div>
+        )}
 
         <MenuButton
           title={
