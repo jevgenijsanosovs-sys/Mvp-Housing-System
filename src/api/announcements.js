@@ -24,6 +24,12 @@ export async function getAdminAnnouncements() {
   );
 }
 
+export async function getAnnouncementTargetOptions() {
+  return await api(
+    "/api/admin/announcement-target-options"
+  );
+}
+
 export async function createAnnouncement(
   announcement
 ) {
