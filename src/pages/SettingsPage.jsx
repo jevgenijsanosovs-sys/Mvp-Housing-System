@@ -3,12 +3,20 @@ import {
   useState,
 } from "react";
 
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import useChangePassword
   from "../hooks/useChangePassword";
 
 import {
   useTranslation,
 } from "../i18n";
+
+import {
+  useAuth,
+} from "../context/AuthContext";
 
 const TEXT = {
   en: {
@@ -43,6 +51,10 @@ const TEXT = {
       "The current password is incorrect.",
     failed:
       "The password could not be changed.",
+    mandatoryTitle:
+      "Temporary password",
+    mandatoryMessage:
+      "For security, replace the temporary password before using the rest of MVX System.",
   },
 
   lv: {
@@ -77,6 +89,10 @@ const TEXT = {
       "Pašreizējā parole nav pareiza.",
     failed:
       "Paroli neizdevās nomainīt.",
+    mandatoryTitle:
+      "Pagaidu parole",
+    mandatoryMessage:
+      "Drošības nolūkā pirms pārējās MVX System izmantošanas nomainiet pagaidu paroli.",
   },
 
   ru: {
@@ -111,6 +127,10 @@ const TEXT = {
       "Текущий пароль указан неверно.",
     failed:
       "Не удалось изменить пароль.",
+    mandatoryTitle:
+      "Временный пароль",
+    mandatoryMessage:
+      "В целях безопасности замените временный пароль до использования остальных разделов MVX System.",
   },
 };
 
@@ -145,6 +165,20 @@ export default function SettingsPage() {
   const {
     language,
   } = useTranslation();
+
+  const {
+    me,
+    refreshMe,
+  } = useAuth();
+
+  const navigate =
+    useNavigate();
+
+  const mustChangePassword =
+    Number(
+      me?.user
+        ?.must_change_password
+    ) === 1;
 
   const text =
     useMemo(
@@ -250,6 +284,23 @@ export default function SettingsPage() {
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+
+        const refreshed =
+          await refreshMe();
+
+        if (
+          Number(
+            refreshed?.user
+              ?.must_change_password
+          ) === 0
+        ) {
+          navigate(
+            "/",
+            {
+              replace: true,
+            }
+          );
+        }
       }
     };
 
@@ -308,6 +359,44 @@ export default function SettingsPage() {
           {text.subtitle}
         </div>
       </div>
+
+      {mustChangePassword && (
+        <div
+          role="alert"
+          style={{
+            marginBottom: 16,
+            padding: 14,
+            border:
+              "1px solid rgba(180,83,83,.28)",
+            borderRadius: 11,
+            background:
+              "rgba(180,83,83,.06)",
+          }}
+        >
+          <div
+            style={{
+              color:
+                "var(--text-h)",
+              fontSize: 13,
+              fontWeight: 800,
+            }}
+          >
+            {text.mandatoryTitle}
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              color:
+                "var(--text)",
+              fontSize: 12,
+              lineHeight: 1.5,
+            }}
+          >
+            {text.mandatoryMessage}
+          </div>
+        </div>
+      )}
 
       <section
         style={{
