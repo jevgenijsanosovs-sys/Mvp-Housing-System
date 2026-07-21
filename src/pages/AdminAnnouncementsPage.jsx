@@ -17,6 +17,12 @@ const EMPTY_FORM = {
   priority: "normal",
   publish_from: "",
   publish_until: "",
+  targets: [
+    {
+      type: "all",
+      value: null,
+    },
+  ],
 };
 
 function toDateTimeLocal(
@@ -101,7 +107,9 @@ export default function AdminAnnouncementsPage() {
 
   const {
     announcements,
+    targetOptions,
     loading,
+    optionsLoading,
     saving,
     actionId,
     error,
@@ -127,6 +135,16 @@ export default function AdminAnnouncementsPage() {
   const [
     notice,
     setNotice,
+  ] = useState("");
+
+  const [
+    targetType,
+    setTargetType,
+  ] = useState("section");
+
+  const [
+    targetValue,
+    setTargetValue,
   ] = useState("");
 
   const isEditing =
@@ -244,6 +262,18 @@ export default function AdminAnnouncementsPage() {
           toDateTimeLocal(
             announcement.publish_until
           ),
+        targets:
+          Array.isArray(
+            announcement.targets
+          ) &&
+          announcement.targets.length > 0
+            ? announcement.targets
+            : [
+                {
+                  type: "all",
+                  value: null,
+                },
+              ],
       });
 
       setFormError("");
@@ -253,6 +283,255 @@ export default function AdminAnnouncementsPage() {
         top: 0,
         behavior: "smooth",
       });
+    };
+
+  const getTargetOptions =
+    () => {
+      if (
+        targetType === "section"
+      ) {
+        return (
+          targetOptions.sections ||
+          []
+        ).map(
+          (item) => ({
+            value:
+              String(
+                item.value
+              ),
+            label:
+              `${t(
+                "announcements.admin.recipients.section"
+              )} ${item.value}`,
+          })
+        );
+      }
+
+      if (
+        targetType ===
+        "apartment"
+      ) {
+        return (
+          targetOptions.apartments ||
+          []
+        ).map(
+          (item) => ({
+            value:
+              String(item.id),
+            label:
+              `${t(
+                "announcements.admin.recipients.apartment"
+              )} ${item.number}`,
+          })
+        );
+      }
+
+      if (
+        targetType === "role"
+      ) {
+        return (
+          targetOptions.roles ||
+          []
+        ).map(
+          (item) => ({
+            value:
+              String(item.name),
+            label:
+              item.name,
+          })
+        );
+      }
+
+      if (
+        targetType === "user"
+      ) {
+        return (
+          targetOptions.users ||
+          []
+        ).map(
+          (item) => ({
+            value:
+              String(item.id),
+            label:
+              [
+                item.first_name,
+                item.last_name,
+              ]
+                .filter(Boolean)
+                .join(" ") ||
+              item.email,
+          })
+        );
+      }
+
+      return [];
+    };
+
+  const getTargetLabel =
+    (target) => {
+      if (
+        target.type === "all"
+      ) {
+        return t(
+          "announcements.admin.recipients.everyone"
+        );
+      }
+
+      if (
+        target.type ===
+        "section"
+      ) {
+        return `${t(
+          "announcements.admin.recipients.section"
+        )} ${target.value}`;
+      }
+
+      if (
+        target.type ===
+        "apartment"
+      ) {
+        const apartment =
+          (
+            targetOptions.apartments ||
+            []
+          ).find(
+            (item) =>
+              String(item.id) ===
+              String(target.value)
+          );
+
+        return `${t(
+          "announcements.admin.recipients.apartment"
+        )} ${
+          apartment?.number ||
+          target.value
+        }`;
+      }
+
+      if (
+        target.type === "role"
+      ) {
+        return `${t(
+          "announcements.admin.recipients.role"
+        )}: ${target.value}`;
+      }
+
+      const user =
+        (
+          targetOptions.users ||
+          []
+        ).find(
+          (item) =>
+            String(item.id) ===
+            String(target.value)
+        );
+
+      const userName =
+        user
+          ? [
+              user.first_name,
+              user.last_name,
+            ]
+              .filter(Boolean)
+              .join(" ") ||
+            user.email
+          : target.value;
+
+      return `${t(
+        "announcements.admin.recipients.user"
+      )}: ${userName}`;
+    };
+
+  const addTarget =
+    () => {
+      if (
+        !targetType ||
+        !targetValue
+      ) {
+        return;
+      }
+
+      const nextTarget = {
+        type: targetType,
+        value: targetValue,
+      };
+
+      setForm(
+        (current) => {
+          const withoutEveryone =
+            current.targets.filter(
+              (target) =>
+                target.type !==
+                "all"
+            );
+
+          const exists =
+            withoutEveryone.some(
+              (target) =>
+                target.type ===
+                  nextTarget.type &&
+                String(
+                  target.value
+                ) ===
+                  String(
+                    nextTarget.value
+                  )
+            );
+
+          return {
+            ...current,
+            targets:
+              exists
+                ? withoutEveryone
+                : [
+                    ...withoutEveryone,
+                    nextTarget,
+                  ],
+          };
+        }
+      );
+
+      setTargetValue("");
+    };
+
+  const setEveryoneTarget =
+    () => {
+      changeField(
+        "targets",
+        [
+          {
+            type: "all",
+            value: null,
+          },
+        ]
+      );
+    };
+
+  const removeTarget =
+    (targetToRemove) => {
+      setForm(
+        (current) => {
+          const targets =
+            current.targets.filter(
+              (target) =>
+                !(
+                  target.type ===
+                    targetToRemove.type &&
+                  String(
+                    target.value
+                  ) ===
+                    String(
+                      targetToRemove.value
+                    )
+                )
+            );
+
+          return {
+            ...current,
+            targets,
+          };
+        }
+      );
     };
 
   const submit =
@@ -281,6 +560,20 @@ export default function AdminAnnouncementsPage() {
         setFormError(
           t(
             "announcements.admin.validation.content"
+          )
+        );
+        return;
+      }
+
+      if (
+        !Array.isArray(
+          form.targets
+        ) ||
+        form.targets.length === 0
+      ) {
+        setFormError(
+          t(
+            "announcements.admin.validation.recipients"
           )
         );
         return;
@@ -320,6 +613,8 @@ export default function AdminAnnouncementsPage() {
               form.publish_until
             ),
           publishImmediately,
+          targets:
+            form.targets,
         });
 
         setNotice(
@@ -481,6 +776,14 @@ export default function AdminAnnouncementsPage() {
             }
 
             .announcement-actions button {
+              width: 100%;
+            }
+
+            .announcement-recipient-controls {
+              grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .announcement-recipient-controls button {
               width: 100%;
             }
 
@@ -755,6 +1058,206 @@ export default function AdminAnnouncementsPage() {
                 style={inputStyle}
               />
             </label>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gap: 10,
+              padding: 14,
+              border:
+                "1px solid var(--border)",
+              borderRadius: 11,
+              background:
+                "var(--surface-soft)",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  color:
+                    "var(--text-h)",
+                  fontSize: 11,
+                  fontWeight: 800,
+                }}
+              >
+                {t(
+                  "announcements.admin.recipients.title"
+                )}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 4,
+                  color:
+                    "var(--text)",
+                  fontSize: 10,
+                }}
+              >
+                {t(
+                  "announcements.admin.recipients.hint"
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {form.targets.map(
+                (target) => (
+                  <span
+                    key={`${target.type}:${target.value || ""}`}
+                    style={targetChip}
+                  >
+                    {getTargetLabel(
+                      target
+                    )}
+
+                    <button
+                      type="button"
+                      aria-label={t(
+                        "announcements.admin.recipients.remove"
+                      )}
+                      onClick={() =>
+                        removeTarget(
+                          target
+                        )
+                      }
+                      style={
+                        targetRemoveButton
+                      }
+                    >
+                      ×
+                    </button>
+                  </span>
+                )
+              )}
+            </div>
+
+            <div
+              className="announcement-recipient-controls"
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "minmax(130px,.7fr) minmax(180px,1.3fr) auto",
+                gap: 8,
+              }}
+            >
+              <select
+                value={
+                  targetType
+                }
+                onChange={(event) => {
+                  setTargetType(
+                    event.target.value
+                  );
+                  setTargetValue("");
+                }}
+                style={inputStyle}
+                disabled={
+                  optionsLoading
+                }
+              >
+                <option value="section">
+                  {t(
+                    "announcements.admin.recipients.sections"
+                  )}
+                </option>
+
+                <option value="apartment">
+                  {t(
+                    "announcements.admin.recipients.apartments"
+                  )}
+                </option>
+
+                <option value="role">
+                  {t(
+                    "announcements.admin.recipients.roles"
+                  )}
+                </option>
+
+                <option value="user">
+                  {t(
+                    "announcements.admin.recipients.users"
+                  )}
+                </option>
+              </select>
+
+              <select
+                value={
+                  targetValue
+                }
+                onChange={(event) =>
+                  setTargetValue(
+                    event.target.value
+                  )
+                }
+                style={inputStyle}
+                disabled={
+                  optionsLoading
+                }
+              >
+                <option value="">
+                  {optionsLoading
+                    ? t(
+                        "announcements.admin.recipients.loading"
+                      )
+                    : t(
+                        "announcements.admin.recipients.select"
+                      )}
+                </option>
+
+                {getTargetOptions().map(
+                  (option) => (
+                    <option
+                      key={
+                        option.value
+                      }
+                      value={
+                        option.value
+                      }
+                    >
+                      {option.label}
+                    </option>
+                  )
+                )}
+              </select>
+
+              <button
+                type="button"
+                onClick={addTarget}
+                disabled={
+                  !targetValue
+                }
+                style={
+                  secondaryButton
+                }
+              >
+                {t(
+                  "announcements.admin.recipients.add"
+                )}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={
+                setEveryoneTarget
+              }
+              style={{
+                ...secondaryButton,
+                justifySelf:
+                  "start",
+              }}
+            >
+              {t(
+                "announcements.admin.recipients.setEveryone"
+              )}
+            </button>
           </div>
 
           {formError && (
@@ -1035,6 +1538,35 @@ export default function AdminAnnouncementsPage() {
                         <div
                           style={{
                             display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            marginTop: 11,
+                          }}
+                        >
+                          {(
+                            announcement.targets ||
+                            []
+                          ).map(
+                            (target) => (
+                              <span
+                                key={`${announcement.id}:${target.type}:${target.value || ""}`}
+                                style={{
+                                  ...targetChip,
+                                  padding:
+                                    "3px 8px",
+                                }}
+                              >
+                                {getTargetLabel(
+                                  target
+                                )}
+                              </span>
+                            )
+                          )}
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
                             gap: 14,
                             flexWrap: "wrap",
                             marginTop: 11,
@@ -1272,6 +1804,38 @@ const statusBadge = {
     "0.04em",
   textTransform:
     "uppercase",
+};
+
+const targetChip = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  minHeight: 26,
+  padding: "4px 6px 4px 9px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 999,
+  background:
+    "var(--surface)",
+  color:
+    "var(--text-h)",
+  fontSize: 10,
+  fontWeight: 700,
+};
+
+const targetRemoveButton = {
+  width: 20,
+  height: 20,
+  padding: 0,
+  border: 0,
+  borderRadius: 999,
+  background:
+    "transparent",
+  color:
+    "var(--text)",
+  cursor: "pointer",
+  fontSize: 15,
+  lineHeight: 1,
 };
 
 const errorStyle = {
