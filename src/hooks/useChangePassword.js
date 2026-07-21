@@ -3,8 +3,8 @@ import {
 } from "react";
 
 import {
-  changePassword,
-} from "../api/auth";
+  api,
+} from "../services/api";
 
 function getErrorMessage(
   errorCode
@@ -27,6 +27,12 @@ function getErrorMessage(
 
     unauthorized:
       "Your session has expired. Sign in again.",
+
+    not_found:
+      "The password change service was not found.",
+
+    password_change_failed:
+      "The password could not be changed.",
   };
 
   return (
@@ -62,9 +68,19 @@ export default function useChangePassword() {
 
       try {
         const result =
-          await changePassword(
-            currentPassword,
-            newPassword
+          await api(
+            "/api/change-password",
+            {
+              method: "POST",
+
+              body: JSON.stringify({
+                current_password:
+                  currentPassword,
+
+                new_password:
+                  newPassword,
+              }),
+            }
           );
 
         if (
