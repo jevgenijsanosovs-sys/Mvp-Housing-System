@@ -1,11 +1,14 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 
-import { api } from "../services/api";
+import {
+  api,
+} from "../services/api";
 
 const AuthContext =
   createContext(null);
@@ -13,100 +16,163 @@ const AuthContext =
 export function AuthProvider({
   children,
 }) {
+  const [
+    token,
+    setToken,
+  ] = useState(
+    localStorage.getItem(
+      "token"
+    )
+  );
 
-  const [token, setToken] =
-    useState(
-      localStorage.getItem("token")
-    );
+  const [
+    me,
+    setMe,
+  ] = useState(null);
 
-  const [me, setMe] =
-    useState(null);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [loading, setLoading] =
-    useState(true);
+  const logout =
+    useCallback(() => {
+      localStorage.removeItem(
+        "token"
+      );
+
+      sessionStorage.clear();
+
+      setToken(null);
+      setMe(null);
+
+      window.location.href =
+        "/login";
+    }, []);
+
+  const refreshMe =
+    useCallback(async () => {
+      const meData =
+        await api(
+          "/api/me"
+        );
+
+      if (
+        !meData?.user
+      ) {
+        logout();
+        return null;
+      }
+
+      setMe(meData);
+
+      return meData;
+    }, [logout]);
 
   useEffect(() => {
+    let active = true;
 
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    const load =
+      async () => {
+        if (!token) {
+          if (active) {
+            setMe(null);
+            setLoading(false);
+          }
 
-    api("/api/me")
-      .then((d) => {
-
-        if (!d?.user) {
-          logout();
           return;
         }
 
-        setMe(d);
+        setLoading(true);
 
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+        try {
+          const meData =
+            await api(
+              "/api/me"
+            );
 
-  }, [token]);
+          if (!active) {
+            return;
+          }
 
-  const login = async (
-    email,
-    password
-  ) => {
+          if (
+            !meData?.user
+          ) {
+            logout();
+            return;
+          }
 
-    const res = await api(
-      "/api/login",
-      {
-        method: "POST",
+          setMe(meData);
+        } finally {
+          if (active) {
+            setLoading(false);
+          }
+        }
+      };
 
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    token,
+    logout,
+  ]);
+
+  const login =
+    async (
+      email,
+      password
+    ) => {
+      const res =
+        await api(
+          "/api/login",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify({
+                email,
+                password,
+              }),
+          }
+        );
+
+      if (!res?.token) {
+        alert(
+          res?.error ||
+          "Login failed"
+        );
+
+        return false;
       }
-    );
 
-    if (!res?.token) {
-
-      alert(
-        res?.error ||
-        "Login failed"
+      localStorage.setItem(
+        "token",
+        res.token
       );
 
-      return false;
-    }
+      setToken(
+        res.token
+      );
 
-    localStorage.setItem(
-      "token",
-      res.token
-    );
+      const meData =
+        await api(
+          "/api/me"
+        );
 
-    setToken(res.token);
+      if (
+        !meData?.user
+      ) {
+        logout();
+        return false;
+      }
 
-	const meData =
-	  await api("/api/me");
+      setMe(meData);
 
-	setMe(meData);
-
-
-    return true;
-  };
-
-	const logout = () => {
-
-	  localStorage.removeItem(
-		"token"
-	  );
-
-	  sessionStorage.clear();
-
-	  setToken(null);
-
-	  setMe(null);
-
-	  window.location.href =
-		"/login";
-	};
+      return true;
+    };
 
   const value = {
     token,
@@ -114,6 +180,7 @@ export function AuthProvider({
     login,
     logout,
     loading,
+    refreshMe,
   };
 
   return (
@@ -126,7 +193,7 @@ export function AuthProvider({
 }
 
 export function useAuth() {
-
-  return useContext(AuthContext);
-
+  return useContext(
+    AuthContext
+  );
 }
