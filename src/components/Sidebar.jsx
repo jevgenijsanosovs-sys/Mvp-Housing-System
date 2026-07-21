@@ -49,6 +49,7 @@ const RESIDENT_PATHS = new Set([
   "/",
   "/water",
   "/announcements",
+  "/settings",
 ]);
 
 const ADMIN_PATHS = new Set([
@@ -59,7 +60,14 @@ const ADMIN_PATHS = new Set([
   "/water-readings",
   "/monthly-report",
   "/admin-announcements",
+  "/settings",
 ]);
+
+const SETTINGS_LABELS = {
+  lv: "Iestatījumi",
+  en: "Settings",
+  ru: "Настройки",
+};
 
 function isPathAllowedForMode(
   path,
@@ -149,6 +157,7 @@ export default function Sidebar({
 
   const {
     t,
+    language,
   } = useTranslation();
 
   const navigate =
@@ -170,6 +179,10 @@ export default function Sidebar({
 
   const hasAdmin =
     roles.includes("admin");
+
+  const settingsLabel =
+    SETTINGS_LABELS[language] ||
+    SETTINGS_LABELS.en;
 
   const closeMobileSidebar =
     () => {
@@ -411,6 +424,17 @@ export default function Sidebar({
             />
           </>
         )}
+
+        <hr style={divider} />
+
+        <MenuButton
+          title={
+            settingsLabel
+          }
+          onClick={() =>
+            go("/settings")
+          }
+        />
       </div>
 
       <div
