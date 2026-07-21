@@ -489,6 +489,73 @@ export default function DashboardPage() {
             </HomeTile>
 
             <HomeTile
+              title={t("dashboard.announcements.title")}
+              subtitle={t("dashboard.announcements.subtitle")}
+              onClick={() =>
+                navigate(
+                  "/announcements"
+                )
+              }
+            >
+
+              {residentLoading ? (
+
+                <Placeholder>
+                  {t("dashboard.common.loading")}
+                </Placeholder>
+
+              ) : latestAnnouncements.length >
+                0 ? (
+
+                <AnnouncementsPreviewList
+                  announcements={
+                    latestAnnouncements
+                  }
+                  onOpen={(
+                    event,
+                    announcement
+                  ) => {
+                    event.stopPropagation();
+
+                    navigate(
+                      `/announcement?id=${encodeURIComponent(
+                        announcement.id
+                      )}`
+                    );
+                  }}
+                  onViewAll={(
+                    event
+                  ) => {
+                    event.stopPropagation();
+
+                    navigate(
+                      "/announcements"
+                    );
+                  }}
+                />
+
+              ) : (
+
+                <Placeholder>
+                  <strong
+                    style={{
+                      display: "block",
+                      marginBottom: 5,
+                      color:
+                        "var(--text-h)",
+                    }}
+                  >
+                    {t("dashboard.announcements.upToDate")}
+                  </strong>
+
+                  {t("dashboard.announcements.noNew")}
+                </Placeholder>
+
+              )}
+
+            </HomeTile>
+
+            <HomeTile
               title={t("dashboard.readings.title")}
               subtitle={t("dashboard.readings.subtitle")}
               onClick={() =>
@@ -630,73 +697,6 @@ export default function DashboardPage() {
                   </div>
 
                 </div>
-
-              )}
-
-            </HomeTile>
-
-            <HomeTile
-              title={t("dashboard.announcements.title")}
-              subtitle={t("dashboard.announcements.subtitle")}
-              onClick={() =>
-                navigate(
-                  "/announcements"
-                )
-              }
-            >
-
-              {residentLoading ? (
-
-                <Placeholder>
-                  {t("dashboard.common.loading")}
-                </Placeholder>
-
-              ) : latestAnnouncements.length >
-                0 ? (
-
-                <AnnouncementsPreviewList
-                  announcements={
-                    latestAnnouncements
-                  }
-                  onOpen={(
-                    event,
-                    announcement
-                  ) => {
-                    event.stopPropagation();
-
-                    navigate(
-                      `/announcement?id=${encodeURIComponent(
-                        announcement.id
-                      )}`
-                    );
-                  }}
-                  onViewAll={(
-                    event
-                  ) => {
-                    event.stopPropagation();
-
-                    navigate(
-                      "/announcements"
-                    );
-                  }}
-                />
-
-              ) : (
-
-                <Placeholder>
-                  <strong
-                    style={{
-                      display: "block",
-                      marginBottom: 5,
-                      color:
-                        "var(--text-h)",
-                    }}
-                  >
-                    {t("dashboard.announcements.upToDate")}
-                  </strong>
-
-                  {t("dashboard.announcements.noNew")}
-                </Placeholder>
 
               )}
 
