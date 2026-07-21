@@ -241,10 +241,10 @@ export default function DashboardPage() {
       ]
     );
 
-  const latestAnnouncement =
+  const latestAnnouncements =
     useMemo(
       () =>
-        getLatestAnnouncement(
+        getLatestAnnouncements(
           announcementRows
         ),
       [announcementRows]
@@ -640,11 +640,7 @@ export default function DashboardPage() {
               subtitle={t("dashboard.announcements.subtitle")}
               onClick={() =>
                 navigate(
-                  latestAnnouncement
-                    ? `/announcement?id=${encodeURIComponent(
-                        latestAnnouncement.id
-                      )}`
-                    : "/announcements"
+                  "/announcements"
                 )
               }
             >
@@ -655,12 +651,25 @@ export default function DashboardPage() {
                   {t("dashboard.common.loading")}
                 </Placeholder>
 
-              ) : latestAnnouncement ? (
+              ) : latestAnnouncements.length >
+                0 ? (
 
-                <AnnouncementPreview
-                  announcement={
-                    latestAnnouncement
+                <AnnouncementsPreviewList
+                  announcements={
+                    latestAnnouncements
                   }
+                  onOpen={(
+                    event,
+                    announcement
+                  ) => {
+                    event.stopPropagation();
+
+                    navigate(
+                      `/announcement?id=${encodeURIComponent(
+                        announcement.id
+                      )}`
+                    );
+                  }}
                   onViewAll={(
                     event
                   ) => {
@@ -1019,8 +1028,9 @@ function HomeTile({
 }
 
 
-function AnnouncementPreview({
-  announcement,
+function AnnouncementsPreviewList({
+  announcements,
+  onOpen,
   onViewAll,
 }) {
 
@@ -1028,127 +1038,173 @@ function AnnouncementPreview({
     t,
   } = useTranslation();
 
-  const isImportant =
-    announcement.priority ===
-    "important";
-
   return (
     <div
       style={{
         display: "grid",
-        gap: 10,
+        gap: 0,
       }}
     >
 
-      <div
+      {announcements.map(
+        (announcement) => {
+
+          const isImportant =
+            announcement.priority ===
+            "important";
+
+          return (
+            <button
+              key={announcement.id}
+              type="button"
+              onClick={(event) =>
+                onOpen(
+                  event,
+                  announcement
+                )
+              }
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "minmax(0,1fr) auto",
+                gap: 12,
+                alignItems: "start",
+                width: "100%",
+                padding: "10px 0",
+                border: "none",
+                borderBottom:
+                  "1px solid var(--border)",
+                background:
+                  "transparent",
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+
+              <div
+                style={{
+                  minWidth: 0,
+                }}
+              >
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    marginBottom: 4,
+                  }}
+                >
+
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      flex: "0 0 7px",
+                      borderRadius: 999,
+                      background:
+                        isImportant
+                          ? "#b91c1c"
+                          : "var(--text)",
+                      opacity:
+                        isImportant
+                          ? 1
+                          : 0.45,
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      color:
+                        isImportant
+                          ? "#b91c1c"
+                          : "var(--text)",
+                      fontSize: 9,
+                      fontWeight: 800,
+                      textTransform:
+                        "uppercase",
+                      letterSpacing:
+                        "0.06em",
+                    }}
+                  >
+                    {isImportant
+                      ? t("dashboard.announcements.important")
+                      : t("dashboard.announcements.information")}
+                  </span>
+
+                </div>
+
+                <strong
+                  style={{
+                    display: "block",
+                    color:
+                      "var(--text-h)",
+                    fontSize: 12,
+                    lineHeight: 1.35,
+                    overflowWrap:
+                      "anywhere",
+                  }}
+                >
+                  {announcement.title}
+                </strong>
+
+                <div
+                  style={{
+                    marginTop: 3,
+                    color:
+                      "var(--text)",
+                    fontSize: 10,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {getAnnouncementPreview(
+                    announcement.content,
+                    82
+                  )}
+                </div>
+
+              </div>
+
+              <span
+                style={{
+                  paddingTop: 1,
+                  color:
+                    "var(--text)",
+                  fontSize: 9,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {formatAnnouncementDate(
+                  getAnnouncementDate(
+                    announcement
+                  )
+                )}
+              </span>
+
+            </button>
+          );
+        }
+      )}
+
+      <button
+        type="button"
+        onClick={onViewAll}
         style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          gap: 10,
-          flexWrap: "wrap",
-        }}
-      >
-
-        <span
-          style={{
-            color: isImportant
-              ? "#b91c1c"
-              : "var(--text)",
-            fontSize: 10,
-            fontWeight: 800,
-            textTransform:
-              "uppercase",
-            letterSpacing:
-              "0.06em",
-          }}
-        >
-          {isImportant
-            ? t("dashboard.announcements.important")
-            : t("dashboard.announcements.information")}
-        </span>
-
-        <span
-          style={{
-            color:
-              "var(--text)",
-            fontSize: 10,
-          }}
-        >
-          {formatAnnouncementDate(
-            getAnnouncementDate(
-              announcement
-            )
-          )}
-        </span>
-
-      </div>
-
-      <strong
-        style={{
-          color:
-            "var(--text-h)",
-          fontSize: 15,
-          lineHeight: 1.35,
-        }}
-      >
-        {announcement.title}
-      </strong>
-
-      <div
-        style={{
-          color:
-            "var(--text)",
+          justifySelf: "start",
+          marginTop: 10,
+          padding: 0,
+          border: "none",
+          background:
+            "transparent",
+          color: "#2563eb",
           fontSize: 11,
-          lineHeight: 1.55,
+          fontWeight: 700,
+          cursor: "pointer",
         }}
       >
-        {getAnnouncementPreview(
-          announcement.content
-        )}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          gap: 12,
-          paddingTop: 8,
-          borderTop:
-            "1px solid var(--border)",
-        }}
-      >
-        <span
-          style={{
-            color: "#2563eb",
-            fontSize: 11,
-            fontWeight: 700,
-          }}
-        >
-          {t("dashboard.announcements.open")} →
-        </span>
-
-        <button
-          type="button"
-          onClick={onViewAll}
-          style={{
-            padding: 0,
-            border: "none",
-            background:
-              "transparent",
-            color:
-              "var(--text)",
-            fontSize: 10,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          {t("dashboard.announcements.viewAll")}
-        </button>
-      </div>
+        {t("dashboard.announcements.viewAll")} →
+      </button>
 
     </div>
   );
@@ -1881,7 +1937,7 @@ function buildWaterSummary(
   };
 }
 
-function getLatestAnnouncement(
+function getLatestAnnouncements(
   announcements
 ) {
 
@@ -1891,7 +1947,7 @@ function getLatestAnnouncement(
     ) ||
     announcements.length === 0
   ) {
-    return null;
+    return [];
   }
 
   return [...announcements]
@@ -1903,7 +1959,8 @@ function getLatestAnnouncement(
         getAnnouncementTime(
           left
         )
-    )[0];
+    )
+    .slice(0, 3);
 }
 
 function getAnnouncementTime(
@@ -1966,7 +2023,8 @@ function formatAnnouncementDate(
 }
 
 function getAnnouncementPreview(
-  content
+  content,
+  maxLength = 145
 ) {
 
   const normalized =
@@ -1974,13 +2032,19 @@ function getAnnouncementPreview(
       .replace(/\s+/g, " ")
       .trim();
 
-  if (normalized.length <= 145) {
+  if (
+    normalized.length <=
+    maxLength
+  ) {
     return normalized;
   }
 
   return `${normalized.slice(
     0,
-    142
+    Math.max(
+      0,
+      maxLength - 3
+    )
   )}...`;
 }
 
