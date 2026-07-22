@@ -1,59 +1,292 @@
-import { useEffect } from "react";
-import { useState } from "react";
-import { useUsers } from "../hooks/useUsers";
-import useApartments from "../hooks/useApartments";
-import { useNavigate } from "react-router-dom";
 import {
-  buttonStyle,
-  menuButton,
-  tableStyle,
-  modalStyle,
-  modalContentStyle,
-  inputStyle,
-} from "../styles/theme";
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-import Modal from "../components/Modal";
+import {
+  useNavigate,
+} from "react-router-dom";
 
+import {
+  useUsers,
+} from "../hooks/useUsers";
+
+import useApartments
+  from "../hooks/useApartments";
+
+import Modal
+  from "../components/Modal";
+
+import {
+  useTranslation,
+} from "../i18n";
+
+const TEXT = {
+  en: {
+    title: "Users",
+    search: "Search by name, personal code, email, phone or apartment",
+    add: "+ Add User",
+    loading: "Loading users...",
+    all: "All",
+    active: "Active",
+    inactive: "Inactive",
+    name: "Name",
+    personalCode: "Personal code",
+    email: "Email",
+    phone: "Phone",
+    apartments: "Apartments",
+    status: "Status",
+    actions: "Actions",
+    edit: "Edit",
+    assign: "Assignments",
+    changeStatus: "Change status",
+    noApartments: "No apartments",
+    createTitle: "Create User",
+    editTitle: "Edit User",
+    firstName: "First name",
+    lastName: "Last name",
+    password: "Temporary password",
+    create: "Create User",
+    save: "Save changes",
+    cancel: "Cancel",
+    statusTitle: "Change user status",
+    statusText: "This does not delete the user. All records and apartment history remain in the database.",
+    setActive: "Set Active",
+    setInactive: "Set Inactive",
+    assignmentTitle: "Apartment assignments",
+    selectApartment: "Select apartment",
+    relation: "Relation",
+    owner: "Owner",
+    resident: "Resident",
+    addAssignment: "Add assignment",
+    existingAssignments: "Existing assignments",
+    remove: "Remove",
+    noAssignments: "No assignments",
+    userInformation: "User information",
+    close: "Close",
+    confirmInactive: "Set this user to inactive?",
+    confirmActive: "Set this user to active?",
+  },
+  lv: {
+    title: "Lietotāji",
+    search: "Meklēt pēc vārda, personas koda, e-pasta, tālruņa vai dzīvokļa",
+    add: "+ Pievienot lietotāju",
+    loading: "Notiek lietotāju ielāde...",
+    all: "Visi",
+    active: "Aktīvs",
+    inactive: "Neaktīvs",
+    name: "Vārds",
+    personalCode: "Personas kods",
+    email: "E-pasts",
+    phone: "Tālrunis",
+    apartments: "Dzīvokļi",
+    status: "Statuss",
+    actions: "Darbības",
+    edit: "Rediģēt",
+    assign: "Piesaistes",
+    changeStatus: "Mainīt statusu",
+    noApartments: "Nav dzīvokļu",
+    createTitle: "Izveidot lietotāju",
+    editTitle: "Rediģēt lietotāju",
+    firstName: "Vārds",
+    lastName: "Uzvārds",
+    password: "Pagaidu parole",
+    create: "Izveidot lietotāju",
+    save: "Saglabāt izmaiņas",
+    cancel: "Atcelt",
+    statusTitle: "Mainīt lietotāja statusu",
+    statusText: "Lietotājs netiek dzēsts. Visi ieraksti un dzīvokļu vēsture paliek datubāzē.",
+    setActive: "Iestatīt aktīvu",
+    setInactive: "Iestatīt neaktīvu",
+    assignmentTitle: "Dzīvokļu piesaistes",
+    selectApartment: "Izvēlieties dzīvokli",
+    relation: "Saistība",
+    owner: "Īpašnieks",
+    resident: "Iedzīvotājs",
+    addAssignment: "Pievienot piesaisti",
+    existingAssignments: "Esošās piesaistes",
+    remove: "Noņemt",
+    noAssignments: "Piesaistu nav",
+    userInformation: "Lietotāja informācija",
+    close: "Aizvērt",
+    confirmInactive: "Iestatīt šo lietotāju kā neaktīvu?",
+    confirmActive: "Iestatīt šo lietotāju kā aktīvu?",
+  },
+  ru: {
+    title: "Пользователи",
+    search: "Поиск по имени, персональному коду, email, телефону или квартире",
+    add: "+ Добавить пользователя",
+    loading: "Загрузка пользователей...",
+    all: "Все",
+    active: "Активный",
+    inactive: "Неактивный",
+    name: "Имя",
+    personalCode: "Персональный код",
+    email: "Email",
+    phone: "Телефон",
+    apartments: "Квартиры",
+    status: "Статус",
+    actions: "Действия",
+    edit: "Редактировать",
+    assign: "Связи с квартирами",
+    changeStatus: "Изменить статус",
+    noApartments: "Нет квартир",
+    createTitle: "Создать пользователя",
+    editTitle: "Редактировать пользователя",
+    firstName: "Имя",
+    lastName: "Фамилия",
+    password: "Временный пароль",
+    create: "Создать пользователя",
+    save: "Сохранить изменения",
+    cancel: "Отмена",
+    statusTitle: "Изменить статус пользователя",
+    statusText: "Пользователь не удаляется. Все записи и история связей с квартирами сохраняются в базе.",
+    setActive: "Сделать активным",
+    setInactive: "Сделать неактивным",
+    assignmentTitle: "Связи с квартирами",
+    selectApartment: "Выберите квартиру",
+    relation: "Тип связи",
+    owner: "Собственник",
+    resident: "Жилец",
+    addAssignment: "Добавить связь",
+    existingAssignments: "Текущие связи",
+    remove: "Удалить связь",
+    noAssignments: "Связей нет",
+    userInformation: "Информация о пользователе",
+    close: "Закрыть",
+    confirmInactive: "Перевести этого пользователя в неактивный статус?",
+    confirmActive: "Сделать этого пользователя активным?",
+  },
+};
+
+function ApartmentChips({
+  value,
+  onOpen,
+}) {
+  const apartments =
+    String(
+      value || ""
+    )
+      .split(",")
+      .map(
+        (item) =>
+          item.trim()
+      )
+      .filter(Boolean);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 5,
+      }}
+    >
+      {apartments.map(
+        (number) => (
+          <button
+            type="button"
+            key={number}
+            onClick={() =>
+              onOpen(number)
+            }
+            style={chipStyle}
+          >
+            #{number}
+          </button>
+        )
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+}) {
+  return (
+    <label
+      style={labelStyle}
+    >
+      {label}
+      {required && " *"}
+
+      <input
+        type={type}
+        value={value ?? ""}
+        onChange={(event) =>
+          onChange(
+            event.target.value
+          )
+        }
+        style={inputStyle}
+      />
+    </label>
+  );
+}
 
 export default function UsersPage() {
+  const navigate =
+    useNavigate();
 
-  const [selectedUser, setSelectedUser] =
-    useState(null);
-  
-  const isMobile =
-    window.innerWidth < 768;
+  const {
+    language,
+  } = useTranslation();
 
-  const [search, setSearch] =
-  useState("");
-  
+  const text =
+    TEXT[language] ||
+    TEXT.en;
+
+  const [
+    search,
+    setSearch,
+  ] = useState("");
+
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] = useState("all");
+
+  const [
+    selectedUser,
+    setSelectedUser,
+  ] = useState(null);
+
   const {
     users,
+    loading,
+    error,
     loadUsers,
 
     assignmentUser,
     setAssignmentUser,
-
     assignmentApartmentId,
     setAssignmentApartmentId,
-
     assignmentRelation,
     setAssignmentRelation,
-
     userAssignments,
     setUserAssignments,
 
     showCreateUser,
     setShowCreateUser,
-
     newUser,
     setNewUser,
 
+    editingUser,
+    setEditingUser,
+    statusUser,
+    setStatusUser,
+
     createUser,
+    updateUser,
+    setUserStatus,
 
     loadUserAssignments,
-
     addAssignment,
-
     removeAssignment,
   } = useUsers();
 
@@ -66,606 +299,1340 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
-  const openApartment = (aptNumber) => {
-    navigate(`/apartments?number=${aptNumber}`);
-  };
+  const filteredUsers =
+    useMemo(() => {
+      const query =
+        search
+          .trim()
+          .toLowerCase();
 
-   
-  const navigate = useNavigate();
+      return users.filter(
+        (user) => {
+          const active =
+            Number(
+              user.is_active
+            ) === 1;
 
-  const filteredUsers = users.filter(
-    (u) => {
-  
-      const text = `
-        ${u.first_name || ""}
-        ${u.last_name || ""}
-        ${u.email || ""}
-        ${u.phone || ""}
-        ${u.owner_apartments || ""}
-        ${u.resident_apartments || ""}
-      `
-        .toLowerCase();
-  
-      return text.includes(
-        search.toLowerCase()
+          if (
+            statusFilter ===
+              "active" &&
+            !active
+          ) {
+            return false;
+          }
+
+          if (
+            statusFilter ===
+              "inactive" &&
+            active
+          ) {
+            return false;
+          }
+
+          if (!query) {
+            return true;
+          }
+
+          return [
+            user.first_name,
+            user.last_name,
+            user.personal_code,
+            user.email,
+            user.phone,
+            user.owner_apartments,
+            user.resident_apartments,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+            .includes(query);
+        }
       );
-    }
-  );
-  
-  const ApartmentChips = ({ apartments }) => {
-    if (!apartments) return null;
-  
-    return (
-      <>
-        {apartments
-          .split(",")
-          .map((a) => a.trim())
-          .filter(Boolean)
-          .map((apt) => (
-            <button
-              key={apt}
-              onClick={() => openApartment(apt)}
-              style={{
-                marginRight: 6,
-                marginBottom: 6,
-                padding: "4px 10px",
-                borderRadius: 999,
-                border: "1px solid #d1d5db",
-                background: "#f3f4f6",
-                cursor: "pointer",
-                fontSize: 13,
-              }}
-            >
-              {apt}
-            </button>
-          ))}
-      </>
-    );
-  };
-  
+    }, [
+      users,
+      search,
+      statusFilter,
+    ]);
+
+  const openAssignments =
+    async (user) => {
+      await loadApartments();
+
+      setAssignmentUser(
+        user
+      );
+
+      await loadUserAssignments(
+        user.id
+      );
+    };
+
+  const openApartment =
+    (number) => {
+      navigate(
+        `/apartments?number=${number}`
+      );
+    };
+
+  const handleCreate =
+    async () => {
+      try {
+        await createUser();
+      } catch (createError) {
+        window.alert(
+          createError.message
+        );
+      }
+    };
+
+  const handleUpdate =
+    async () => {
+      try {
+        await updateUser(
+          editingUser
+        );
+      } catch (updateError) {
+        window.alert(
+          updateError.message
+        );
+      }
+    };
+
+  const handleStatus =
+    async () => {
+      const nextStatus =
+        Number(
+          statusUser.is_active
+        ) !== 1;
+
+      const confirmed =
+        window.confirm(
+          nextStatus
+            ? text.confirmActive
+            : text.confirmInactive
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        await setUserStatus(
+          statusUser.id,
+          nextStatus
+        );
+      } catch (statusError) {
+        window.alert(
+          statusError.message
+        );
+      }
+    };
+
   return (
     <div>
+      <style>
+        {`
+          .users-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+          }
 
-<div
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 50,
-    background: "#f3f4f6",
-    paddingBottom: 12,
-    marginBottom: 20,
-  }}
->
+          .users-table {
+            width: 100%;
+            min-width: 1050px;
+            border-collapse: collapse;
+          }
 
-  <div
-    style={{
-      display: "flex",
-      gap: 10,
-      alignItems: "center",
-      flexWrap: "wrap",
-    }}
-  >
+          .users-table th,
+          .users-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle;
+            font-size: 12px;
+          }
 
-    <h1
-      style={{
-        margin: 0,
-      }}
-    >
-      Users
-    </h1>
+          .users-table th {
+            background: var(--surface-soft);
+            color: var(--text-h);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+          }
 
-    <input
-      placeholder="Search..."
-      value={search}
-      onChange={(e) =>
-        setSearch(e.target.value)
-      }
-      style={{
-        flex: 1,
-        minWidth: 180,
-        padding: 10,
-        borderRadius: 10,
-        border: "1px solid #ccc",
-      }}
-    />
+          .users-mobile-list {
+            display: none;
+          }
 
-    <button
-      onClick={() =>
-        setShowCreateUser(true)
-      }
-      style={{
-        padding: "10px 16px",
-        borderRadius: 10,
-        border: "none",
-        cursor: "pointer",
-      }}
-    >
-      Add User
-    </button>
+          @media (max-width: 767px) {
+            .users-table-wrap {
+              display: none;
+            }
 
-  </div>
+            .users-mobile-list {
+              display: grid;
+              gap: 10px;
+            }
 
-</div>
+            .users-header {
+              padding-top: 54px;
+            }
 
-{!isMobile ? (
+            .users-form-grid {
+              grid-template-columns: minmax(0,1fr) !important;
+            }
+          }
+        `}
+      </style>
 
-  <table style={tableStyle}>
-
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Apartments</th>
-        <th>Assignments</th>
-      </tr>
-    </thead>
-
-    <tbody>
-
-      {filteredUsers.map((u) => (
-
-        <tr key={u.id}>
-
-          <td>{u.id}</td>
-          <td>{u.first_name}</td>
-          <td>{u.last_name}</td>
-
-          <td>
-          
-            <a
-              href={`mailto:${u.email}`}
-            >
-              {u.email}
-            </a>
-          
-          </td>
-          
-          <td>
-          
-            <a
-              href={`tel:${u.phone}`}
-            >
-              {u.phone}
-            </a>
-          
-          </td>
-          
-          <td>
-          
-            {u.owner_apartments && (
-              <ApartmentChips
-                apartments={u.owner_apartments}
-              />
-            )}
-          
-            {u.resident_apartments && (
-              <ApartmentChips
-                apartments={u.resident_apartments}
-              />
-            )}
-          
-          </td>
-          
-          <td>
-
-            <button
-              style={menuButton}
-              onClick={async () => {
-
-                await loadApartments();
-
-                setAssignmentUser(u);
-
-                await loadUserAssignments(
-                  u.id
-                );
-
-              }}
-            >
-              Assign Apartment
-            </button>
-
-          </td>
-
-        </tr>
-
-      ))}
-
-    </tbody>
-
-  </table>
-
-) : (
-
-  <div>
-
-    {filteredUsers.map((u) => (
-
-      <div
-        key={u.id}
-        onClick={() =>
-          setSelectedUser(u)
-        }
-        style={{
-          background: "white",
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 12,
-          textAlign: "left",
-          cursor: "pointer",
-        }}
+      <header
+        className="users-header"
+        style={headerStyle}
       >
+        <div>
+          <h1
+            style={{
+              margin: 0,
+              color:
+                "var(--text-h)",
+            }}
+          >
+            {text.title}
+          </h1>
 
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-          }}
-        >
-          {u.first_name}
-          {" "}
-          {u.last_name}
+          <div
+            style={subtleStyle}
+          >
+            {filteredUsers.length} / {users.length}
+          </div>
         </div>
-
-        <div
-          style={{
-            marginTop: 8,
-            fontSize: 14,
-          }}
-        >
-          {u.owner_apartments && (
-            <>
-              <div
-                style={{
-                  color: "#6b7280",
-                  marginBottom: 4,
-                }}
-              >
-                Owner
-              </div>
-        
-              <ApartmentChips
-                apartments={u.owner_apartments}
-              />
-            </>
-          )}
-        
-          {u.resident_apartments && (
-            <>
-              <div
-                style={{
-                  color: "#6b7280",
-                  marginTop: 8,
-                  marginBottom: 4,
-                }}
-              >
-                Resident
-              </div>
-        
-              <ApartmentChips
-                apartments={u.resident_apartments}
-              />
-            </>
-          )}
-        </div>
-        
-          {!u.owner_apartments &&
-            !u.resident_apartments &&
-            "No apartments"}
 
         <button
-          style={{
-            ...menuButton,
-            marginTop: 12,
-            width: "100%",
-          }}
-          onClick={async (e) => {
-        
-            e.stopPropagation();
-        
-            await loadApartments();
-        
-            setAssignmentUser(u);
-        
-            await loadUserAssignments(
-              u.id
-            );
-        
-          }}
+          type="button"
+          onClick={() =>
+            setShowCreateUser(
+              true
+            )
+          }
+          style={primaryButtonStyle}
         >
-          Assign Apartment
+          {text.add}
         </button>
+      </header>
 
-
-        </div>
-    ))}
-
-  </div>
-
-)}
-
-<Modal
-  open={!!selectedUser}
-  title="User Information"
-  onClose={() =>
-    setSelectedUser(null)
-  }
->
-
-  {selectedUser && (
-
-    <div
-      style={{
-        textAlign: "left",
-      }}
-    >
-
-      <p>
-        <b>First Name:</b>
-        {" "}
-        {selectedUser.first_name}
-      </p>
-
-      <p>
-        <b>Last Name:</b>
-        {" "}
-        {selectedUser.last_name}
-      </p>
-
-      <p>
-        <b>Email:</b>
-        {" "}
-        <a
-          href={`mailto:${selectedUser.email}`}
-        >
-          {selectedUser.email}
-        </a>
-      </p>
-
-      <p>
-        <b>Phone:</b>
-        {" "}
-        <a
-          href={`tel:${selectedUser.phone}`}
-        >
-          {selectedUser.phone}
-        </a>
-      
-        {" | "}
-      
-        <a
-          href={`https://wa.me/${selectedUser.phone.replace(/\D/g,"")}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          WhatsApp
-        </a>
-      </p>
-
-      <p>
-        <b>Owner:</b>
-        {selectedUser.owner_apartments}
-      </p>
-      <p>
-        <b>Resident:</b>
-        {selectedUser.resident_apartments}
-      </p>
-      
-    </div>
-
-  )}
-
-</Modal>
-      
-{/* CREATE USER MODAL */}
-
-<Modal
-  open={showCreateUser}
-  title="Create User"
-  onClose={() =>
-    setShowCreateUser(false)
-  }
->
-
-  <input
-    placeholder="First Name"
-    value={newUser.first_name}
-    onChange={(e) =>
-      setNewUser({
-        ...newUser,
-        first_name: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <input
-    placeholder="Last Name"
-    value={newUser.last_name}
-    onChange={(e) =>
-      setNewUser({
-        ...newUser,
-        last_name: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <input
-    placeholder="Email"
-    value={newUser.email}
-    onChange={(e) =>
-      setNewUser({
-        ...newUser,
-        email: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <input
-    placeholder="Phone"
-    value={newUser.phone}
-    onChange={(e) =>
-      setNewUser({
-        ...newUser,
-        phone: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <input
-    placeholder="Password"
-    value={newUser.password}
-    onChange={(e) =>
-      setNewUser({
-        ...newUser,
-        password: e.target.value,
-      })
-    }
-    style={inputStyle}
-  />
-
-  <button
-    onClick={createUser}
-    style={buttonStyle}
-  >
-    Create User
-  </button>
-
-</Modal>
-
-{/* ASSIGNMENT MODAL */}
-
-{assignmentUser && (
-
-  <div style={modalStyle}>
-
-    <div style={modalContentStyle}>
-
-      <h2>Assign Apartment</h2>
-
-      <p>
-        User:
-        {" "}
-        {assignmentUser.first_name}
-        {" "}
-        {assignmentUser.last_name}
-      </p>
-
-      <select
-        value={assignmentApartmentId}
-        onChange={(e) =>
-          setAssignmentApartmentId(
-            e.target.value
-          )
-        }
-        style={inputStyle}
+      <section
+        style={toolbarStyle}
       >
-
-        <option value="">
-          Select apartment
-        </option>
-
-        {apartments.map((a) => (
-
-          <option
-            key={a.id}
-            value={a.id}
-          >
-            Apartment #{a.number}
-          </option>
-
-        ))}
-
-      </select>
-
-      <select
-        value={assignmentRelation}
-        onChange={(e) =>
-          setAssignmentRelation(
-            e.target.value
-          )
-        }
-        style={inputStyle}
-      >
-
-        <option value="owner">
-          owner
-        </option>
-
-        <option value="resident">
-          resident
-        </option>
-
-      </select>
-
-      <button
-        onClick={addAssignment}
-        style={buttonStyle}
-      >
-        Save
-      </button>
-
-      <button
-        onClick={() => {
-
-          setAssignmentUser(null);
-
-          setAssignmentApartmentId("");
-
-          setUserAssignments([]);
-
-        }}
-        style={menuButton}
-      >
-        Cancel
-      </button>
-
-      <hr />
-
-      <h3>
-        Existing Assignments
-      </h3>
-
-      {userAssignments.map((x) => (
+        <input
+          type="search"
+          value={search}
+          placeholder={text.search}
+          onChange={(event) =>
+            setSearch(
+              event.target.value
+            )
+          }
+          style={{
+            ...inputStyle,
+            flex: 1,
+            minWidth: 220,
+          }}
+        />
 
         <div
-          key={x.id}
           style={{
-            marginBottom: 10,
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap",
           }}
         >
+          {[
+            ["all", text.all],
+            ["active", text.active],
+            ["inactive", text.inactive],
+          ].map(
+            ([
+              value,
+              label,
+            ]) => (
+              <button
+                type="button"
+                key={value}
+                onClick={() =>
+                  setStatusFilter(
+                    value
+                  )
+                }
+                style={
+                  filterButtonStyle(
+                    statusFilter ===
+                      value
+                  )
+                }
+              >
+                {label}
+              </button>
+            )
+          )}
+        </div>
+      </section>
 
-          Apartment #{x.number}
-          {" "}
-          ({x.relation_type})
+      {loading && (
+        <div
+          style={noticeStyle}
+        >
+          {text.loading}
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={errorStyle}
+        >
+          {error}
+        </div>
+      )}
+
+      <div
+        className="users-table-wrap"
+      >
+        <table
+          className="users-table"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>{text.name}</th>
+              <th>{text.personalCode}</th>
+              <th>{text.email}</th>
+              <th>{text.phone}</th>
+              <th>{text.apartments}</th>
+              <th>{text.status}</th>
+              <th>{text.actions}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredUsers.map(
+              (user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedUser(
+                          user
+                        )
+                      }
+                      style={linkButtonStyle}
+                    >
+                      {user.first_name}{" "}
+                      {user.last_name}
+                    </button>
+                  </td>
+
+                  <td>
+                    {user.personal_code ||
+                      "—"}
+                  </td>
+
+                  <td>
+                    <a
+                      href={`mailto:${user.email}`}
+                    >
+                      {user.email}
+                    </a>
+                  </td>
+
+                  <td>
+                    {user.phone ? (
+                      <a
+                        href={`tel:${user.phone}`}
+                      >
+                        {user.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+
+                  <td>
+                    <ApartmentChips
+                      value={[
+                        user.owner_apartments,
+                        user.resident_apartments,
+                      ]
+                        .filter(Boolean)
+                        .join(",")}
+                      onOpen={
+                        openApartment
+                      }
+                    />
+                  </td>
+
+                  <td>
+                    <span
+                      style={statusBadgeStyle(
+                        Number(
+                          user.is_active
+                        ) === 1
+                      )}
+                    >
+                      {Number(
+                        user.is_active
+                      ) === 1
+                        ? text.active
+                        : text.inactive}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div
+                      style={actionsStyle}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditingUser({
+                            ...user,
+                          })
+                        }
+                        style={smallButtonStyle}
+                      >
+                        {text.edit}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openAssignments(
+                            user
+                          )
+                        }
+                        style={smallButtonStyle}
+                      >
+                        {text.assign}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setStatusUser(
+                            user
+                          )
+                        }
+                        style={secondarySmallButtonStyle}
+                      >
+                        {text.changeStatus}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        className="users-mobile-list"
+      >
+        {filteredUsers.map(
+          (user) => (
+            <article
+              key={user.id}
+              style={mobileCardStyle}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: 10,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedUser(
+                      user
+                    )
+                  }
+                  style={linkButtonStyle}
+                >
+                  {user.first_name}{" "}
+                  {user.last_name}
+                </button>
+
+                <span
+                  style={statusBadgeStyle(
+                    Number(
+                      user.is_active
+                    ) === 1
+                  )}
+                >
+                  {Number(
+                    user.is_active
+                  ) === 1
+                    ? text.active
+                    : text.inactive}
+                </span>
+              </div>
+
+              <div
+                style={mobileMetaStyle}
+              >
+                {text.personalCode}:{" "}
+                {user.personal_code ||
+                  "—"}
+              </div>
+
+              <div
+                style={mobileMetaStyle}
+              >
+                {user.email}
+              </div>
+
+              <div
+                style={mobileMetaStyle}
+              >
+                {user.phone || "—"}
+              </div>
+
+              <ApartmentChips
+                value={[
+                  user.owner_apartments,
+                  user.resident_apartments,
+                ]
+                  .filter(Boolean)
+                  .join(",")}
+                onOpen={
+                  openApartment
+                }
+              />
+
+              <div
+                style={{
+                  ...actionsStyle,
+                  marginTop: 10,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingUser({
+                      ...user,
+                    })
+                  }
+                  style={smallButtonStyle}
+                >
+                  {text.edit}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    openAssignments(
+                      user
+                    )
+                  }
+                  style={smallButtonStyle}
+                >
+                  {text.assign}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStatusUser(
+                      user
+                    )
+                  }
+                  style={secondarySmallButtonStyle}
+                >
+                  {text.changeStatus}
+                </button>
+              </div>
+            </article>
+          )
+        )}
+      </div>
+
+      <Modal
+        open={
+          showCreateUser
+        }
+        title={
+          text.createTitle
+        }
+        onClose={() =>
+          setShowCreateUser(
+            false
+          )
+        }
+      >
+        <div
+          className="users-form-grid"
+          style={formGridStyle}
+        >
+          <Field
+            label={text.firstName}
+            required
+            value={
+              newUser.first_name
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                first_name: value,
+              })
+            }
+          />
+
+          <Field
+            label={text.lastName}
+            required
+            value={
+              newUser.last_name
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                last_name: value,
+              })
+            }
+          />
+
+          <Field
+            label={
+              text.personalCode
+            }
+            value={
+              newUser.personal_code
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                personal_code:
+                  value,
+              })
+            }
+          />
+
+          <Field
+            label={text.phone}
+            value={
+              newUser.phone
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                phone: value,
+              })
+            }
+          />
+
+          <Field
+            label={text.email}
+            required
+            type="email"
+            value={
+              newUser.email
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                email: value,
+              })
+            }
+          />
+
+          <Field
+            label={text.password}
+            required
+            type="password"
+            value={
+              newUser.password
+            }
+            onChange={(value) =>
+              setNewUser({
+                ...newUser,
+                password: value,
+              })
+            }
+          />
 
           <button
-            style={{
-              marginLeft: 10,
-            }}
-            onClick={() =>
-              removeAssignment(x.id)
+            type="button"
+            onClick={
+              handleCreate
             }
+            style={{
+              ...primaryButtonStyle,
+              gridColumn:
+                "1 / -1",
+            }}
           >
-            Remove
+            {text.create}
           </button>
-
         </div>
+      </Modal>
 
-      ))}
+      <Modal
+        open={
+          Boolean(
+            editingUser
+          )
+        }
+        title={
+          text.editTitle
+        }
+        onClose={() =>
+          setEditingUser(
+            null
+          )
+        }
+      >
+        {editingUser && (
+          <div
+            className="users-form-grid"
+            style={formGridStyle}
+          >
+            <Field
+              label={
+                text.firstName
+              }
+              required
+              value={
+                editingUser.first_name
+              }
+              onChange={(value) =>
+                setEditingUser({
+                  ...editingUser,
+                  first_name:
+                    value,
+                })
+              }
+            />
 
-    </div>
+            <Field
+              label={
+                text.lastName
+              }
+              required
+              value={
+                editingUser.last_name
+              }
+              onChange={(value) =>
+                setEditingUser({
+                  ...editingUser,
+                  last_name:
+                    value,
+                })
+              }
+            />
 
-  </div>
+            <Field
+              label={
+                text.personalCode
+              }
+              value={
+                editingUser.personal_code
+              }
+              onChange={(value) =>
+                setEditingUser({
+                  ...editingUser,
+                  personal_code:
+                    value,
+                })
+              }
+            />
 
-)}
+            <Field
+              label={text.phone}
+              value={
+                editingUser.phone
+              }
+              onChange={(value) =>
+                setEditingUser({
+                  ...editingUser,
+                  phone: value,
+                })
+              }
+            />
 
+            <Field
+              label={text.email}
+              required
+              type="email"
+              value={
+                editingUser.email
+              }
+              onChange={(value) =>
+                setEditingUser({
+                  ...editingUser,
+                  email: value,
+                })
+              }
+            />
+
+            <button
+              type="button"
+              onClick={
+                handleUpdate
+              }
+              style={{
+                ...primaryButtonStyle,
+                gridColumn:
+                  "1 / -1",
+              }}
+            >
+              {text.save}
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={
+          Boolean(
+            statusUser
+          )
+        }
+        title={
+          text.statusTitle
+        }
+        onClose={() =>
+          setStatusUser(
+            null
+          )
+        }
+      >
+        {statusUser && (
+          <div>
+            <p>
+              <strong>
+                {statusUser.first_name}{" "}
+                {statusUser.last_name}
+              </strong>
+            </p>
+
+            <p
+              style={subtleStyle}
+            >
+              {text.statusText}
+            </p>
+
+            <button
+              type="button"
+              onClick={
+                handleStatus
+              }
+              style={
+                Number(
+                  statusUser.is_active
+                ) === 1
+                  ? warningButtonStyle
+                  : primaryButtonStyle
+              }
+            >
+              {Number(
+                statusUser.is_active
+              ) === 1
+                ? text.setInactive
+                : text.setActive}
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={
+          Boolean(
+            selectedUser
+          )
+        }
+        title={
+          text.userInformation
+        }
+        onClose={() =>
+          setSelectedUser(
+            null
+          )
+        }
+      >
+        {selectedUser && (
+          <div
+            style={{
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <InfoRow
+              label={text.name}
+              value={`${selectedUser.first_name} ${selectedUser.last_name}`}
+            />
+
+            <InfoRow
+              label={
+                text.personalCode
+              }
+              value={
+                selectedUser.personal_code
+              }
+            />
+
+            <InfoRow
+              label={text.email}
+              value={
+                selectedUser.email
+              }
+            />
+
+            <InfoRow
+              label={text.phone}
+              value={
+                selectedUser.phone
+              }
+            />
+
+            <InfoRow
+              label={text.status}
+              value={
+                Number(
+                  selectedUser.is_active
+                ) === 1
+                  ? text.active
+                  : text.inactive
+              }
+            />
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={
+          Boolean(
+            assignmentUser
+          )
+        }
+        title={
+          text.assignmentTitle
+        }
+        onClose={() => {
+          setAssignmentUser(
+            null
+          );
+          setAssignmentApartmentId(
+            ""
+          );
+          setUserAssignments(
+            []
+          );
+        }}
+      >
+        {assignmentUser && (
+          <div
+            style={{
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <strong>
+              {assignmentUser.first_name}{" "}
+              {assignmentUser.last_name}
+            </strong>
+
+            <select
+              value={
+                assignmentApartmentId
+              }
+              onChange={(event) =>
+                setAssignmentApartmentId(
+                  event.target.value
+                )
+              }
+              style={inputStyle}
+            >
+              <option value="">
+                {text.selectApartment}
+              </option>
+
+              {apartments.map(
+                (apartment) => (
+                  <option
+                    key={
+                      apartment.id
+                    }
+                    value={
+                      apartment.id
+                    }
+                  >
+                    #{apartment.number}
+                  </option>
+                )
+              )}
+            </select>
+
+            <select
+              value={
+                assignmentRelation
+              }
+              onChange={(event) =>
+                setAssignmentRelation(
+                  event.target.value
+                )
+              }
+              style={inputStyle}
+            >
+              <option value="owner">
+                {text.owner}
+              </option>
+
+              <option value="resident">
+                {text.resident}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await addAssignment();
+                  setAssignmentApartmentId(
+                    ""
+                  );
+                } catch (
+                  assignmentError
+                ) {
+                  window.alert(
+                    assignmentError.message
+                  );
+                }
+              }}
+              style={primaryButtonStyle}
+            >
+              {text.addAssignment}
+            </button>
+
+            <hr
+              style={{
+                width: "100%",
+                borderColor:
+                  "var(--border)",
+              }}
+            />
+
+            <strong>
+              {text.existingAssignments}
+            </strong>
+
+            {userAssignments.length ===
+            0 ? (
+              <span
+                style={subtleStyle}
+              >
+                {text.noAssignments}
+              </span>
+            ) : (
+              userAssignments.map(
+                (assignment) => (
+                  <div
+                    key={
+                      assignment.id
+                    }
+                    style={assignmentRowStyle}
+                  >
+                    <span>
+                      #{assignment.number} ·{" "}
+                      {assignment.relation_type ===
+                      "owner"
+                        ? text.owner
+                        : text.resident}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await removeAssignment(
+                            assignment.id
+                          );
+                        } catch (
+                          removeError
+                        ) {
+                          window.alert(
+                            removeError.message
+                          );
+                        }
+                      }}
+                      style={dangerTextButtonStyle}
+                    >
+                      {text.remove}
+                    </button>
+                  </div>
+                )
+              )
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
+}
+
+function InfoRow({
+  label,
+  value,
+}) {
+  return (
+    <div
+      style={infoRowStyle}
+    >
+      <strong>
+        {label}
+      </strong>
+
+      <span>
+        {value || "—"}
+      </span>
+    </div>
+  );
+}
+
+const headerStyle = {
+  display: "flex",
+  justifyContent:
+    "space-between",
+  alignItems: "center",
+  gap: 12,
+  flexWrap: "wrap",
+  marginBottom: 12,
+};
+
+const toolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+  marginBottom: 12,
+  padding: 12,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 12,
+  background:
+    "var(--surface)",
+};
+
+const formGridStyle = {
+  display: "grid",
+  gridTemplateColumns:
+    "repeat(2,minmax(0,1fr))",
+  gap: 10,
+};
+
+const labelStyle = {
+  display: "grid",
+  gap: 5,
+  color:
+    "var(--text-h)",
+  fontSize: 11,
+  fontWeight: 700,
+};
+
+const inputStyle = {
+  width: "100%",
+  minHeight: 38,
+  boxSizing:
+    "border-box",
+  padding: "8px 10px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 8,
+  background:
+    "var(--surface)",
+  color:
+    "var(--text-h)",
+};
+
+const primaryButtonStyle = {
+  minHeight: 36,
+  padding: "8px 12px",
+  border: "none",
+  borderRadius: 8,
+  background: "#2563eb",
+  color: "#fff",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const warningButtonStyle = {
+  ...primaryButtonStyle,
+  background: "#b45309",
+};
+
+const smallButtonStyle = {
+  padding: "6px 8px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 7,
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text-h)",
+  fontSize: 10,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const secondarySmallButtonStyle = {
+  ...smallButtonStyle,
+  color: "#b45309",
+};
+
+const actionsStyle = {
+  display: "flex",
+  gap: 5,
+  flexWrap: "wrap",
+};
+
+const chipStyle = {
+  padding: "3px 7px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 999,
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text-h)",
+  fontSize: 10,
+  cursor: "pointer",
+};
+
+const linkButtonStyle = {
+  padding: 0,
+  border: "none",
+  background: "none",
+  color: "#2563eb",
+  fontWeight: 700,
+  cursor: "pointer",
+  textAlign: "left",
+};
+
+const subtleStyle = {
+  color:
+    "var(--text)",
+  fontSize: 11,
+};
+
+const noticeStyle = {
+  marginBottom: 12,
+  padding: 10,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 8,
+  background:
+    "var(--surface-soft)",
+};
+
+const errorStyle = {
+  ...noticeStyle,
+  color: "#b91c1c",
+};
+
+const mobileCardStyle = {
+  padding: 13,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 12,
+  background:
+    "var(--surface)",
+};
+
+const mobileMetaStyle = {
+  marginTop: 6,
+  color:
+    "var(--text)",
+  fontSize: 11,
+  overflowWrap:
+    "anywhere",
+};
+
+const assignmentRowStyle = {
+  display: "flex",
+  justifyContent:
+    "space-between",
+  alignItems: "center",
+  gap: 10,
+  padding: 8,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 8,
+};
+
+const dangerTextButtonStyle = {
+  border: "none",
+  background: "none",
+  color: "#b91c1c",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const infoRowStyle = {
+  display: "flex",
+  justifyContent:
+    "space-between",
+  gap: 12,
+  padding: "8px 0",
+  borderBottom:
+    "1px solid var(--border)",
+};
+
+function filterButtonStyle(
+  active
+) {
+  return {
+    padding: "7px 10px",
+    border:
+      active
+        ? "1px solid #2563eb"
+        : "1px solid var(--border)",
+    borderRadius: 8,
+    background:
+      active
+        ? "rgba(37,99,235,.10)"
+        : "var(--surface)",
+    color:
+      active
+        ? "#1d4ed8"
+        : "var(--text-h)",
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: "pointer",
+  };
+}
+
+function statusBadgeStyle(
+  active
+) {
+  return {
+    display: "inline-flex",
+    padding: "4px 7px",
+    borderRadius: 999,
+    background:
+      active
+        ? "#dcfce7"
+        : "#f3f4f6",
+    color:
+      active
+        ? "#15803d"
+        : "#6b7280",
+    fontSize: 10,
+    fontWeight: 800,
+    whiteSpace: "nowrap",
+  };
 }
