@@ -336,7 +336,7 @@ function CompactSummary({
 function InfoItem({ label, value }) {
   return (
     <div style={infoItemStyle}>
-      <div style={metricLabelStyle}>
+      <div style={infoLabelStyle}>
         {label}
       </div>
 
@@ -1549,6 +1549,17 @@ const infoGridStyle = {
   display: "grid",
   gridTemplateColumns: "repeat(2,minmax(0,1fr))",
   gap: 7,
+};
+
+const infoLabelStyle = {
+  color:
+    "var(--text)",
+  fontSize: 9,
+  fontWeight: 800,
+  textTransform:
+    "uppercase",
+  letterSpacing:
+    "0.05em",
 };
 
 const infoItemStyle = {
