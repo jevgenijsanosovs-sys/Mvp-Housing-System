@@ -9,6 +9,18 @@ const water = {
       one: "{{count}} meter",
       other: "{{count}} meters",
     },
+
+    period: {
+      statusTitle: "Water reading collection status",
+      openTitle: "Water reading collection is open",
+      closedTitle: "Water reading collection is closed",
+      loading: "Loading water reading collection period...",
+      loadFailed: "Water reading collection period could not be loaded.",
+      unavailable: "Water reading collection period is not available.",
+      openUntil: "You can submit readings until {{date}}.",
+      opensOn: "The next collection period opens on {{date}}.",
+      closedOn: "The last collection period closed on {{date}}.",
+    },
   },
 
   card: {
