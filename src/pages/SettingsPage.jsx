@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -18,11 +19,15 @@ import {
   useAuth,
 } from "../context/AuthContext";
 
+import {
+  api,
+} from "../api/client";
+
 const TEXT = {
   en: {
     title: "Settings",
     subtitle:
-      "Manage your personal account settings.",
+      "Manage your personal account and system settings.",
     security: "Security",
     password: "Password",
     hint:
@@ -55,12 +60,55 @@ const TEXT = {
       "Temporary password",
     mandatoryMessage:
       "For security, replace the temporary password before using the rest of MVX System.",
+
+    waterSection:
+      "Water readings",
+    waterTitle:
+      "Collection period",
+    waterHint:
+      "Set how many days before and after the last day of each month residents may submit water meter readings.",
+    daysBefore:
+      "Days before month end",
+    daysAfter:
+      "Days after month end",
+    timezone:
+      "Timezone",
+    managedMonth:
+      "Managed reporting month",
+    currentStatus:
+      "Current status",
+    calculatedPeriod:
+      "Calculated collection period",
+    saveWater:
+      "Save period settings",
+    savingWater:
+      "Saving settings...",
+    loadingWater:
+      "Loading water reporting settings...",
+    waterSaved:
+      "Water reporting settings saved.",
+    waterLoadFailed:
+      "Water reporting settings could not be loaded.",
+    waterSaveFailed:
+      "Water reporting settings could not be saved.",
+    invalidDays:
+      "Enter a whole number from 0 to 31.",
+    scheduled:
+      "Scheduled",
+    open:
+      "Open",
+    closed:
+      "Closed",
+    finalized:
+      "Finalized",
+    unknown:
+      "Unknown",
   },
 
   lv: {
     title: "Iestatījumi",
     subtitle:
-      "Pārvaldiet sava konta personīgos iestatījumus.",
+      "Pārvaldiet personīgos un sistēmas iestatījumus.",
     security: "Drošība",
     password: "Parole",
     hint:
@@ -93,12 +141,55 @@ const TEXT = {
       "Pagaidu parole",
     mandatoryMessage:
       "Drošības nolūkā pirms pārējās MVX System izmantošanas nomainiet pagaidu paroli.",
+
+    waterSection:
+      "Ūdens skaitītāju rādījumi",
+    waterTitle:
+      "Rādījumu iesniegšanas periods",
+    waterHint:
+      "Norādiet, cik dienas pirms un pēc mēneša pēdējās dienas iedzīvotāji drīkst iesniegt ūdens skaitītāju rādījumus.",
+    daysBefore:
+      "Dienas pirms mēneša beigām",
+    daysAfter:
+      "Dienas pēc mēneša beigām",
+    timezone:
+      "Laika josla",
+    managedMonth:
+      "Pārvaldāmais pārskata mēnesis",
+    currentStatus:
+      "Pašreizējais statuss",
+    calculatedPeriod:
+      "Aprēķinātais iesniegšanas periods",
+    saveWater:
+      "Saglabāt perioda iestatījumus",
+    savingWater:
+      "Iestatījumi tiek saglabāti...",
+    loadingWater:
+      "Tiek ielādēti ūdens rādījumu iestatījumi...",
+    waterSaved:
+      "Ūdens rādījumu iestatījumi ir saglabāti.",
+    waterLoadFailed:
+      "Neizdevās ielādēt ūdens rādījumu iestatījumus.",
+    waterSaveFailed:
+      "Neizdevās saglabāt ūdens rādījumu iestatījumus.",
+    invalidDays:
+      "Ievadiet veselu skaitli no 0 līdz 31.",
+    scheduled:
+      "Ieplānots",
+    open:
+      "Atvērts",
+    closed:
+      "Slēgts",
+    finalized:
+      "Pabeigts",
+    unknown:
+      "Nav zināms",
   },
 
   ru: {
     title: "Настройки",
     subtitle:
-      "Управление персональными настройками учетной записи.",
+      "Управление персональными и системными настройками.",
     security: "Безопасность",
     password: "Пароль",
     hint:
@@ -131,6 +222,49 @@ const TEXT = {
       "Временный пароль",
     mandatoryMessage:
       "В целях безопасности замените временный пароль до использования остальных разделов MVX System.",
+
+    waterSection:
+      "Показания воды",
+    waterTitle:
+      "Период приёма показаний",
+    waterHint:
+      "Укажите, за сколько дней до и после последнего дня месяца жители могут передавать показания счётчиков воды.",
+    daysBefore:
+      "Дней до конца месяца",
+    daysAfter:
+      "Дней после конца месяца",
+    timezone:
+      "Часовой пояс",
+    managedMonth:
+      "Управляемый отчётный месяц",
+    currentStatus:
+      "Текущий статус",
+    calculatedPeriod:
+      "Рассчитанный период приёма",
+    saveWater:
+      "Сохранить настройки периода",
+    savingWater:
+      "Сохранение настроек...",
+    loadingWater:
+      "Загрузка настроек периода...",
+    waterSaved:
+      "Настройки периода приёма показаний сохранены.",
+    waterLoadFailed:
+      "Не удалось загрузить настройки периода.",
+    waterSaveFailed:
+      "Не удалось сохранить настройки периода.",
+    invalidDays:
+      "Введите целое число от 0 до 31.",
+    scheduled:
+      "Запланирован",
+    open:
+      "Открыт",
+    closed:
+      "Закрыт",
+    finalized:
+      "Завершён",
+    unknown:
+      "Неизвестно",
   },
 };
 
@@ -161,6 +295,98 @@ function mapMessage(
   );
 }
 
+function formatMonth(
+  year,
+  month,
+  language
+) {
+  if (!year || !month) {
+    return "—";
+  }
+
+  const localeMap = {
+    lv: "lv-LV",
+    en: "en-GB",
+    ru: "ru-RU",
+  };
+
+  const date =
+    new Date(
+      Date.UTC(
+        Number(year),
+        Number(month) - 1,
+        1
+      )
+    );
+
+  return new Intl.DateTimeFormat(
+    localeMap[language] ||
+      "en-GB",
+    {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }
+  ).format(date);
+}
+
+function formatDateTime(
+  value,
+  language,
+  timeZone
+) {
+  if (!value) {
+    return "—";
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return String(value);
+  }
+
+  const localeMap = {
+    lv: "lv-LV",
+    en: "en-GB",
+    ru: "ru-RU",
+  };
+
+  return new Intl.DateTimeFormat(
+    localeMap[language] ||
+      "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone:
+        timeZone ||
+        "Europe/Riga",
+    }
+  ).format(date);
+}
+
+function getStatusLabel(
+  status,
+  text
+) {
+  const normalized =
+    String(status || "")
+      .trim()
+      .toLowerCase();
+
+  return (
+    text[normalized] ||
+    text.unknown
+  );
+}
+
 export default function SettingsPage() {
   const {
     language,
@@ -173,6 +399,12 @@ export default function SettingsPage() {
 
   const navigate =
     useNavigate();
+
+  const roles =
+    me?.roles || [];
+
+  const isAdmin =
+    roles.includes("admin");
 
   const mustChangePassword =
     Number(
@@ -216,6 +448,135 @@ export default function SettingsPage() {
     validationError,
     setValidationError,
   ] = useState("");
+
+  const [
+    waterLoading,
+    setWaterLoading,
+  ] = useState(false);
+
+  const [
+    waterSaving,
+    setWaterSaving,
+  ] = useState(false);
+
+  const [
+    waterError,
+    setWaterError,
+  ] = useState("");
+
+  const [
+    waterSuccess,
+    setWaterSuccess,
+  ] = useState("");
+
+  const [
+    daysBefore,
+    setDaysBefore,
+  ] = useState("5");
+
+  const [
+    daysAfter,
+    setDaysAfter,
+  ] = useState("5");
+
+  const [
+    waterTimezone,
+    setWaterTimezone,
+  ] = useState(
+    "Europe/Riga"
+  );
+
+  const [
+    managedPeriod,
+    setManagedPeriod,
+  ] = useState(null);
+
+  const [
+    calculatedPeriod,
+    setCalculatedPeriod,
+  ] = useState(null);
+
+  useEffect(() => {
+    if (
+      !isAdmin ||
+      mustChangePassword
+    ) {
+      return;
+    }
+
+    const loadWaterSettings =
+      async () => {
+        setWaterLoading(true);
+        setWaterError("");
+
+        try {
+          const result =
+            await api(
+              "/api/admin/water-reporting-settings"
+            );
+
+          if (
+            !result ||
+            result.error ||
+            result.ok === false
+          ) {
+            throw new Error(
+              result?.error ||
+              "water_settings_load_failed"
+            );
+          }
+
+          setDaysBefore(
+            String(
+              result.settings
+                ?.days_before_month_end ??
+              5
+            )
+          );
+
+          setDaysAfter(
+            String(
+              result.settings
+                ?.days_after_month_end ??
+              5
+            )
+          );
+
+          setWaterTimezone(
+            result.settings
+              ?.timezone ||
+            "Europe/Riga"
+          );
+
+          setManagedPeriod(
+            result.managed_period ||
+            null
+          );
+
+          setCalculatedPeriod(
+            result.calculated_period ||
+            null
+          );
+        } catch (loadError) {
+          console.error(
+            "LOAD WATER REPORTING SETTINGS ERROR:",
+            loadError
+          );
+
+          setWaterError(
+            text.waterLoadFailed
+          );
+        } finally {
+          setWaterLoading(false);
+        }
+      };
+
+    loadWaterSettings();
+  }, [
+    isAdmin,
+    mustChangePassword,
+    text.waterLoadFailed,
+  ]);
 
   const changeField =
     (setter) =>
@@ -301,6 +662,123 @@ export default function SettingsPage() {
             }
           );
         }
+      }
+    };
+
+  const handleWaterSubmit =
+    async (event) => {
+      event.preventDefault();
+
+      setWaterError("");
+      setWaterSuccess("");
+
+      const before =
+        Number(daysBefore);
+
+      const after =
+        Number(daysAfter);
+
+      if (
+        !Number.isInteger(before) ||
+        before < 0 ||
+        before > 31 ||
+        !Number.isInteger(after) ||
+        after < 0 ||
+        after > 31
+      ) {
+        setWaterError(
+          text.invalidDays
+        );
+        return;
+      }
+
+      setWaterSaving(true);
+
+      try {
+        const result =
+          await api(
+            "/api/admin/water-reporting-settings",
+            {
+              method: "POST",
+              body: JSON.stringify({
+                days_before_month_end:
+                  before,
+                days_after_month_end:
+                  after,
+                timezone:
+                  waterTimezone,
+              }),
+            }
+          );
+
+        if (
+          !result ||
+          result.error ||
+          result.ok === false
+        ) {
+          throw new Error(
+            result?.error ||
+            "water_settings_save_failed"
+          );
+        }
+
+        const refreshed =
+          await api(
+            "/api/admin/water-reporting-settings"
+          );
+
+        if (
+          refreshed &&
+          !refreshed.error &&
+          refreshed.ok !== false
+        ) {
+          setManagedPeriod(
+            refreshed.managed_period ||
+            null
+          );
+
+          setCalculatedPeriod(
+            refreshed.calculated_period ||
+            null
+          );
+
+          setDaysBefore(
+            String(
+              refreshed.settings
+                ?.days_before_month_end ??
+              before
+            )
+          );
+
+          setDaysAfter(
+            String(
+              refreshed.settings
+                ?.days_after_month_end ??
+              after
+            )
+          );
+
+          setWaterTimezone(
+            refreshed.settings
+              ?.timezone ||
+            waterTimezone
+          );
+        }
+
+        setWaterSuccess(
+          text.waterSaved
+        );
+      } catch (saveError) {
+        console.error(
+          "SAVE WATER REPORTING SETTINGS ERROR:",
+          saveError
+        );
+
+        setWaterError(
+          text.waterSaveFailed
+        );
+      } finally {
+        setWaterSaving(false);
       }
     };
 
@@ -398,62 +876,206 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {isAdmin &&
+        !mustChangePassword && (
+          <section
+            style={{
+              ...sectionStyle,
+              marginBottom: 18,
+            }}
+          >
+            <SectionHeader
+              eyebrow={
+                text.waterSection
+              }
+              title={
+                text.waterTitle
+              }
+              hint={
+                text.waterHint
+              }
+            />
+
+            {waterLoading ? (
+              <div
+                style={noticeStyle}
+              >
+                {text.loadingWater}
+              </div>
+            ) : (
+              <form
+                onSubmit={
+                  handleWaterSubmit
+                }
+                style={{
+                  display: "grid",
+                  gap: 14,
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit,minmax(210px,1fr))",
+                    gap: 14,
+                  }}
+                >
+                  <NumberField
+                    label={
+                      text.daysBefore
+                    }
+                    value={
+                      daysBefore
+                    }
+                    onChange={(
+                      event
+                    ) => {
+                      setDaysBefore(
+                        event.target.value
+                      );
+                      setWaterError("");
+                      setWaterSuccess("");
+                    }}
+                  />
+
+                  <NumberField
+                    label={
+                      text.daysAfter
+                    }
+                    value={
+                      daysAfter
+                    }
+                    onChange={(
+                      event
+                    ) => {
+                      setDaysAfter(
+                        event.target.value
+                      );
+                      setWaterError("");
+                      setWaterSuccess("");
+                    }}
+                  />
+                </div>
+
+                <ReadOnlyField
+                  label={
+                    text.timezone
+                  }
+                  value={
+                    waterTimezone
+                  }
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit,minmax(210px,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <InfoBox
+                    label={
+                      text.managedMonth
+                    }
+                    value={
+                      formatMonth(
+                        managedPeriod
+                          ?.period_year ||
+                          calculatedPeriod
+                            ?.period_year,
+                        managedPeriod
+                          ?.period_month ||
+                          calculatedPeriod
+                            ?.period_month,
+                        language
+                      )
+                    }
+                  />
+
+                  <InfoBox
+                    label={
+                      text.currentStatus
+                    }
+                    value={
+                      getStatusLabel(
+                        managedPeriod
+                          ?.status,
+                        text
+                      )
+                    }
+                  />
+                </div>
+
+                <InfoBox
+                  label={
+                    text.calculatedPeriod
+                  }
+                  value={`${formatDateTime(
+                    calculatedPeriod
+                      ?.collection_opens_at,
+                    language,
+                    waterTimezone
+                  )} — ${formatDateTime(
+                    calculatedPeriod
+                      ?.collection_closes_at,
+                    language,
+                    waterTimezone
+                  )}`}
+                />
+
+                {waterError && (
+                  <div
+                    role="alert"
+                    style={errorStyle}
+                  >
+                    {waterError}
+                  </div>
+                )}
+
+                {waterSuccess && (
+                  <div
+                    role="status"
+                    style={successStyle}
+                  >
+                    {waterSuccess}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={
+                    waterSaving
+                  }
+                  style={
+                    primaryButtonStyle(
+                      waterSaving
+                    )
+                  }
+                >
+                  {waterSaving
+                    ? text.savingWater
+                    : text.saveWater}
+                </button>
+              </form>
+            )}
+          </section>
+        )}
+
       <section
-        style={{
-          padding: 20,
-          border:
-            "1px solid var(--border)",
-          borderRadius: 14,
-          background:
-            "var(--surface)",
-          boxShadow:
-            "0 6px 20px rgba(15,23,42,.05)",
-        }}
+        style={sectionStyle}
       >
-        <div
-          style={{
-            marginBottom: 18,
-          }}
-        >
-          <div
-            style={{
-              color:
-                "var(--text)",
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing:
-                "0.06em",
-              textTransform:
-                "uppercase",
-            }}
-          >
-            {text.security}
-          </div>
-
-          <h2
-            style={{
-              margin:
-                "5px 0 0",
-              color:
-                "var(--text-h)",
-              fontSize: 19,
-            }}
-          >
-            {text.password}
-          </h2>
-
-          <div
-            style={{
-              marginTop: 6,
-              color:
-                "var(--text)",
-              fontSize: 11,
-              lineHeight: 1.55,
-            }}
-          >
-            {text.hint}
-          </div>
-        </div>
+        <SectionHeader
+          eyebrow={
+            text.security
+          }
+          title={
+            text.password
+          }
+          hint={
+            text.hint
+          }
+        />
 
         <form
           onSubmit={
@@ -524,25 +1146,11 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            style={{
-              minHeight: 42,
-              padding:
-                "9px 14px",
-              border:
-                "1px solid #1d4ed8",
-              borderRadius: 9,
-              background:
+            style={
+              primaryButtonStyle(
                 saving
-                  ? "#93a4c7"
-                  : "#2563eb",
-              color: "#ffffff",
-              fontSize: 12,
-              fontWeight: 800,
-              cursor:
-                saving
-                  ? "default"
-                  : "pointer",
-            }}
+              )
+            }
           >
             {saving
               ? text.saving
@@ -554,6 +1162,59 @@ export default function SettingsPage() {
   );
 }
 
+function SectionHeader({
+  eyebrow,
+  title,
+  hint,
+}) {
+  return (
+    <div
+      style={{
+        marginBottom: 18,
+      }}
+    >
+      <div
+        style={{
+          color:
+            "var(--text)",
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing:
+            "0.06em",
+          textTransform:
+            "uppercase",
+        }}
+      >
+        {eyebrow}
+      </div>
+
+      <h2
+        style={{
+          margin:
+            "5px 0 0",
+          color:
+            "var(--text-h)",
+          fontSize: 19,
+        }}
+      >
+        {title}
+      </h2>
+
+      <div
+        style={{
+          marginTop: 6,
+          color:
+            "var(--text)",
+          fontSize: 11,
+          lineHeight: 1.55,
+        }}
+      >
+        {hint}
+      </div>
+    </div>
+  );
+}
+
 function PasswordField({
   label,
   value,
@@ -561,16 +1222,7 @@ function PasswordField({
   autoComplete,
 }) {
   return (
-    <label
-      style={{
-        display: "grid",
-        gap: 6,
-        color:
-          "var(--text-h)",
-        fontSize: 11,
-        fontWeight: 700,
-      }}
-    >
+    <label style={fieldLabelStyle}>
       {label}
 
       <input
@@ -580,29 +1232,150 @@ function PasswordField({
         autoComplete={
           autoComplete
         }
+        style={inputStyle}
+      />
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+}) {
+  return (
+    <label style={fieldLabelStyle}>
+      {label}
+
+      <input
+        type="number"
+        min="0"
+        max="31"
+        step="1"
+        value={value}
+        onChange={onChange}
+        inputMode="numeric"
+        style={inputStyle}
+      />
+    </label>
+  );
+}
+
+function ReadOnlyField({
+  label,
+  value,
+}) {
+  return (
+    <label style={fieldLabelStyle}>
+      {label}
+
+      <input
+        type="text"
+        value={value}
+        readOnly
         style={{
-          width: "100%",
-          minWidth: 0,
-          minHeight: 42,
-          boxSizing:
-            "border-box",
-          padding:
-            "9px 11px",
-          border:
-            "1px solid var(--border)",
-          borderRadius: 9,
-          outline: "none",
+          ...inputStyle,
           background:
-            "var(--surface)",
-          color:
-            "var(--text-h)",
-          font: "inherit",
-          fontSize: 14,
+            "var(--surface-soft)",
+          cursor: "default",
         }}
       />
     </label>
   );
 }
+
+function InfoBox({
+  label,
+  value,
+}) {
+  return (
+    <div
+      style={{
+        padding: 12,
+        border:
+          "1px solid var(--border)",
+        borderRadius: 10,
+        background:
+          "var(--surface-soft)",
+      }}
+    >
+      <div
+        style={{
+          color:
+            "var(--text)",
+          fontSize: 10,
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          marginTop: 5,
+          color:
+            "var(--text-h)",
+          fontSize: 13,
+          fontWeight: 700,
+          lineHeight: 1.45,
+        }}
+      >
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+const sectionStyle = {
+  padding: 20,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 14,
+  background:
+    "var(--surface)",
+  boxShadow:
+    "0 6px 20px rgba(15,23,42,.05)",
+};
+
+const fieldLabelStyle = {
+  display: "grid",
+  gap: 6,
+  color:
+    "var(--text-h)",
+  fontSize: 11,
+  fontWeight: 700,
+};
+
+const inputStyle = {
+  width: "100%",
+  minWidth: 0,
+  minHeight: 42,
+  boxSizing: "border-box",
+  padding:
+    "9px 11px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 9,
+  outline: "none",
+  background:
+    "var(--surface)",
+  color:
+    "var(--text-h)",
+  font: "inherit",
+  fontSize: 14,
+};
+
+const noticeStyle = {
+  padding: 12,
+  border:
+    "1px solid var(--border)",
+  borderRadius: 9,
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text)",
+  fontSize: 12,
+};
 
 const errorStyle = {
   padding: 12,
@@ -625,3 +1398,27 @@ const successStyle = {
   color: "#15803d",
   fontSize: 12,
 };
+
+function primaryButtonStyle(
+  disabled
+) {
+  return {
+    minHeight: 42,
+    padding:
+      "9px 14px",
+    border:
+      "1px solid #1d4ed8",
+    borderRadius: 9,
+    background:
+      disabled
+        ? "#93a4c7"
+        : "#2563eb",
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: 800,
+    cursor:
+      disabled
+        ? "default"
+        : "pointer",
+  };
+}
