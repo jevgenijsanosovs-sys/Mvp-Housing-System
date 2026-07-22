@@ -1778,12 +1778,11 @@ export default function AdminAnnouncementsPage() {
                           <span
                             style={{
                               ...statusBadge,
-                              border:
-                                "1px solid var(--border)",
-                              background:
-                                "var(--surface-soft)",
-                              color:
-                                "var(--text)",
+
+                              ...(announcement.priority ===
+                              "important"
+                                ? importantBadge
+                                : normalPriorityBadge),
                             }}
                           >
                             {announcement.priority ===
@@ -1960,7 +1959,7 @@ export default function AdminAnnouncementsPage() {
                               )
                             }
                             style={
-                              dangerButton
+                              archiveButton
                             }
                           >
                             {busy
@@ -2076,10 +2075,36 @@ const secondaryButton = {
 const dangerButton = {
   ...baseButton,
   border:
-    "1px solid rgba(180,83,83,.28)",
+    "1px solid #b91c1c",
   background:
-    "rgba(180,83,83,.06)",
-  color: "#9f3f3f",
+    "#dc2626",
+  color: "#ffffff",
+};
+
+const archiveButton = {
+  ...baseButton,
+  border:
+    "1px solid #6d5cae",
+  background:
+    "rgba(109,92,174,.12)",
+  color: "#5b4b9a",
+};
+
+const importantBadge = {
+  border:
+    "1px solid #b91c1c",
+  background:
+    "#dc2626",
+  color: "#ffffff",
+};
+
+const normalPriorityBadge = {
+  border:
+    "1px solid var(--border)",
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text)",
 };
 
 const statusBadge = {
