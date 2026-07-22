@@ -142,8 +142,11 @@ function getLastPath(
 
 export default function Sidebar({
   isMobile = false,
+  isCompactDesktop = false,
   sidebarOpen = false,
   setSidebarOpen = () => {},
+  desktopCollapsed = false,
+  setDesktopCollapsed = () => {},
 }) {
   const {
     me,
@@ -190,9 +193,13 @@ export default function Sidebar({
     SETTINGS_LABELS[language] ||
     SETTINGS_LABELS.en;
 
+  const drawerMode =
+    isMobile ||
+    isCompactDesktop;
+
   const closeMobileSidebar =
     () => {
-      if (isMobile) {
+      if (drawerMode) {
         setSidebarOpen(false);
       }
     };
@@ -244,20 +251,30 @@ export default function Sidebar({
   const sidebarStyle = {
     ...sidebar,
 
-    ...(isMobile
+    ...(drawerMode
       ? {
           position: "fixed",
           top: 0,
           left: sidebarOpen
             ? 0
-            : -320,
-          height: "100vh",
-          overflowY: "auto",
+            : -280,
+          height: "100dvh",
+          overflow: "hidden",
           zIndex: 1800,
           transition:
             "left 0.25s ease",
+          boxShadow:
+            sidebarOpen
+              ? "12px 0 30px rgba(15,23,42,.24)"
+              : "none",
         }
       : {
+          display:
+            desktopCollapsed
+              ? "none"
+              : "flex",
+          position: "sticky",
+          top: 0,
           height: "100vh",
           overflow: "hidden",
         }),
@@ -301,6 +318,42 @@ export default function Sidebar({
       <div
         style={topBlockStyle}
       >
+        {!drawerMode && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "flex-end",
+              marginBottom: 2,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() =>
+                setDesktopCollapsed(
+                  true
+                )
+              }
+              aria-label="Collapse menu"
+              title="Collapse menu"
+              style={{
+                width: 30,
+                height: 30,
+                border:
+                  "1px solid #374151",
+                borderRadius: 8,
+                background:
+                  "transparent",
+                color: "#d1d5db",
+                cursor: "pointer",
+                fontSize: 16,
+              }}
+            >
+              ◀
+            </button>
+          </div>
+        )}
+
         <h2
           style={sidebarTitle}
         >
