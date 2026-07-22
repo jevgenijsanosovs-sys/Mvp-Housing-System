@@ -512,6 +512,7 @@ export default function SettingsPage() {
         try {
           const result =
             await api(
+              null,
               "/api/admin/water-reporting-settings"
             );
 
@@ -697,6 +698,7 @@ export default function SettingsPage() {
       try {
         const result =
           await api(
+            null,
             "/api/admin/water-reporting-settings",
             {
               method: "POST",
@@ -724,6 +726,7 @@ export default function SettingsPage() {
 
         const refreshed =
           await api(
+            null,
             "/api/admin/water-reporting-settings"
           );
 
