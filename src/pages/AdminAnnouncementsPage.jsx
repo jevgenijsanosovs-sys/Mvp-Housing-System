@@ -99,6 +99,66 @@ function getStatusStyle(
   };
 }
 
+
+function formatPushDelivery(
+  pushDelivery,
+  language
+) {
+  if (!pushDelivery) {
+    return "";
+  }
+
+  const recipients =
+    Number(
+      pushDelivery.recipients || 0
+    );
+
+  const sent =
+    Number(
+      pushDelivery.sent || 0
+    );
+
+  const failed =
+    Number(
+      pushDelivery.failed || 0
+    );
+
+  const skipped =
+    Number(
+      pushDelivery.skipped || 0
+    );
+
+  const labels = {
+    en: {
+      title: "Push",
+      recipients: "recipients",
+      sent: "sent",
+      failed: "failed",
+      skipped: "skipped",
+    },
+    lv: {
+      title: "Push",
+      recipients: "saņēmēji",
+      sent: "nosūtīti",
+      failed: "neizdevās",
+      skipped: "izlaisti",
+    },
+    ru: {
+      title: "Push",
+      recipients: "получателей",
+      sent: "отправлено",
+      failed: "ошибок",
+      skipped: "пропущено",
+    },
+  };
+
+  const text =
+    labels[language] ||
+    labels.en;
+
+  return `${text.title}: ${recipients} ${text.recipients}, ${sent} ${text.sent}, ${failed} ${text.failed}, ${skipped} ${text.skipped}.`;
+}
+
 export default function AdminAnnouncementsPage() {
   const {
     t,
@@ -598,26 +658,27 @@ export default function AdminAnnouncementsPage() {
       }
 
       try {
-        await saveAnnouncement({
-          id: form.id,
-          title,
-          content,
-          priority:
-            form.priority,
-          publish_from:
-            toApiDateTime(
-              form.publish_from
-            ),
-          publish_until:
-            toApiDateTime(
-              form.publish_until
-            ),
-          publishImmediately,
-          targets:
-            form.targets,
-        });
+        const result =
+          await saveAnnouncement({
+            id: form.id,
+            title,
+            content,
+            priority:
+              form.priority,
+            publish_from:
+              toApiDateTime(
+                form.publish_from
+              ),
+            publish_until:
+              toApiDateTime(
+                form.publish_until
+              ),
+            publishImmediately,
+            targets:
+              form.targets,
+          });
 
-        setNotice(
+        const baseNotice =
           publishImmediately
             ? t(
                 "announcements.admin.notice.published"
@@ -628,7 +689,18 @@ export default function AdminAnnouncementsPage() {
                 )
               : t(
                   "announcements.admin.notice.draftSaved"
-                )
+                );
+
+        const pushNotice =
+          formatPushDelivery(
+            result?.pushDelivery,
+            language
+          );
+
+        setNotice(
+          pushNotice
+            ? `${baseNotice} ${pushNotice}`
+            : baseNotice
         );
 
         resetForm();
@@ -663,14 +735,26 @@ export default function AdminAnnouncementsPage() {
       setNotice("");
 
       try {
-        await publishAnnouncement(
-          announcement.id
-        );
+        const result =
+          await publishAnnouncement(
+            announcement.id
+          );
 
-        setNotice(
+        const baseNotice =
           t(
             "announcements.admin.notice.published"
-          )
+          );
+
+        const pushNotice =
+          formatPushDelivery(
+            result?.pushDelivery,
+            language
+          );
+
+        setNotice(
+          pushNotice
+            ? `${baseNotice} ${pushNotice}`
+            : baseNotice
         );
       } catch {
         // The hook exposes the backend error.
