@@ -1,15 +1,40 @@
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
-import { api } from "../services/api";
+import {
+  api,
+} from "../services/api";
+
+const EMPTY_USER = {
+  first_name: "",
+  last_name: "",
+  personal_code: "",
+  email: "",
+  phone: "",
+  password: "",
+};
 
 export function useUsers() {
+  const [
+    users,
+    setUsers,
+  ] = useState([]);
 
-  const [users, setUsers] =
-    useState([]);
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
 
-  const [assignmentUser,
-    setAssignmentUser] =
-    useState(null);
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    assignmentUser,
+    setAssignmentUser,
+  ] = useState(null);
 
   const [
     assignmentApartmentId,
@@ -31,79 +56,251 @@ export function useUsers() {
     setShowCreateUser,
   ] = useState(false);
 
-  const [newUser, setNewUser] =
-    useState({
-      email: "",
-      password: "",
-      first_name: "",
-      last_name: "",
-    });
+  const [
+    newUser,
+    setNewUser,
+  ] = useState(
+    EMPTY_USER
+  );
 
-  const loadUsers = async () => {
+  const [
+    editingUser,
+    setEditingUser,
+  ] = useState(null);
 
-    const d = await api(
-      "/api/admin/users"
-    );
+  const [
+    statusUser,
+    setStatusUser,
+  ] = useState(null);
 
-    setUsers(
-      Array.isArray(d) ? d : []
-    );
-  };
+  const loadUsers =
+    async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const result =
+          await api(
+            "/api/admin/users"
+          );
+
+        if (
+          result?.error
+        ) {
+          throw new Error(
+            result.error
+          );
+        }
+
+        setUsers(
+          Array.isArray(
+            result
+          )
+            ? result
+            : []
+        );
+      } catch (
+        loadError
+      ) {
+        console.error(
+          "LOAD USERS ERROR:",
+          loadError
+        );
+
+        setUsers([]);
+
+        setError(
+          loadError?.message ||
+          "Users could not be loaded."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const loadUserAssignments =
-    async (userId) => {
-
-      const d = await api(
-        "/api/admin/user-apartments?user_id=" +
-        userId
-      );
+    async (
+      userId
+    ) => {
+      const result =
+        await api(
+          "/api/admin/user-apartments?user_id=" +
+            userId
+        );
 
       setUserAssignments(
-        Array.isArray(d) ? d : []
+        Array.isArray(
+          result
+        )
+          ? result
+          : []
       );
     };
 
-  const createUser = async () => {
+  const createUser =
+    async () => {
+      setError("");
 
-    const res = await api(
-      "/api/admin/create-user",
-      {
-        method: "POST",
+      try {
+        const result =
+          await api(
+            "/api/admin/create-user",
+            {
+              method: "POST",
+              body:
+                JSON.stringify(
+                  newUser
+                ),
+            }
+          );
 
-        body: JSON.stringify(
-          newUser
-        ),
+        if (
+          result?.error ||
+          result?.ok === false
+        ) {
+          throw new Error(
+            result?.error ||
+            "Create failed"
+          );
+        }
+
+        setShowCreateUser(
+          false
+        );
+
+        setNewUser(
+          EMPTY_USER
+        );
+
+        await loadUsers();
+
+        return result;
+      } catch (
+        createError
+      ) {
+        setError(
+          createError?.message ||
+          "User could not be created."
+        );
+
+        throw createError;
       }
-    );
+    };
 
-    if (res.ok) {
+  const updateUser =
+    async (
+      userData
+    ) => {
+      setError("");
 
-      alert("User created");
+      try {
+        const result =
+          await api(
+            "/api/admin/update-user",
+            {
+              method: "POST",
+              body:
+                JSON.stringify({
+                  id:
+                    userData.id,
+                  first_name:
+                    userData.first_name,
+                  last_name:
+                    userData.last_name,
+                  personal_code:
+                    userData.personal_code,
+                  email:
+                    userData.email,
+                  phone:
+                    userData.phone,
+                }),
+            }
+          );
 
-      setShowCreateUser(false);
+        if (
+          result?.error ||
+          result?.ok === false
+        ) {
+          throw new Error(
+            result?.error ||
+            "Update failed"
+          );
+        }
 
-      setNewUser({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-      });
+        setEditingUser(
+          null
+        );
 
-      loadUsers();
+        await loadUsers();
 
-    } else {
+        return result;
+      } catch (
+        updateError
+      ) {
+        setError(
+          updateError?.message ||
+          "User could not be updated."
+        );
 
-      alert(
-        res.error ||
-        "Create failed"
-      );
+        throw updateError;
+      }
+    };
 
-    }
-  };
+  const setUserStatus =
+    async (
+      userId,
+      isActive
+    ) => {
+      setError("");
+
+      try {
+        const result =
+          await api(
+            "/api/admin/set-user-status",
+            {
+              method: "POST",
+              body:
+                JSON.stringify({
+                  id: userId,
+                  is_active:
+                    isActive
+                      ? 1
+                      : 0,
+                }),
+            }
+          );
+
+        if (
+          result?.error ||
+          result?.ok === false
+        ) {
+          throw new Error(
+            result?.error ||
+            "Status update failed"
+          );
+        }
+
+        setStatusUser(
+          null
+        );
+
+        await loadUsers();
+
+        return result;
+      } catch (
+        statusError
+      ) {
+        setError(
+          statusError?.message ||
+          "User status could not be changed."
+        );
+
+        throw statusError;
+      }
+    };
 
   const addAssignment =
     async () => {
-
       if (
         !assignmentUser ||
         !assignmentApartmentId
@@ -111,78 +308,82 @@ export function useUsers() {
         return;
       }
 
-      const r = await api(
-        "/api/admin/add-user-apartment",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            user_id:
-              assignmentUser.id,
-
-            apartment_id:
-              assignmentApartmentId,
-
-            relation_type:
-              assignmentRelation,
-          }),
-        }
-      );
-
-      if (r.ok) {
-
-        await loadUserAssignments(
-          assignmentUser.id
+      const result =
+        await api(
+          "/api/admin/add-user-apartment",
+          {
+            method: "POST",
+            body:
+              JSON.stringify({
+                user_id:
+                  assignmentUser.id,
+                apartment_id:
+                  assignmentApartmentId,
+                relation_type:
+                  assignmentRelation,
+              }),
+          }
         );
 
-        alert(
-          "Assignment added"
-        );
-
-      } else {
-
-        alert(
-          r.error ||
+      if (
+        result?.error ||
+        result?.ok === false
+      ) {
+        throw new Error(
+          result?.error ||
           "Assignment failed"
         );
-
       }
+
+      await loadUserAssignments(
+        assignmentUser.id
+      );
+
+      await loadUsers();
+
+      return result;
     };
 
   const removeAssignment =
-    async (assignmentId) => {
-
-      const r = await api(
-        "/api/admin/remove-user-apartment",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            assignment_id:
-              assignmentId,
-          }),
-        }
-      );
-
-      if (r.ok) {
-
-        await loadUserAssignments(
-          assignmentUser.id
+    async (
+      assignmentId
+    ) => {
+      const result =
+        await api(
+          "/api/admin/remove-user-apartment",
+          {
+            method: "POST",
+            body:
+              JSON.stringify({
+                assignment_id:
+                  assignmentId,
+              }),
+          }
         );
 
-      } else {
-
-        alert(
-          r.error ||
+      if (
+        result?.error ||
+        result?.ok === false
+      ) {
+        throw new Error(
+          result?.error ||
           "Remove failed"
         );
-
       }
+
+      await loadUserAssignments(
+        assignmentUser.id
+      );
+
+      await loadUsers();
+
+      return result;
     };
 
   return {
-
     users,
+    loading,
+    error,
     loadUsers,
 
     assignmentUser,
@@ -203,12 +404,18 @@ export function useUsers() {
     newUser,
     setNewUser,
 
+    editingUser,
+    setEditingUser,
+
+    statusUser,
+    setStatusUser,
+
     createUser,
+    updateUser,
+    setUserStatus,
 
     loadUserAssignments,
-
     addAssignment,
-
     removeAssignment,
   };
 }
