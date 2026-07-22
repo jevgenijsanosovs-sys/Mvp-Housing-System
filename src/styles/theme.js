@@ -9,7 +9,7 @@ const sidebar = {
   width: 260,
   background: "#111827",
   color: "white",
-  padding: 20,
+  padding: "14px 16px",
   display: "flex",
   flexDirection: "column",
   height: "100vh",
@@ -19,10 +19,32 @@ const sidebar = {
   boxSizing: "border-box",
 };
 
-const sidebarTitle = { color: "white" };
-const sidebarUser = { color: "#d1d5db", marginBottom: 20 };
-const divider = { borderColor: "#374151", width: "100%" };
-const modeBlock = { marginBottom: 20 };
+const sidebarTitle = {
+  color: "white",
+  margin:
+    "0 0 10px",
+  lineHeight: 1.25,
+};
+
+const sidebarUser = {
+  color: "#d1d5db",
+  marginBottom: 10,
+  fontSize: 12,
+  lineHeight: 1.35,
+  overflowWrap:
+    "anywhere",
+};
+
+const divider = {
+  borderColor: "#374151",
+  width: "100%",
+  margin:
+    "8px 0",
+};
+
+const modeBlock = {
+  marginBottom: 8,
+};
 
 const content = {
   flex: 1,
@@ -62,21 +84,41 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  marginTop: 20,
-  padding: 12,
-  borderRadius: 10,
+  marginTop: 8,
+  padding: "9px 10px",
+  minHeight: 36,
+  borderRadius: 9,
   border: "none",
   cursor: "pointer",
   width: "100%",
+  boxSizing:
+    "border-box",
+  fontSize: 12,
+  lineHeight: 1.2,
+  whiteSpace: "normal",
+  overflowWrap:
+    "anywhere",
 };
 
 const menuButton = {
   width: "100%",
-  padding: 12,
-  marginTop: 10,
+  minHeight: 34,
+  padding: "7px 9px",
+  marginTop: 6,
   border: "none",
-  borderRadius: 10,
+  borderRadius: 8,
   cursor: "pointer",
+  boxSizing:
+    "border-box",
+  fontSize: 12,
+  fontWeight: 600,
+  lineHeight: 1.2,
+  textAlign: "center",
+  whiteSpace: "normal",
+  overflowWrap:
+    "anywhere",
+  wordBreak:
+    "break-word",
 };
 
 const activeButton = {
