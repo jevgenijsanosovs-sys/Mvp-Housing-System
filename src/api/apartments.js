@@ -1,66 +1,135 @@
-import { api } from "./client";
+import {
+  useState,
+} from "react";
 
-export function getApartments(token) {
-  return api(
-    token,
-    "/api/apartments/full"
-  );
-}
+import {
+  api,
+} from "../services/api";
 
-export function createApartment(
-  token,
-  data
-) {
-  return api(
-    token,
-    "/api/admin/create-apartment",
-    {
-      method: "POST",
+const EMPTY_APARTMENT = {
+  number: "",
+  section: "",
+  floor: "",
+  room_count: 1,
+  resident_count: 0,
+  living_area: "",
+  non_living_area: "",
+  heated_area: "",
+  alternative_heating_area: "",
+  land_tax_area: "",
+  alternative_heating: false,
+  hot_water_riser_count: 0,
+  level_count: 1,
+  notes: "",
+};
 
-      body: JSON.stringify(data),
+export default function useApartments() {
+  const [apartments, setApartments] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [showCreateApartment, setShowCreateApartment] =
+    useState(false);
+
+  const [newApartment, setNewApartment] =
+    useState(EMPTY_APARTMENT);
+
+  const loadApartments = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await api(
+        "/api/apartments/full"
+      );
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      setApartments(
+        Array.isArray(result)
+          ? result
+          : []
+      );
+    } catch (loadError) {
+      console.error(
+        "LOAD APARTMENTS ERROR:",
+        loadError
+      );
+
+      setApartments([]);
+      setError(
+        loadError?.message ||
+        "Apartments could not be loaded."
+      );
+    } finally {
+      setLoading(false);
     }
-  );
-}
+  };
 
-export function getUserApartments(
-  token,
-  userId
-) {
-  return api(
-    token,
-    "/api/admin/user-apartments?user_id=" +
-      userId
-  );
-}
+  const createApartment = async () => {
+    setError("");
 
-export function addUserApartment(
-  token,
-  data
-) {
-  return api(
-    token,
-    "/api/admin/add-user-apartment",
-    {
-      method: "POST",
+    try {
+      const result = await api(
+        "/api/admin/create-apartment",
+        {
+          method: "POST",
+          body: JSON.stringify(
+            newApartment
+          ),
+        }
+      );
 
-      body: JSON.stringify(data),
+      if (
+        result?.error ||
+        result?.ok === false
+      ) {
+        throw new Error(
+          result?.error ||
+          "Create failed"
+        );
+      }
+
+      setShowCreateApartment(false);
+      setNewApartment(
+        EMPTY_APARTMENT
+      );
+
+      await loadApartments();
+
+      return result;
+    } catch (createError) {
+      console.error(
+        "CREATE APARTMENT ERROR:",
+        createError
+      );
+
+      setError(
+        createError?.message ||
+        "Apartment could not be created."
+      );
+
+      throw createError;
     }
-  );
-}
+  };
 
-export function removeUserApartment(
-  token,
-  assignmentId
-) {
-  return api(
-    token,
-    "/api/admin/remove-user-apartment",
-    {
-      method: "POST",
-
-      body: JSON.stringify({
-        assignment_id: assignmentId,
-      }),
-    }
-  );
+  return {
+    apartments,
+    setApartments,
+    loading,
+    error,
+    showCreateApartment,
+    setShowCreateApartment,
+    newApartment,
+    setNewApartment,
+    loadApartments,
+    createApartment,
+  };
 }
