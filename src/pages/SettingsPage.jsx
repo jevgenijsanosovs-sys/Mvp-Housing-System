@@ -19,6 +19,10 @@ import {
   useAuth,
 } from "../context/AuthContext";
 
+import {
+  useMode,
+} from "../context/ModeContext";
+
 
 const API_BASE_URL =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
@@ -575,6 +579,10 @@ export default function SettingsPage() {
     me,
     refreshMe,
   } = useAuth();
+
+  const {
+    mode,
+  } = useMode();
 
   const navigate =
     useNavigate();
@@ -1334,6 +1342,7 @@ export default function SettingsPage() {
       )}
 
       {isAdmin &&
+        mode === "admin" &&
         !mustChangePassword && (
           <section
             style={{
