@@ -23,7 +23,7 @@ import {
 const API_BASE_URL =
   "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
 
-async function waterReportingApi(
+async function workerApi(
   path,
   options = {}
 ) {
@@ -146,6 +146,35 @@ const TEXT = {
       "Finalized",
     unknown:
       "Unknown",
+
+    notificationsSection:
+      "Notifications",
+    notificationsTitle:
+      "Urgent announcements",
+    notificationsHint:
+      "Enable system notifications so you do not miss urgent announcements from MVX.",
+    notificationsUnsupported:
+      "Push notifications are not supported in this browser or device mode.",
+    notificationsBlocked:
+      "Notifications are blocked in the browser settings.",
+    notificationsEnabled:
+      "Urgent notifications are enabled on this device.",
+    notificationsDisabled:
+      "Urgent notifications are disabled on this device.",
+    notificationsLoading:
+      "Checking notification status...",
+    notificationsEnabling:
+      "Enabling notifications...",
+    notificationsDisabling:
+      "Disabling notifications...",
+    notificationsEnable:
+      "Enable urgent notifications",
+    notificationsDisable:
+      "Disable urgent notifications",
+    notificationsFailed:
+      "Notification settings could not be updated.",
+    notificationsIosHint:
+      "On iPhone or iPad, add MVX to the Home Screen and open it from there before enabling notifications.",
   },
 
   lv: {
@@ -227,6 +256,35 @@ const TEXT = {
       "Pabeigts",
     unknown:
       "Nav zināms",
+
+    notificationsSection:
+      "Paziņojumi",
+    notificationsTitle:
+      "Steidzami paziņojumi",
+    notificationsHint:
+      "Ieslēdziet sistēmas paziņojumus, lai nepalaistu garām steidzamus MVX paziņojumus.",
+    notificationsUnsupported:
+      "Šī pārlūkprogramma vai ierīces režīms neatbalsta push paziņojumus.",
+    notificationsBlocked:
+      "Paziņojumi ir bloķēti pārlūkprogrammas iestatījumos.",
+    notificationsEnabled:
+      "Steidzamie paziņojumi šajā ierīcē ir ieslēgti.",
+    notificationsDisabled:
+      "Steidzamie paziņojumi šajā ierīcē ir izslēgti.",
+    notificationsLoading:
+      "Pārbauda paziņojumu statusu...",
+    notificationsEnabling:
+      "Paziņojumi tiek ieslēgti...",
+    notificationsDisabling:
+      "Paziņojumi tiek izslēgti...",
+    notificationsEnable:
+      "Ieslēgt steidzamos paziņojumus",
+    notificationsDisable:
+      "Izslēgt steidzamos paziņojumus",
+    notificationsFailed:
+      "Neizdevās atjaunināt paziņojumu iestatījumus.",
+    notificationsIosHint:
+      "iPhone vai iPad ierīcē vispirms pievienojiet MVX sākuma ekrānam un atveriet to no sākuma ekrāna.",
   },
 
   ru: {
@@ -308,8 +366,86 @@ const TEXT = {
       "Завершён",
     unknown:
       "Неизвестно",
+
+    notificationsSection:
+      "Уведомления",
+    notificationsTitle:
+      "Срочные объявления",
+    notificationsHint:
+      "Включите системные уведомления, чтобы не пропускать срочные объявления MVX.",
+    notificationsUnsupported:
+      "Этот браузер или режим устройства не поддерживает push-уведомления.",
+    notificationsBlocked:
+      "Уведомления заблокированы в настройках браузера.",
+    notificationsEnabled:
+      "Срочные уведомления включены на этом устройстве.",
+    notificationsDisabled:
+      "Срочные уведомления отключены на этом устройстве.",
+    notificationsLoading:
+      "Проверка статуса уведомлений...",
+    notificationsEnabling:
+      "Включение уведомлений...",
+    notificationsDisabling:
+      "Отключение уведомлений...",
+    notificationsEnable:
+      "Включить срочные уведомления",
+    notificationsDisable:
+      "Отключить срочные уведомления",
+    notificationsFailed:
+      "Не удалось изменить настройки уведомлений.",
+    notificationsIosHint:
+      "На iPhone или iPad сначала добавьте MVX на экран «Домой» и откройте приложение с этого экрана.",
   },
 };
+
+
+function urlBase64ToUint8Array(
+  base64String
+) {
+  const padding =
+    "=".repeat(
+      (
+        4 -
+        (
+          base64String.length %
+          4
+        )
+      ) % 4
+    );
+
+  const base64 =
+    (
+      base64String +
+      padding
+    )
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData =
+    window.atob(base64);
+
+  return Uint8Array.from(
+    rawData,
+    (character) =>
+      character.charCodeAt(0)
+  );
+}
+
+function isIosDevice() {
+  return /iphone|ipad|ipod/i.test(
+    navigator.userAgent
+  );
+}
+
+function isStandaloneMode() {
+  return (
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches ||
+    window.navigator
+      .standalone === true
+  );
+}
 
 function mapMessage(
   message,
@@ -539,6 +675,42 @@ export default function SettingsPage() {
     setCalculatedPeriod,
   ] = useState(null);
 
+
+  const [
+    pushSupported,
+    setPushSupported,
+  ] = useState(true);
+
+  const [
+    pushLoading,
+    setPushLoading,
+  ] = useState(true);
+
+  const [
+    pushSaving,
+    setPushSaving,
+  ] = useState(false);
+
+  const [
+    pushSubscribed,
+    setPushSubscribed,
+  ] = useState(false);
+
+  const [
+    pushPermission,
+    setPushPermission,
+  ] = useState(
+    typeof Notification !==
+      "undefined"
+      ? Notification.permission
+      : "unsupported"
+  );
+
+  const [
+    pushError,
+    setPushError,
+  ] = useState("");
+
   useEffect(() => {
     if (
       !isAdmin ||
@@ -554,7 +726,7 @@ export default function SettingsPage() {
 
         try {
           const result =
-            await waterReportingApi(
+            await workerApi(
               "/api/admin/water-reporting-settings"
             );
 
@@ -619,6 +791,72 @@ export default function SettingsPage() {
     isAdmin,
     mustChangePassword,
     text.waterLoadFailed,
+  ]);
+
+
+  useEffect(() => {
+    if (mustChangePassword) {
+      return;
+    }
+
+    const supported =
+      "serviceWorker" in
+        navigator &&
+      "PushManager" in
+        window &&
+      "Notification" in
+        window;
+
+    setPushSupported(
+      supported
+    );
+
+    if (!supported) {
+      setPushLoading(false);
+      return;
+    }
+
+    const loadPushStatus =
+      async () => {
+        setPushLoading(true);
+        setPushError("");
+
+        try {
+          const registration =
+            await navigator
+              .serviceWorker
+              .ready;
+
+          const subscription =
+            await registration
+              .pushManager
+              .getSubscription();
+
+          setPushSubscribed(
+            Boolean(subscription)
+          );
+
+          setPushPermission(
+            Notification.permission
+          );
+        } catch (statusError) {
+          console.error(
+            "LOAD PUSH STATUS ERROR:",
+            statusError
+          );
+
+          setPushError(
+            text.notificationsFailed
+          );
+        } finally {
+          setPushLoading(false);
+        }
+      };
+
+    loadPushStatus();
+  }, [
+    mustChangePassword,
+    text.notificationsFailed,
   ]);
 
   const changeField =
@@ -739,7 +977,7 @@ export default function SettingsPage() {
 
       try {
         const result =
-          await waterReportingApi(
+          await workerApi(
             "/api/admin/water-reporting-settings",
             {
               method: "POST",
@@ -766,7 +1004,7 @@ export default function SettingsPage() {
         }
 
         const refreshed =
-          await waterReportingApi(
+          await workerApi(
             "/api/admin/water-reporting-settings"
           );
 
@@ -822,6 +1060,182 @@ export default function SettingsPage() {
         );
       } finally {
         setWaterSaving(false);
+      }
+    };
+
+
+  const handleEnablePush =
+    async () => {
+      setPushError("");
+      setPushSaving(true);
+
+      try {
+        if (
+          !pushSupported
+        ) {
+          throw new Error(
+            "push_not_supported"
+          );
+        }
+
+        const permission =
+          await Notification
+            .requestPermission();
+
+        setPushPermission(
+          permission
+        );
+
+        if (
+          permission !==
+          "granted"
+        ) {
+          if (
+            permission ===
+            "denied"
+          ) {
+            setPushError(
+              text.notificationsBlocked
+            );
+          }
+
+          return;
+        }
+
+        const config =
+          await workerApi(
+            "/api/push/config"
+          );
+
+        if (
+          !config?.configured ||
+          !config
+            ?.vapid_public_key
+        ) {
+          throw new Error(
+            "push_not_configured"
+          );
+        }
+
+        const registration =
+          await navigator
+            .serviceWorker
+            .ready;
+
+        let subscription =
+          await registration
+            .pushManager
+            .getSubscription();
+
+        if (!subscription) {
+          subscription =
+            await registration
+              .pushManager
+              .subscribe({
+                userVisibleOnly:
+                  true,
+
+                applicationServerKey:
+                  urlBase64ToUint8Array(
+                    config
+                      .vapid_public_key
+                  ),
+              });
+        }
+
+        const result =
+          await workerApi(
+            "/api/push/subscribe",
+            {
+              method: "POST",
+              body:
+                JSON.stringify({
+                  subscription:
+                    subscription
+                      .toJSON(),
+
+                  language,
+
+                  device_label:
+                    isIosDevice()
+                      ? "iPhone / iPad"
+                      : "Browser device",
+                }),
+            }
+          );
+
+        if (
+          !result?.ok
+        ) {
+          throw new Error(
+            result?.error ||
+            "push_subscribe_failed"
+          );
+        }
+
+        setPushSubscribed(true);
+
+      } catch (pushEnableError) {
+        console.error(
+          "ENABLE PUSH ERROR:",
+          pushEnableError
+        );
+
+        setPushError(
+          text.notificationsFailed
+        );
+      } finally {
+        setPushSaving(false);
+      }
+    };
+
+  const handleDisablePush =
+    async () => {
+      setPushError("");
+      setPushSaving(true);
+
+      try {
+        const registration =
+          await navigator
+            .serviceWorker
+            .ready;
+
+        const subscription =
+          await registration
+            .pushManager
+            .getSubscription();
+
+        if (subscription) {
+          await workerApi(
+            "/api/push/unsubscribe",
+            {
+              method: "POST",
+              body:
+                JSON.stringify({
+                  endpoint:
+                    subscription
+                      .endpoint,
+                }),
+            }
+          );
+
+          await subscription
+            .unsubscribe();
+        }
+
+        setPushSubscribed(false);
+
+      } catch (pushDisableError) {
+        console.error(
+          "DISABLE PUSH ERROR:",
+          pushDisableError
+        );
+
+        setPushError(
+          text.notificationsFailed
+        );
+      } finally {
+        setPushSaving(false);
       }
     };
 
@@ -1104,6 +1518,110 @@ export default function SettingsPage() {
             )}
           </section>
         )}
+
+      {!mustChangePassword && (
+        <section
+          style={{
+            ...sectionStyle,
+            marginBottom: 18,
+          }}
+        >
+          <SectionHeader
+            eyebrow={
+              text.notificationsSection
+            }
+            title={
+              text.notificationsTitle
+            }
+            hint={
+              text.notificationsHint
+            }
+          />
+
+          {pushLoading ? (
+            <div
+              style={noticeStyle}
+            >
+              {text.notificationsLoading}
+            </div>
+          ) : !pushSupported ? (
+            <div
+              style={noticeStyle}
+            >
+              {text.notificationsUnsupported}
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+              }}
+            >
+              <div
+                style={
+                  pushSubscribed
+                    ? successStyle
+                    : noticeStyle
+                }
+              >
+                {pushSubscribed
+                  ? text.notificationsEnabled
+                  : pushPermission ===
+                      "denied"
+                    ? text.notificationsBlocked
+                    : text.notificationsDisabled}
+              </div>
+
+              {isIosDevice() &&
+                !isStandaloneMode() && (
+                  <div
+                    style={noticeStyle}
+                  >
+                    {text.notificationsIosHint}
+                  </div>
+                )}
+
+              {pushError && (
+                <div
+                  role="alert"
+                  style={errorStyle}
+                >
+                  {pushError}
+                </div>
+              )}
+
+              <button
+                type="button"
+                disabled={
+                  pushSaving ||
+                  pushPermission ===
+                    "denied"
+                }
+                onClick={
+                  pushSubscribed
+                    ? handleDisablePush
+                    : handleEnablePush
+                }
+                style={
+                  primaryButtonStyle(
+                    pushSaving ||
+                    pushPermission ===
+                      "denied"
+                  )
+                }
+              >
+                {pushSaving
+                  ? pushSubscribed
+                    ? text.notificationsDisabling
+                    : text.notificationsEnabling
+                  : pushSubscribed
+                    ? text.notificationsDisable
+                    : text.notificationsEnable}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       <section
         style={sectionStyle}
