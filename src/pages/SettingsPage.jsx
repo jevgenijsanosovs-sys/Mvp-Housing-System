@@ -19,9 +19,52 @@ import {
   useAuth,
 } from "../context/AuthContext";
 
-import {
-  api,
-} from "../api/client";
+
+const API_BASE_URL =
+  "https://noisy-band-27a3.jevgenijs-anosovs.workers.dev";
+
+async function waterReportingApi(
+  path,
+  options = {}
+) {
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+  const response =
+    await fetch(
+      `${API_BASE_URL}${path}`,
+      {
+        ...options,
+        headers: {
+          "Content-Type":
+            "application/json",
+          ...(token
+            ? {
+                Authorization:
+                  `Bearer ${token}`,
+              }
+            : {}),
+          ...(options.headers || {}),
+        },
+      }
+    );
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+      `HTTP ${response.status}`
+    );
+  }
+
+  return data;
+}
 
 const TEXT = {
   en: {
@@ -511,8 +554,7 @@ export default function SettingsPage() {
 
         try {
           const result =
-            await api(
-              null,
+            await waterReportingApi(
               "/api/admin/water-reporting-settings"
             );
 
@@ -697,8 +739,7 @@ export default function SettingsPage() {
 
       try {
         const result =
-          await api(
-            null,
+          await waterReportingApi(
             "/api/admin/water-reporting-settings",
             {
               method: "POST",
@@ -725,8 +766,7 @@ export default function SettingsPage() {
         }
 
         const refreshed =
-          await api(
-            null,
+          await waterReportingApi(
             "/api/admin/water-reporting-settings"
           );
 
