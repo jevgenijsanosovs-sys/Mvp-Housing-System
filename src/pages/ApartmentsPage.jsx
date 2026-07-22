@@ -18,6 +18,152 @@ import {
   useTranslation,
 } from "../i18n";
 
+
+const TEXT = {
+  en: {
+    title: "Apartments",
+    apartmentCount: "{count} apartments",
+    addApartment: "+ Add Apartment",
+    loading: "Loading apartments...",
+    searchPlaceholder: "Apartment, owner or resident",
+    noMatches: "No matching apartments",
+    sections: "Sections",
+    selectSection: "Select a building section",
+    section: "Section",
+    selectedSectionSummary: "Selected section summary",
+    floors: "Floors",
+    floor: "Floor",
+    selectedFloorSummary: "Selected floor summary",
+    apartments: "Apartments",
+    onThisFloor: "{count} on this floor",
+    residents: "Residents",
+    livingArea: "Living area",
+    apartment: "Apartment",
+    general: "General",
+    number: "Number",
+    rooms: "Rooms",
+    levels: "Levels",
+    hotWaterRisers: "Hot water risers",
+    areas: "Areas",
+    living: "Living",
+    nonLiving: "Non-living",
+    heated: "Heated",
+    landTax: "Land tax",
+    alternativeHeatingArea: "Alternative heating area",
+    alternativeHeating: "Alternative heating",
+    yes: "Yes",
+    no: "No",
+    owners: "Owners",
+    noRecords: "No records",
+    notes: "Notes",
+    createApartment: "Create Apartment",
+    saveApartment: "Save Apartment",
+    livingAreaSquareMetres: "Living area, m²",
+  },
+
+  lv: {
+    title: "Dzīvokļi",
+    apartmentCount: "{count} dzīvokļi",
+    addApartment: "+ Pievienot dzīvokli",
+    loading: "Notiek dzīvokļu ielāde...",
+    searchPlaceholder: "Dzīvoklis, īpašnieks vai iedzīvotājs",
+    noMatches: "Atbilstoši dzīvokļi nav atrasti",
+    sections: "Sekcijas",
+    selectSection: "Izvēlieties ēkas sekciju",
+    section: "Sekcija",
+    selectedSectionSummary: "Izvēlētās sekcijas kopsavilkums",
+    floors: "Stāvi",
+    floor: "Stāvs",
+    selectedFloorSummary: "Izvēlētā stāva kopsavilkums",
+    apartments: "Dzīvokļi",
+    onThisFloor: "{count} šajā stāvā",
+    residents: "Iedzīvotāji",
+    livingArea: "Dzīvojamā platība",
+    apartment: "Dzīvoklis",
+    general: "Pamatinformācija",
+    number: "Numurs",
+    rooms: "Istabas",
+    levels: "Līmeņi",
+    hotWaterRisers: "Karstā ūdens stāvvadi",
+    areas: "Platības",
+    living: "Dzīvojamā",
+    nonLiving: "Nedzīvojamā",
+    heated: "Apkurināmā",
+    landTax: "Zemes nodokļa platība",
+    alternativeHeatingArea: "Alternatīvās apkures platība",
+    alternativeHeating: "Alternatīvā apkure",
+    yes: "Jā",
+    no: "Nē",
+    owners: "Īpašnieki",
+    noRecords: "Ierakstu nav",
+    notes: "Piezīmes",
+    createApartment: "Izveidot dzīvokli",
+    saveApartment: "Saglabāt dzīvokli",
+    livingAreaSquareMetres: "Dzīvojamā platība, m²",
+  },
+
+  ru: {
+    title: "Квартиры",
+    apartmentCount: "Квартир: {count}",
+    addApartment: "+ Добавить квартиру",
+    loading: "Загрузка квартир...",
+    searchPlaceholder: "Квартира, собственник или жилец",
+    noMatches: "Подходящие квартиры не найдены",
+    sections: "Секции",
+    selectSection: "Выберите секцию здания",
+    section: "Секция",
+    selectedSectionSummary: "Сводка по выбранной секции",
+    floors: "Этажи",
+    floor: "Этаж",
+    selectedFloorSummary: "Сводка по выбранному этажу",
+    apartments: "Квартиры",
+    onThisFloor: "На этом этаже: {count}",
+    residents: "Жильцы",
+    livingArea: "Жилая площадь",
+    apartment: "Квартира",
+    general: "Основная информация",
+    number: "Номер",
+    rooms: "Комнаты",
+    levels: "Уровни",
+    hotWaterRisers: "Стояки горячей воды",
+    areas: "Площади",
+    living: "Жилая",
+    nonLiving: "Нежилая",
+    heated: "Отапливаемая",
+    landTax: "Площадь для земельного налога",
+    alternativeHeatingArea: "Площадь альтернативного отопления",
+    alternativeHeating: "Альтернативное отопление",
+    yes: "Да",
+    no: "Нет",
+    owners: "Собственники",
+    noRecords: "Записей нет",
+    notes: "Примечания",
+    createApartment: "Создать квартиру",
+    saveApartment: "Сохранить квартиру",
+    livingAreaSquareMetres: "Жилая площадь, м²",
+  },
+};
+
+function interpolate(
+  template,
+  values = {}
+) {
+  return String(template).replace(
+    /\{(\w+)\}/g,
+    (
+      match,
+      key
+    ) =>
+      Object.prototype
+        .hasOwnProperty.call(
+          values,
+          key
+        )
+        ? values[key]
+        : match
+  );
+}
+
 function compareValues(left, right) {
   return String(left ?? "")
     .localeCompare(
@@ -112,6 +258,7 @@ function SummaryCard({
   subtitle,
   summary,
   language,
+  text,
 }) {
   return (
     <section style={summaryCardStyle}>
@@ -127,17 +274,17 @@ function SummaryCard({
 
       <div className="apartment-summary-grid">
         <Metric
-          label="Apartments"
+          label={text.apartments}
           value={summary.apartments}
         />
 
         <Metric
-          label="Residents"
+          label={text.residents}
           value={summary.residents}
         />
 
         <Metric
-          label="Living area"
+          label={text.livingArea}
           value={`${formatArea(
             summary.livingArea,
             language
@@ -166,7 +313,11 @@ function InfoItem({ label, value }) {
   );
 }
 
-function PeopleList({ title, people }) {
+function PeopleList({
+  title,
+  people,
+  emptyText,
+}) {
   return (
     <section style={subCardStyle}>
       <div style={subCardHeaderStyle}>
@@ -181,7 +332,7 @@ function PeopleList({ title, people }) {
 
       {people.length === 0 ? (
         <div style={emptyInlineStyle}>
-          No records
+          {emptyText}
         </div>
       ) : (
         <div style={peopleGridStyle}>
@@ -240,6 +391,14 @@ export default function ApartmentsPage() {
 
   const { language } =
     useTranslation();
+
+  const text =
+    useMemo(
+      () =>
+        TEXT[language] ||
+        TEXT.en,
+      [language]
+    );
 
   const apartmentNumber =
     searchParams.get("number");
@@ -511,11 +670,17 @@ export default function ApartmentsPage() {
       >
         <div>
           <h1 style={pageTitleStyle}>
-            Apartments
+            {text.title}
           </h1>
 
           <div style={pageSubtitleStyle}>
-            {apartments.length} apartments
+            {interpolate(
+              text.apartmentCount,
+              {
+                count:
+                  apartments.length,
+              }
+            )}
           </div>
         </div>
 
@@ -526,7 +691,7 @@ export default function ApartmentsPage() {
           }
           style={primaryButtonStyle}
         >
-          + Add Apartment
+          {text.addApartment}
         </button>
       </div>
 
@@ -538,14 +703,16 @@ export default function ApartmentsPage() {
 
       {loading && (
         <div style={noticeStyle}>
-          Loading apartments...
+          {text.loading}
         </div>
       )}
 
       <section style={panelSpacingStyle}>
         <input
           type="search"
-          placeholder="Apartment, owner or resident"
+          placeholder={
+            text.searchPlaceholder
+          }
           value={search}
           onChange={(event) =>
             setSearch(event.target.value)
@@ -557,7 +724,7 @@ export default function ApartmentsPage() {
           <div style={{ marginTop: 10 }}>
             {searchResults.length === 0 ? (
               <div style={emptyStyle}>
-                No matching apartments
+                {text.noMatches}
               </div>
             ) : (
               <div className="apartment-chip-grid">
@@ -588,8 +755,10 @@ export default function ApartmentsPage() {
 
       <section style={panelSpacingStyle}>
         <SectionHeader
-          title="Sections"
-          subtitle="Select a building section"
+          title={text.sections}
+          subtitle={
+            text.selectSection
+          }
         />
 
         <div className="apartment-chip-grid">
@@ -614,16 +783,19 @@ export default function ApartmentsPage() {
       {selectedSection !== null && (
         <>
           <SummaryCard
-            title={`Section ${selectedSection}`}
-            subtitle="Selected section summary"
+            title={`${text.section} ${selectedSection}`}
+            subtitle={
+              text.selectedSectionSummary
+            }
             summary={sectionSummary}
             language={language}
+            text={text}
           />
 
           <section style={panelSpacingStyle}>
             <SectionHeader
-              title="Floors"
-              subtitle={`Section ${selectedSection}`}
+              title={text.floors}
+              subtitle={`${text.section} ${selectedSection}`}
             />
 
             <div className="apartment-chip-grid">
@@ -650,16 +822,27 @@ export default function ApartmentsPage() {
       {selectedFloor !== null && (
         <>
           <SummaryCard
-            title={`Section ${selectedSection} · Floor ${selectedFloor}`}
-            subtitle="Selected floor summary"
+            title={`${text.section} ${selectedSection} · ${text.floor} ${selectedFloor}`}
+            subtitle={
+              text.selectedFloorSummary
+            }
             summary={floorSummary}
             language={language}
+            text={text}
           />
 
           <section style={panelSpacingStyle}>
             <SectionHeader
-              title="Apartments"
-              subtitle={`${floorApartments.length} on this floor`}
+              title={text.apartments}
+              subtitle={
+                interpolate(
+                  text.onThisFloor,
+                  {
+                    count:
+                      floorApartments.length,
+                  }
+                )
+              }
             />
 
             <div className="apartment-chip-grid">
@@ -692,50 +875,50 @@ export default function ApartmentsPage() {
           <div style={apartmentHeaderStyle}>
             <div>
               <h2 style={apartmentTitleStyle}>
-                Apartment #{selectedApartment.number}
+                {text.apartment} #{selectedApartment.number}
               </h2>
 
               <div style={apartmentSubtitleStyle}>
-                Section {selectedApartment.section} · Floor {selectedApartment.floor}
+                {text.section} {selectedApartment.section} · {text.floor} {selectedApartment.floor}
               </div>
             </div>
 
             <span style={countBadgeStyle}>
               {getUniquePeopleCount([
                 selectedApartment,
-              ])} residents
+              ])} {text.residents.toLowerCase()}
             </span>
           </div>
 
           <div className="apartment-details-grid">
             <section style={subCardStyle}>
               <h3 style={subCardTitleStyle}>
-                General
+                {text.general}
               </h3>
 
               <div style={infoGridStyle}>
                 <InfoItem
-                  label="Number"
+                  label={text.number}
                   value={selectedApartment.number}
                 />
                 <InfoItem
-                  label="Section"
+                  label={text.section}
                   value={selectedApartment.section}
                 />
                 <InfoItem
-                  label="Floor"
+                  label={text.floor}
                   value={selectedApartment.floor}
                 />
                 <InfoItem
-                  label="Rooms"
+                  label={text.rooms}
                   value={selectedApartment.room_count}
                 />
                 <InfoItem
-                  label="Levels"
+                  label={text.levels}
                   value={selectedApartment.level_count}
                 />
                 <InfoItem
-                  label="Hot water risers"
+                  label={text.hotWaterRisers}
                   value={selectedApartment.hot_water_riser_count}
                 />
               </div>
@@ -743,65 +926,71 @@ export default function ApartmentsPage() {
 
             <section style={subCardStyle}>
               <h3 style={subCardTitleStyle}>
-                Areas
+                {text.areas}
               </h3>
 
               <div style={infoGridStyle}>
                 <InfoItem
-                  label="Living"
+                  label={text.living}
                   value={`${formatArea(
                     selectedApartment.living_area,
                     language
                   )} m²`}
                 />
                 <InfoItem
-                  label="Non-living"
+                  label={text.nonLiving}
                   value={`${formatArea(
                     selectedApartment.non_living_area,
                     language
                   )} m²`}
                 />
                 <InfoItem
-                  label="Heated"
+                  label={text.heated}
                   value={`${formatArea(
                     selectedApartment.heated_area,
                     language
                   )} m²`}
                 />
                 <InfoItem
-                  label="Land tax"
+                  label={text.landTax}
                   value={`${formatArea(
                     selectedApartment.land_tax_area,
                     language
                   )} m²`}
                 />
                 <InfoItem
-                  label="Alternative heating area"
+                  label={text.alternativeHeatingArea}
                   value={`${formatArea(
                     selectedApartment.alternative_heating_area,
                     language
                   )} m²`}
                 />
                 <InfoItem
-                  label="Alternative heating"
+                  label={text.alternativeHeating}
                   value={
                     Number(
                       selectedApartment.alternative_heating
                     ) === 1
-                      ? "Yes"
-                      : "No"
+                      ? text.yes
+                      : text.no
                   }
                 />
               </div>
             </section>
 
             <PeopleList
-              title="Owners"
+              title={text.owners}
+              emptyText={
+                text.noRecords
+              }
               people={selectedApartment.owners || []}
             />
 
             <PeopleList
-              title="Residents"
+              title={text.residents}
+              emptyText={
+                text.noRecords
+              }
               people={selectedApartment.residents || []}
             />
           </div>
@@ -809,7 +998,7 @@ export default function ApartmentsPage() {
           {selectedApartment.notes && (
             <div style={notesStyle}>
               <strong style={{ color: "var(--text-h)" }}>
-                Notes:
+                {text.notes}:
               </strong>{" "}
               {selectedApartment.notes}
             </div>
@@ -819,14 +1008,16 @@ export default function ApartmentsPage() {
 
       <Modal
         open={showCreateApartment}
-        title="Create Apartment"
+        title={
+          text.createApartment
+        }
         onClose={() =>
           setShowCreateApartment(false)
         }
       >
         <div style={modalGridStyle}>
           <label style={labelStyle}>
-            Number
+            {text.number}
             <input
               value={newApartment.number}
               onChange={(event) =>
@@ -840,7 +1031,7 @@ export default function ApartmentsPage() {
           </label>
 
           <label style={labelStyle}>
-            Section
+            {text.section}
             <input
               value={newApartment.section}
               onChange={(event) =>
@@ -854,7 +1045,7 @@ export default function ApartmentsPage() {
           </label>
 
           <label style={labelStyle}>
-            Floor
+            {text.floor}
             <input
               type="number"
               value={newApartment.floor}
@@ -869,7 +1060,7 @@ export default function ApartmentsPage() {
           </label>
 
           <label style={labelStyle}>
-            Living area, m²
+            {text.livingAreaSquareMetres}
             <input
               type="number"
               step="0.01"
@@ -889,7 +1080,7 @@ export default function ApartmentsPage() {
             onClick={createApartment}
             style={primaryButtonStyle}
           >
-            Save Apartment
+            {text.saveApartment}
           </button>
         </div>
       </Modal>
