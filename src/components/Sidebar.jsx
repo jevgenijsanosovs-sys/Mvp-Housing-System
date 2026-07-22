@@ -248,6 +248,10 @@ export default function Sidebar({
     closeMobileSidebar();
   };
 
+  const isActivePath =
+    (path) =>
+      location.pathname === path;
+
   const sidebarStyle = {
     ...sidebar,
 
@@ -436,6 +440,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.dashboard"
               )}
+              active={isActivePath("/")}
               onClick={() =>
                 go("/")
               }
@@ -445,6 +450,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.waterMeters"
               )}
+              active={isActivePath("/water")}
               onClick={() =>
                 go("/water")
               }
@@ -454,6 +460,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.announcements"
               )}
+              active={isActivePath("/announcements")}
               onClick={() =>
                 go(
                   "/announcements"
@@ -470,6 +477,9 @@ export default function Sidebar({
               title={t(
                 "sidebar.dashboard"
               )}
+              active={
+                isActivePath("/")
+              }
               onClick={() =>
                 go("/")
               }
@@ -479,6 +489,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.users"
               )}
+              active={isActivePath("/users")}
               onClick={() =>
                 go("/users")
               }
@@ -488,6 +499,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.apartments"
               )}
+              active={isActivePath("/apartments")}
               onClick={() =>
                 go("/apartments")
               }
@@ -497,6 +509,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.waterMeterManagement"
               )}
+              active={isActivePath("/water-meters")}
               onClick={() =>
                 go("/water-meters")
               }
@@ -506,6 +519,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.waterReadingHistory"
               )}
+              active={isActivePath("/water-readings")}
               onClick={() =>
                 go("/water-readings")
               }
@@ -515,6 +529,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.announcements"
               )}
+              active={isActivePath("/admin-announcements")}
               onClick={() =>
                 go(
                   "/admin-announcements"
@@ -526,6 +541,7 @@ export default function Sidebar({
               title={t(
                 "sidebar.monthlyReport"
               )}
+              active={isActivePath("/monthly-report")}
               onClick={() =>
                 go("/monthly-report")
               }
@@ -561,6 +577,11 @@ export default function Sidebar({
         <MenuButton
           title={
             settingsLabel
+          }
+          active={
+            isActivePath(
+              "/settings"
+            )
           }
           onClick={() =>
             go("/settings")
