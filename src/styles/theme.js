@@ -6,7 +6,11 @@ const layout = {
 };
 
 const sidebar = {
-  width: 260,
+  width: 240,
+  minWidth: 240,
+  maxWidth: 240,
+  flex: "0 0 240px",
+  flexShrink: 0,
   background: "#111827",
   color: "white",
   padding: "14px 16px",
@@ -47,7 +51,8 @@ const modeBlock = {
 };
 
 const content = {
-  flex: 1,
+  flex: "1 1 auto",
+  minWidth: 0,
   padding: 30,
   color: "var(--text)",
 };
@@ -116,9 +121,11 @@ const menuButton = {
   textAlign: "center",
   whiteSpace: "normal",
   overflowWrap:
-    "anywhere",
-  wordBreak:
     "break-word",
+  wordBreak:
+    "normal",
+  hyphens:
+    "none",
 };
 
 const activeButton = {
