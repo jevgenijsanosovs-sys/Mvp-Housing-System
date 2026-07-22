@@ -10,6 +10,54 @@ import {
   useTranslation,
 } from "../i18n";
 
+
+const FILTER_LABELS = {
+  en: {
+    status: "Status",
+    priority: "Priority",
+    allStatuses: "All statuses",
+    active: "Active",
+    published: "Published",
+    draft: "Draft",
+    archived: "Archived",
+    allPriorities: "All priorities",
+    important: "Important",
+    normal: "Normal",
+    shown: "Shown",
+    noMatches: "No announcements match the selected filters.",
+  },
+
+  lv: {
+    status: "Statuss",
+    priority: "Prioritāte",
+    allStatuses: "Visi statusi",
+    active: "Aktīvie",
+    published: "Publicētie",
+    draft: "Melnraksti",
+    archived: "Arhivētie",
+    allPriorities: "Visas prioritātes",
+    important: "Svarīgi",
+    normal: "Parasti",
+    shown: "Parādīti",
+    noMatches: "Neviens paziņojums neatbilst izvēlētajiem filtriem.",
+  },
+
+  ru: {
+    status: "Статус",
+    priority: "Приоритет",
+    allStatuses: "Все статусы",
+    active: "Активные",
+    published: "Опубликованные",
+    draft: "Черновики",
+    archived: "Архивированные",
+    allPriorities: "Все приоритеты",
+    important: "Важные",
+    normal: "Обычные",
+    shown: "Показано",
+    noMatches: "Нет объявлений, соответствующих выбранным фильтрам.",
+  },
+};
+
 const EMPTY_FORM = {
   id: null,
   title: "",
@@ -207,6 +255,20 @@ export default function AdminAnnouncementsPage() {
     setTargetValue,
   ] = useState("");
 
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] = useState("all");
+
+  const [
+    priorityFilter,
+    setPriorityFilter,
+  ] = useState("all");
+
+  const filterText =
+    FILTER_LABELS[language] ||
+    FILTER_LABELS.en;
+
   const isEditing =
     Boolean(form.id);
 
@@ -219,6 +281,37 @@ export default function AdminAnnouncementsPage() {
               "archived"
         ).length,
       [announcements]
+    );
+
+  const filteredAnnouncements =
+    useMemo(
+      () =>
+        announcements.filter(
+          (item) => {
+            const statusMatches =
+              statusFilter === "all" ||
+              (
+                statusFilter === "active"
+                  ? item.status !== "archived"
+                  : item.status === statusFilter
+              );
+
+            const priorityMatches =
+              priorityFilter === "all" ||
+              item.priority ===
+                priorityFilter;
+
+            return (
+              statusMatches &&
+              priorityMatches
+            );
+          }
+        ),
+      [
+        announcements,
+        statusFilter,
+        priorityFilter,
+      ]
     );
 
   const formatDateTime =
@@ -1480,6 +1573,114 @@ export default function AdminAnnouncementsPage() {
           </button>
         </div>
 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 10,
+            marginBottom: 14,
+            padding: 12,
+            border:
+              "1px solid var(--border)",
+            borderRadius: 10,
+            background:
+              "var(--surface-soft)",
+          }}
+        >
+          <label
+            style={labelStyle}
+          >
+            {filterText.status}
+
+            <select
+              value={
+                statusFilter
+              }
+              onChange={(event) =>
+                setStatusFilter(
+                  event.target.value
+                )
+              }
+              style={inputStyle}
+            >
+              <option value="all">
+                {filterText.allStatuses}
+              </option>
+
+              <option value="active">
+                {filterText.active}
+              </option>
+
+              <option value="published">
+                {filterText.published}
+              </option>
+
+              <option value="draft">
+                {filterText.draft}
+              </option>
+
+              <option value="archived">
+                {filterText.archived}
+              </option>
+            </select>
+          </label>
+
+          <label
+            style={labelStyle}
+          >
+            {filterText.priority}
+
+            <select
+              value={
+                priorityFilter
+              }
+              onChange={(event) =>
+                setPriorityFilter(
+                  event.target.value
+                )
+              }
+              style={inputStyle}
+            >
+              <option value="all">
+                {filterText.allPriorities}
+              </option>
+
+              <option value="important">
+                {filterText.important}
+              </option>
+
+              <option value="normal">
+                {filterText.normal}
+              </option>
+            </select>
+          </label>
+
+          <div
+            style={{
+              alignSelf: "end",
+              minHeight: 39,
+              display: "flex",
+              alignItems: "center",
+              padding: "0 11px",
+              border:
+                "1px solid var(--border)",
+              borderRadius: 9,
+              background:
+                "var(--surface)",
+              color:
+                "var(--text)",
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {filterText.shown}:{" "}
+            {filteredAnnouncements.length}
+            {" / "}
+            {announcements.length}
+          </div>
+        </div>
+
         {loading ? (
           <EmptyState>
             {t(
@@ -1493,6 +1694,11 @@ export default function AdminAnnouncementsPage() {
               "announcements.admin.noAnnouncements"
             )}
           </EmptyState>
+        ) : filteredAnnouncements.length ===
+          0 ? (
+          <EmptyState>
+            {filterText.noMatches}
+          </EmptyState>
         ) : (
           <div
             style={{
@@ -1500,7 +1706,7 @@ export default function AdminAnnouncementsPage() {
               gap: 11,
             }}
           >
-            {announcements.map(
+            {filteredAnnouncements.map(
               (announcement) => {
                 const busy =
                   actionId ===
