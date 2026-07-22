@@ -2092,10 +2092,10 @@ const archiveButton = {
 
 const importantBadge = {
   border:
-    "1px solid #b91c1c",
+    "1px solid rgba(220,38,38,.28)",
   background:
-    "#dc2626",
-  color: "#ffffff",
+    "rgba(220,38,38,.08)",
+  color: "#dc2626",
 };
 
 const normalPriorityBadge = {
