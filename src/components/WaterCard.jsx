@@ -15,6 +15,7 @@ export default function WaterCard({
   meter,
   onSubmit,
   onHistory,
+  submissionDisabled = false,
 }) {
 
   const {
@@ -28,6 +29,10 @@ export default function WaterCard({
     isSubmitting,
     setIsSubmitting
   ] = useState(false);
+
+  const controlsDisabled =
+    submissionDisabled ||
+    isSubmitting;
 
   const formatValue = (value) => {
 
@@ -183,7 +188,9 @@ export default function WaterCard({
   const handleSubmit =
     async () => {
 
-      if (isSubmitting) {
+      if (
+        controlsDisabled
+      ) {
         return;
       }
 
@@ -404,92 +411,118 @@ export default function WaterCard({
 
       </div>
 
-      <label
-        style={{
-          display: "block",
-          marginBottom: 6,
-          fontSize: 14,
-          fontWeight: 600,
-          color: "#374151",
-        }}
-      >
-        {t(
-          "water.card.newReading"
-        )}
-      </label>
-
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns:
-            "minmax(0, 1fr) auto",
-          gap: 8,
-          alignItems: "stretch",
+          opacity:
+            submissionDisabled
+              ? 0.5
+              : 1,
+          transition:
+            "opacity 0.2s ease",
         }}
       >
 
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder={
-            formatReadingInput(
-              meter.last_reading
-            )
-          }
-          value={value}
-          disabled={isSubmitting}
-          onChange={
-            handleInputChange
-          }
+        <label
           style={{
-            ...inputStyle,
-            width: "100%",
-            margin: 0,
-            boxSizing:
-              "border-box",
-          }}
-        />
-
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={handleSubmit}
-          style={{
-            ...buttonStyle,
-            minWidth: 120,
-            margin: 0,
-            opacity:
-              isSubmitting
-                ? 0.65
-                : 1,
-            cursor:
-              isSubmitting
-                ? "not-allowed"
-                : "pointer",
+            display: "block",
+            marginBottom: 6,
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#374151",
           }}
         >
-          {isSubmitting
-            ? t(
-                "water.card.submitting"
+          {t(
+            "water.card.newReading"
+          )}
+        </label>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "minmax(0, 1fr) auto",
+            gap: 8,
+            alignItems: "stretch",
+          }}
+        >
+
+          <input
+            type="text"
+            inputMode="decimal"
+            placeholder={
+              formatReadingInput(
+                meter.last_reading
               )
-            : t(
-                "water.card.submit"
-              )}
-        </button>
+            }
+            value={value}
+            disabled={
+              controlsDisabled
+            }
+            onChange={
+              handleInputChange
+            }
+            style={{
+              ...inputStyle,
+              width: "100%",
+              margin: 0,
+              boxSizing:
+                "border-box",
+              cursor:
+                controlsDisabled
+                  ? "not-allowed"
+                  : "text",
+              background:
+                controlsDisabled
+                  ? "#f3f4f6"
+                  : inputStyle
+                      .background,
+            }}
+          />
 
-      </div>
+          <button
+            type="button"
+            disabled={
+              controlsDisabled
+            }
+            onClick={handleSubmit}
+            style={{
+              ...buttonStyle,
+              minWidth: 120,
+              margin: 0,
+              opacity:
+                controlsDisabled
+                  ? 0.65
+                  : 1,
+              cursor:
+                controlsDisabled
+                  ? "not-allowed"
+                  : "pointer",
+            }}
+          >
+            {isSubmitting
+              ? t(
+                  "water.card.submitting"
+                )
+              : t(
+                  "water.card.submit"
+                )}
+          </button>
 
-      <div
-        style={{
-          marginTop: 7,
-          color: "#6b7280",
-          fontSize: 12,
-          lineHeight: 1.4,
-        }}
-      >
-        {t(
-          "water.card.inputHint"
-        )}
+        </div>
+
+        <div
+          style={{
+            marginTop: 7,
+            color: "#6b7280",
+            fontSize: 12,
+            lineHeight: 1.4,
+          }}
+        >
+          {t(
+            "water.card.inputHint"
+          )}
+        </div>
+
       </div>
 
       <button
