@@ -59,6 +59,15 @@ const TEXT = {
     createApartment: "Create Apartment",
     saveApartment: "Save Apartment",
     livingAreaSquareMetres: "Living area, m²",
+    nonLivingAreaSquareMetres: "Non-living area, m²",
+    heatedAreaSquareMetres: "Heated area, m²",
+    alternativeHeatingAreaSquareMetres: "Alternative heating area, m²",
+    landTaxAreaSquareMetres: "Land tax area, m²",
+    roomCount: "Room count",
+    residentCount: "Resident count",
+    hotWaterRiserCount: "Hot water riser count",
+    levelCount: "Level count",
+    change: "Change",
   },
 
   lv: {
@@ -100,6 +109,15 @@ const TEXT = {
     createApartment: "Izveidot dzīvokli",
     saveApartment: "Saglabāt dzīvokli",
     livingAreaSquareMetres: "Dzīvojamā platība, m²",
+    nonLivingAreaSquareMetres: "Nedzīvojamā platība, m²",
+    heatedAreaSquareMetres: "Apkurināmā platība, m²",
+    alternativeHeatingAreaSquareMetres: "Alternatīvās apkures platība, m²",
+    landTaxAreaSquareMetres: "Zemes nodokļa platība, m²",
+    roomCount: "Istabu skaits",
+    residentCount: "Iedzīvotāju skaits",
+    hotWaterRiserCount: "Karstā ūdens stāvvadu skaits",
+    levelCount: "Līmeņu skaits",
+    change: "Mainīt",
   },
 
   ru: {
@@ -141,6 +159,15 @@ const TEXT = {
     createApartment: "Создать квартиру",
     saveApartment: "Сохранить квартиру",
     livingAreaSquareMetres: "Жилая площадь, м²",
+    nonLivingAreaSquareMetres: "Нежилая площадь, м²",
+    heatedAreaSquareMetres: "Отапливаемая площадь, м²",
+    alternativeHeatingAreaSquareMetres: "Площадь альтернативного отопления, м²",
+    landTaxAreaSquareMetres: "Площадь для земельного налога, м²",
+    roomCount: "Количество комнат",
+    residentCount: "Количество жильцов",
+    hotWaterRiserCount: "Количество стояков горячей воды",
+    levelCount: "Количество уровней",
+    change: "Изменить",
   },
 };
 
@@ -239,59 +266,70 @@ function getSummary(apartments) {
   };
 }
 
-function Metric({ label, value }) {
-  return (
-    <div style={metricStyle}>
-      <div style={metricLabelStyle}>
-        {label}
-      </div>
-
-      <div style={metricValueStyle}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function SummaryCard({
+function CompactSummary({
   title,
-  subtitle,
   summary,
   language,
   text,
+  onClick,
 }) {
   return (
-    <section style={summaryCardStyle}>
-      <div>
-        <div style={summaryTitleStyle}>
-          {title}
-        </div>
+    <button
+      type="button"
+      onClick={onClick}
+      style={compactSummaryStyle}
+    >
+      <strong
+        style={{
+          color:
+            "var(--text-h)",
+          fontSize: 12,
+        }}
+      >
+        {title}
+      </strong>
 
-        <div style={summarySubtitleStyle}>
-          {subtitle}
-        </div>
-      </div>
+      <span
+        style={compactSummaryMetaStyle}
+      >
+        {text.apartments}:{" "}
+        <strong>
+          {summary.apartments}
+        </strong>
+      </span>
 
-      <div className="apartment-summary-grid">
-        <Metric
-          label={text.apartments}
-          value={summary.apartments}
-        />
+      <span
+        style={compactSummaryMetaStyle}
+      >
+        {text.residents}:{" "}
+        <strong>
+          {summary.residents}
+        </strong>
+      </span>
 
-        <Metric
-          label={text.residents}
-          value={summary.residents}
-        />
-
-        <Metric
-          label={text.livingArea}
-          value={`${formatArea(
+      <span
+        style={compactSummaryMetaStyle}
+      >
+        {text.livingArea}:{" "}
+        <strong>
+          {formatArea(
             summary.livingArea,
             language
-          )} m²`}
-        />
-      </div>
-    </section>
+          )} m²
+        </strong>
+      </span>
+
+      <span
+        style={{
+          ...compactSummaryMetaStyle,
+          marginLeft: "auto",
+          color: "#2563eb",
+          fontWeight: 800,
+        }}
+      >
+        {text.change}
+      </span>
+    </button>
   );
 }
 
@@ -427,6 +465,11 @@ export default function ApartmentsPage() {
   const [search, setSearch] =
     useState("");
 
+  const [
+    selectionStep,
+    setSelectionStep,
+  ] = useState("section");
+
   useEffect(() => {
     loadApartments();
   }, []);
@@ -458,6 +501,10 @@ export default function ApartmentsPage() {
     );
     setSelectedApartment(
       apartment
+    );
+
+    setSelectionStep(
+      "details"
     );
   }, [
     apartmentNumber,
@@ -586,11 +633,13 @@ export default function ApartmentsPage() {
     setSelectedFloor(null);
     setSelectedApartment(null);
     setSearch("");
+    setSelectionStep("floor");
   };
 
   const selectFloor = (floor) => {
     setSelectedFloor(floor);
     setSelectedApartment(null);
+    setSelectionStep("apartment");
   };
 
   const selectApartment = (apartment) => {
@@ -603,6 +652,7 @@ export default function ApartmentsPage() {
     setSelectedApartment(
       apartment
     );
+    setSelectionStep("details");
   };
 
   return (
@@ -619,15 +669,6 @@ export default function ApartmentsPage() {
             display: flex;
             flex-wrap: wrap;
             gap: 7px;
-          }
-
-          .apartment-summary-grid {
-            display: grid;
-            grid-template-columns:
-              repeat(3, minmax(110px, 1fr));
-            gap: 8px;
-            width: 100%;
-            max-width: 520px;
           }
 
           .apartment-details-grid {
@@ -650,15 +691,14 @@ export default function ApartmentsPage() {
               width: 100%;
             }
 
-            .apartment-summary-grid {
-              grid-template-columns:
-                minmax(0, 1fr);
-              max-width: none;
-            }
-
             .apartment-details-grid {
               grid-template-columns:
                 minmax(0, 1fr);
+            }
+
+            .apartment-create-grid {
+              grid-template-columns:
+                minmax(0, 1fr) !important;
             }
           }
         `}
@@ -753,87 +793,148 @@ export default function ApartmentsPage() {
         )}
       </section>
 
-      <section style={panelSpacingStyle}>
-        <SectionHeader
-          title={text.sections}
-          subtitle={
-            text.selectSection
-          }
-        />
-
-        <div className="apartment-chip-grid">
-          {sections.map((section) => (
-            <button
-              type="button"
-              key={section}
-              onClick={() =>
-                selectSection(section)
-              }
-              style={chipButtonStyle(
-                String(selectedSection) ===
-                  String(section)
-              )}
-            >
-              {section}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {selectedSection !== null && (
-        <>
-          <SummaryCard
-            title={`${text.section} ${selectedSection}`}
+      {selectionStep ===
+        "section" ? (
+        <section
+          style={panelSpacingStyle}
+        >
+          <SectionHeader
+            title={text.sections}
             subtitle={
-              text.selectedSectionSummary
+              text.selectSection
             }
-            summary={sectionSummary}
-            language={language}
-            text={text}
           />
 
-          <section style={panelSpacingStyle}>
+          <div
+            className="apartment-chip-grid"
+          >
+            {sections.map(
+              (section) => (
+                <button
+                  type="button"
+                  key={section}
+                  onClick={() =>
+                    selectSection(
+                      section
+                    )
+                  }
+                  style={chipButtonStyle(
+                    String(
+                      selectedSection
+                    ) ===
+                      String(
+                        section
+                      )
+                  )}
+                >
+                  {section}
+                </button>
+              )
+            )}
+          </div>
+        </section>
+      ) : (
+        selectedSection !==
+          null && (
+          <CompactSummary
+            title={`${text.section} ${selectedSection}`}
+            summary={
+              sectionSummary
+            }
+            language={
+              language
+            }
+            text={text}
+            onClick={() => {
+              setSelectionStep(
+                "section"
+              );
+              setSelectedFloor(
+                null
+              );
+              setSelectedApartment(
+                null
+              );
+            }}
+          />
+        )
+      )}
+
+      {selectedSection !==
+        null &&
+        (selectionStep ===
+        "floor" ? (
+          <section
+            style={panelSpacingStyle}
+          >
             <SectionHeader
               title={text.floors}
               subtitle={`${text.section} ${selectedSection}`}
             />
 
-            <div className="apartment-chip-grid">
-              {floors.map((floor) => (
-                <button
-                  type="button"
-                  key={floor}
-                  onClick={() =>
-                    selectFloor(floor)
-                  }
-                  style={chipButtonStyle(
-                    String(selectedFloor) ===
-                      String(floor)
-                  )}
-                >
-                  {floor}
-                </button>
-              ))}
+            <div
+              className="apartment-chip-grid"
+            >
+              {floors.map(
+                (floor) => (
+                  <button
+                    type="button"
+                    key={floor}
+                    onClick={() =>
+                      selectFloor(
+                        floor
+                      )
+                    }
+                    style={chipButtonStyle(
+                      String(
+                        selectedFloor
+                      ) ===
+                        String(
+                          floor
+                        )
+                    )}
+                  >
+                    {floor}
+                  </button>
+                )
+              )}
             </div>
           </section>
-        </>
-      )}
+        ) : (
+          selectedFloor !==
+            null && (
+            <CompactSummary
+              title={`${text.section} ${selectedSection} · ${text.floor} ${selectedFloor}`}
+              summary={
+                floorSummary
+              }
+              language={
+                language
+              }
+              text={text}
+              onClick={() => {
+                setSelectionStep(
+                  "floor"
+                );
+                setSelectedApartment(
+                  null
+                );
+              }}
+            />
+          )
+        ))}
 
-      {selectedFloor !== null && (
-        <>
-          <SummaryCard
-            title={`${text.section} ${selectedSection} · ${text.floor} ${selectedFloor}`}
-            subtitle={
-              text.selectedFloorSummary
-            }
-            summary={floorSummary}
-            language={language}
-            text={text}
-          />
-
-          <section style={panelSpacingStyle}>
+      {selectedFloor !==
+        null &&
+        (selectionStep ===
+        "apartment" ? (
+          <section
+            style={panelSpacingStyle}
+          >
             <SectionHeader
-              title={text.apartments}
+              title={
+                text.apartments
+              }
               subtitle={
                 interpolate(
                   text.onThisFloor,
@@ -845,19 +946,24 @@ export default function ApartmentsPage() {
               }
             />
 
-            <div className="apartment-chip-grid">
+            <div
+              className="apartment-chip-grid"
+            >
               {floorApartments.map(
                 (apartment) => (
                   <button
                     type="button"
-                    key={apartment.id}
+                    key={
+                      apartment.id
+                    }
                     onClick={() =>
-                      setSelectedApartment(
+                      selectApartment(
                         apartment
                       )
                     }
                     style={chipButtonStyle(
-                      selectedApartment?.id ===
+                      selectedApartment
+                        ?.id ===
                         apartment.id
                     )}
                   >
@@ -867,8 +973,39 @@ export default function ApartmentsPage() {
               )}
             </div>
           </section>
-        </>
-      )}
+        ) : (
+          selectedApartment && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectionStep(
+                  "apartment"
+                );
+                setSelectedApartment(
+                  null
+                );
+              }}
+              style={selectedApartmentBarStyle}
+            >
+              <strong>
+                {text.apartment} #
+                {
+                  selectedApartment.number
+                }
+              </strong>
+
+              <span
+                style={{
+                  color:
+                    "var(--text)",
+                  fontSize: 10,
+                }}
+              >
+                {text.change}
+              </span>
+            </button>
+          )
+        ))}
 
       {selectedApartment && (
         <section style={panelSpacingStyle}>
@@ -1015,76 +1152,311 @@ export default function ApartmentsPage() {
           setShowCreateApartment(false)
         }
       >
-        <div style={modalGridStyle}>
-          <label style={labelStyle}>
-            {text.number}
+        <div
+          className="apartment-create-grid"
+          style={modalGridStyle}
+        >
+          <FormField
+            label={text.number}
+            value={
+              newApartment.number
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                number: value,
+              })
+            }
+          />
+
+          <FormField
+            label={text.section}
+            value={
+              newApartment.section
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                section: value,
+              })
+            }
+          />
+
+          <FormField
+            label={text.floor}
+            type="number"
+            value={
+              newApartment.floor
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                floor: value,
+              })
+            }
+          />
+
+          <FormField
+            label={text.roomCount}
+            type="number"
+            min="1"
+            value={
+              newApartment.room_count
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                room_count: value,
+              })
+            }
+          />
+
+          <FormField
+            label={text.residentCount}
+            type="number"
+            min="0"
+            value={
+              newApartment.resident_count
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                resident_count: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.levelCount
+            }
+            type="number"
+            min="1"
+            value={
+              newApartment.level_count
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                level_count: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.livingAreaSquareMetres
+            }
+            type="number"
+            step="0.01"
+            min="0"
+            value={
+              newApartment.living_area
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                living_area: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.nonLivingAreaSquareMetres
+            }
+            type="number"
+            step="0.01"
+            min="0"
+            value={
+              newApartment.non_living_area
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                non_living_area: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.heatedAreaSquareMetres
+            }
+            type="number"
+            step="0.01"
+            min="0"
+            value={
+              newApartment.heated_area
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                heated_area: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.alternativeHeatingAreaSquareMetres
+            }
+            type="number"
+            step="0.01"
+            min="0"
+            value={
+              newApartment.alternative_heating_area
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                alternative_heating_area:
+                  value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.landTaxAreaSquareMetres
+            }
+            type="number"
+            step="0.01"
+            min="0"
+            value={
+              newApartment.land_tax_area
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                land_tax_area: value,
+              })
+            }
+          />
+
+          <FormField
+            label={
+              text.hotWaterRiserCount
+            }
+            type="number"
+            min="0"
+            value={
+              newApartment.hot_water_riser_count
+            }
+            onChange={(value) =>
+              setNewApartment({
+                ...newApartment,
+                hot_water_riser_count:
+                  value,
+              })
+            }
+          />
+
+          <label
+            style={{
+              ...labelStyle,
+              alignContent:
+                "start",
+            }}
+          >
+            {text.alternativeHeating}
+
             <input
-              value={newApartment.number}
+              type="checkbox"
+              checked={
+                Boolean(
+                  newApartment.alternative_heating
+                )
+              }
               onChange={(event) =>
                 setNewApartment({
                   ...newApartment,
-                  number: event.target.value,
+                  alternative_heating:
+                    event.target.checked,
                 })
               }
-              style={inputStyle}
+              style={{
+                width: 18,
+                height: 18,
+              }}
             />
           </label>
 
-          <label style={labelStyle}>
-            {text.section}
-            <input
-              value={newApartment.section}
-              onChange={(event) =>
-                setNewApartment({
-                  ...newApartment,
-                  section: event.target.value,
-                })
-              }
-              style={inputStyle}
-            />
-          </label>
+          <label
+            style={{
+              ...labelStyle,
+              gridColumn:
+                "1 / -1",
+            }}
+          >
+            {text.notes}
 
-          <label style={labelStyle}>
-            {text.floor}
-            <input
-              type="number"
-              value={newApartment.floor}
+            <textarea
+              value={
+                newApartment.notes
+              }
               onChange={(event) =>
                 setNewApartment({
                   ...newApartment,
-                  floor: event.target.value,
+                  notes:
+                    event.target.value,
                 })
               }
-              style={inputStyle}
-            />
-          </label>
-
-          <label style={labelStyle}>
-            {text.livingAreaSquareMetres}
-            <input
-              type="number"
-              step="0.01"
-              value={newApartment.living_area}
-              onChange={(event) =>
-                setNewApartment({
-                  ...newApartment,
-                  living_area: event.target.value,
-                })
-              }
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                minHeight: 90,
+                resize:
+                  "vertical",
+              }}
             />
           </label>
 
           <button
             type="button"
-            onClick={createApartment}
-            style={primaryButtonStyle}
+            onClick={
+              createApartment
+            }
+            style={{
+              ...primaryButtonStyle,
+              gridColumn:
+                "1 / -1",
+            }}
           >
             {text.saveApartment}
           </button>
         </div>
       </Modal>
     </div>
+  );
+}
+
+function FormField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  step,
+  min,
+}) {
+  return (
+    <label
+      style={labelStyle}
+    >
+      {label}
+
+      <input
+        type={type}
+        step={step}
+        min={min}
+        value={value}
+        onChange={(event) =>
+          onChange(
+            event.target.value
+          )
+        }
+        style={inputStyle}
+      />
+    </label>
   );
 }
 
@@ -1101,47 +1473,55 @@ const panelSpacingStyle = {
   marginBottom: 12,
 };
 
-const summaryCardStyle = {
-  ...panelStyle,
-  display: "grid",
+
+
+
+
+
+
+const compactSummaryStyle = {
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
   gap: 12,
-  marginBottom: 12,
-  background: "var(--surface-soft)",
+  flexWrap: "wrap",
+  marginBottom: 8,
+  padding: "9px 12px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 10,
+  background:
+    "var(--surface-soft)",
+  textAlign: "left",
+  cursor: "pointer",
 };
 
-const metricStyle = {
-  padding: 10,
-  border: "1px solid var(--border)",
-  borderRadius: 9,
-  background: "var(--surface)",
+const compactSummaryMetaStyle = {
+  color:
+    "var(--text)",
+  fontSize: 10,
+  whiteSpace: "nowrap",
 };
 
-const metricLabelStyle = {
-  color: "var(--text)",
-  fontSize: 9,
-  fontWeight: 800,
-  textTransform: "uppercase",
-  letterSpacing: "0.06em",
-};
-
-const metricValueStyle = {
-  marginTop: 4,
-  color: "var(--text-h)",
-  fontSize: 17,
-  fontWeight: 800,
-  lineHeight: 1.1,
-};
-
-const summaryTitleStyle = {
-  color: "var(--text-h)",
-  fontSize: 16,
-  fontWeight: 800,
-};
-
-const summarySubtitleStyle = {
-  marginTop: 3,
-  color: "var(--text)",
+const selectedApartmentBarStyle = {
+  width: "100%",
+  display: "flex",
+  justifyContent:
+    "space-between",
+  alignItems: "center",
+  gap: 12,
+  marginBottom: 8,
+  padding: "9px 12px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 10,
+  background:
+    "var(--surface-soft)",
+  color:
+    "var(--text-h)",
   fontSize: 11,
+  textAlign: "left",
+  cursor: "pointer",
 };
 
 const subCardStyle = {
@@ -1359,6 +1739,8 @@ const notesStyle = {
 
 const modalGridStyle = {
   display: "grid",
+  gridTemplateColumns:
+    "repeat(2,minmax(0,1fr))",
   gap: 10,
 };
 
