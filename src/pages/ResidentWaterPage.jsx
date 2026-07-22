@@ -9,7 +9,15 @@ import MeterHistoryModal
 
 import useWater from "../hooks/useWater";
 
+import {
+  useTranslation,
+} from "../i18n";
+
 export default function ResidentWaterPage() {
+
+  const {
+    t,
+  } = useTranslation();
 
   const {
     waterMeters,
@@ -63,6 +71,36 @@ export default function ResidentWaterPage() {
       clearMeterHistory();
     };
 
+  const getDateLocale = () => {
+
+    const htmlLanguage =
+      String(
+        document
+          .documentElement
+          .lang || "en"
+      )
+        .trim()
+        .toLowerCase();
+
+    if (
+      htmlLanguage.startsWith(
+        "lv"
+      )
+    ) {
+      return "lv-LV";
+    }
+
+    if (
+      htmlLanguage.startsWith(
+        "ru"
+      )
+    ) {
+      return "ru-RU";
+    }
+
+    return "en-GB";
+  };
+
   const formatPeriodDateTime =
     (value) => {
 
@@ -82,7 +120,7 @@ export default function ResidentWaterPage() {
       }
 
       return date.toLocaleString(
-        "en-GB",
+        getDateLocale(),
         {
           timeZone:
             "Europe/Riga",
@@ -110,24 +148,32 @@ export default function ResidentWaterPage() {
       ?.period || null;
 
   let periodTitle =
-    "Water reading collection status";
+    t(
+      "water.resident.period.statusTitle"
+    );
 
   let periodMessage =
-    "Water reading collection period is not available.";
+    t(
+      "water.resident.period.unavailable"
+    );
 
   if (
     waterReportingPeriodLoading
   ) {
 
     periodMessage =
-      "Loading water reading collection period...";
+      t(
+        "water.resident.period.loading"
+      );
 
   } else if (
     waterReportingPeriodError
   ) {
 
     periodMessage =
-      "Water reading collection period could not be loaded.";
+      t(
+        "water.resident.period.loadFailed"
+      );
 
   } else if (
     periodState === "open" &&
@@ -135,12 +181,21 @@ export default function ResidentWaterPage() {
   ) {
 
     periodTitle =
-      "Water reading collection is open";
+      t(
+        "water.resident.period.openTitle"
+      );
 
     periodMessage =
-      `You can submit readings until ${formatPeriodDateTime(
-        period.collection_closes_at
-      )}.`;
+      t(
+        "water.resident.period.openUntil",
+        {
+          date:
+            formatPeriodDateTime(
+              period
+                .collection_closes_at
+            ),
+        }
+      );
 
   } else if (
     periodState === "scheduled" &&
@@ -148,12 +203,21 @@ export default function ResidentWaterPage() {
   ) {
 
     periodTitle =
-      "Water reading collection is closed";
+      t(
+        "water.resident.period.closedTitle"
+      );
 
     periodMessage =
-      `The next collection period opens on ${formatPeriodDateTime(
-        period.collection_opens_at
-      )}.`;
+      t(
+        "water.resident.period.opensOn",
+        {
+          date:
+            formatPeriodDateTime(
+              period
+                .collection_opens_at
+            ),
+        }
+      );
 
   } else if (
     [
@@ -166,12 +230,21 @@ export default function ResidentWaterPage() {
   ) {
 
     periodTitle =
-      "Water reading collection is closed";
+      t(
+        "water.resident.period.closedTitle"
+      );
 
     periodMessage =
-      `The last collection period closed on ${formatPeriodDateTime(
-        period.collection_closes_at
-      )}.`;
+      t(
+        "water.resident.period.closedOn",
+        {
+          date:
+            formatPeriodDateTime(
+              period
+                .collection_closes_at
+            ),
+        }
+      );
   }
 
   const metersByApartment =
@@ -233,7 +306,9 @@ export default function ResidentWaterPage() {
             margin: 0,
           }}
         >
-          Water Readings
+          {t(
+            "water.resident.title"
+          )}
         </h1>
 
         <p
@@ -244,8 +319,9 @@ export default function ResidentWaterPage() {
             lineHeight: 1.5,
           }}
         >
-          Submit the current values
-          shown on your water meters.
+          {t(
+            "water.resident.subtitle"
+          )}
         </p>
 
       </div>
@@ -302,7 +378,9 @@ export default function ResidentWaterPage() {
             color: "#6b7280",
           }}
         >
-          No water meters found.
+          {t(
+            "water.resident.noMeters"
+          )}
         </div>
 
       ) : (
@@ -355,7 +433,9 @@ export default function ResidentWaterPage() {
                       marginBottom: 4,
                     }}
                   >
-                    Apartment
+                    {t(
+                      "water.resident.apartment"
+                    )}
                   </div>
 
                   <h2
@@ -366,7 +446,9 @@ export default function ResidentWaterPage() {
                   >
                     {apartmentNumber ===
                     "Unknown"
-                      ? "Not assigned"
+                      ? t(
+                          "water.resident.notAssigned"
+                        )
                       : `#${apartmentNumber}`}
                   </h2>
 
@@ -382,11 +464,15 @@ export default function ResidentWaterPage() {
                     fontWeight: 600,
                   }}
                 >
-                  {meters.length}
-                  {" "}
-                  {meters.length === 1
-                    ? "meter"
-                    : "meters"}
+                  {t(
+                    meters.length === 1
+                      ? "water.resident.meterCount.one"
+                      : "water.resident.meterCount.other",
+                    {
+                      count:
+                        meters.length,
+                    }
+                  )}
                 </div>
 
               </div>
