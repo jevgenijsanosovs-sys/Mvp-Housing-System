@@ -263,10 +263,47 @@ export default function Sidebar({
         }),
   };
 
+  const topBlockStyle = {
+    flex: "0 0 auto",
+  };
+
+  const menuScrollStyle =
+    isMobile
+      ? {}
+      : {
+          flex: "1 1 auto",
+          minHeight: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
+          paddingRight: 4,
+          scrollbarGutter:
+            "stable",
+          overscrollBehavior:
+            "contain",
+        };
+
+  const bottomBlockStyle =
+    isMobile
+      ? {
+          marginTop:
+            "auto",
+        }
+      : {
+          flex: "0 0 auto",
+          marginTop: 0,
+          paddingTop: 2,
+        };
+
   return (
-    <div style={sidebarStyle}>
-      <div>
-        <h2 style={sidebarTitle}>
+    <div
+      style={sidebarStyle}
+    >
+      <div
+        style={topBlockStyle}
+      >
+        <h2
+          style={sidebarTitle}
+        >
           <div
             style={{
               fontSize: "0.8em",
@@ -280,7 +317,9 @@ export default function Sidebar({
           </div>
         </h2>
 
-        <div style={sidebarUser}>
+        <div
+          style={sidebarUser}
+        >
           {t("sidebar.user")}:{" "}
           {me?.user?.first_name}
           {" "}
@@ -288,49 +327,55 @@ export default function Sidebar({
         </div>
 
         {!mustChangePassword && (
-          <div style={modeBlock}>
-          {hasResident && (
-            <button
-              style={
-                mode === "resident"
-                  ? activeButton
-                  : menuButton
-              }
-              onClick={() =>
-                switchMode(
-                  "resident"
-                )
-              }
-            >
-              {t(
-                "sidebar.residentMode"
-              )}
-            </button>
-          )}
+          <div
+            style={modeBlock}
+          >
+            {hasResident && (
+              <button
+                style={
+                  mode === "resident"
+                    ? activeButton
+                    : menuButton
+                }
+                onClick={() =>
+                  switchMode(
+                    "resident"
+                  )
+                }
+              >
+                {t(
+                  "sidebar.residentMode"
+                )}
+              </button>
+            )}
 
-          {hasAdmin && (
-            <button
-              style={
-                mode === "admin"
-                  ? activeButton
-                  : menuButton
-              }
-              onClick={() =>
-                switchMode(
-                  "admin"
-                )
-              }
-            >
-              {t(
-                "sidebar.adminMode"
-              )}
-            </button>
-          )}
+            {hasAdmin && (
+              <button
+                style={
+                  mode === "admin"
+                    ? activeButton
+                    : menuButton
+                }
+                onClick={() =>
+                  switchMode(
+                    "admin"
+                  )
+                }
+              >
+                {t(
+                  "sidebar.adminMode"
+                )}
+              </button>
+            )}
           </div>
         )}
 
         <hr style={divider} />
+      </div>
 
+      <div
+        style={menuScrollStyle}
+      >
         {!mustChangePassword &&
           mode === "resident" && (
           <>
@@ -471,9 +516,7 @@ export default function Sidebar({
       </div>
 
       <div
-        style={{
-          marginTop: "auto",
-        }}
+        style={bottomBlockStyle}
       >
         <hr style={divider} />
 
@@ -481,7 +524,7 @@ export default function Sidebar({
           <LanguageSelector
             variant="sidebar"
             style={{
-              marginBottom: 14,
+              marginBottom: 10,
             }}
           />
         )}
