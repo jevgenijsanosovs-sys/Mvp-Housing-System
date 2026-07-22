@@ -14,10 +14,16 @@ export default function ResidentWaterPage() {
   const {
     waterMeters,
 
+    waterReportingPeriod,
+    waterReportingPeriodLoading,
+    waterReportingPeriodError,
+
     meterHistory,
     meterHistoryLoading,
 
     loadMyWater,
+    loadWaterReportingPeriod,
+
     loadMeterHistory,
     clearMeterHistory,
 
@@ -32,7 +38,10 @@ export default function ResidentWaterPage() {
 
   useEffect(() => {
 
-    loadMyWater();
+    Promise.all([
+      loadMyWater(),
+      loadWaterReportingPeriod(),
+    ]);
 
   }, []);
 
@@ -53,6 +62,117 @@ export default function ResidentWaterPage() {
 
       clearMeterHistory();
     };
+
+  const formatPeriodDateTime =
+    (value) => {
+
+      if (!value) {
+        return "—";
+      }
+
+      const date =
+        new Date(value);
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+        return value;
+      }
+
+      return date.toLocaleString(
+        "en-GB",
+        {
+          timeZone:
+            "Europe/Riga",
+
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+    };
+
+  const submissionAllowed =
+    waterReportingPeriod
+      ?.submission_allowed === true;
+
+  const periodState =
+    waterReportingPeriod
+      ?.state || "unavailable";
+
+  const period =
+    waterReportingPeriod
+      ?.period || null;
+
+  let periodTitle =
+    "Water reading collection status";
+
+  let periodMessage =
+    "Water reading collection period is not available.";
+
+  if (
+    waterReportingPeriodLoading
+  ) {
+
+    periodMessage =
+      "Loading water reading collection period...";
+
+  } else if (
+    waterReportingPeriodError
+  ) {
+
+    periodMessage =
+      "Water reading collection period could not be loaded.";
+
+  } else if (
+    periodState === "open" &&
+    period
+  ) {
+
+    periodTitle =
+      "Water reading collection is open";
+
+    periodMessage =
+      `You can submit readings until ${formatPeriodDateTime(
+        period.collection_closes_at
+      )}.`;
+
+  } else if (
+    periodState === "scheduled" &&
+    period
+  ) {
+
+    periodTitle =
+      "Water reading collection is closed";
+
+    periodMessage =
+      `The next collection period opens on ${formatPeriodDateTime(
+        period.collection_opens_at
+      )}.`;
+
+  } else if (
+    [
+      "closed",
+      "finalized",
+    ].includes(
+      periodState
+    ) &&
+    period
+  ) {
+
+    periodTitle =
+      "Water reading collection is closed";
+
+    periodMessage =
+      `The last collection period closed on ${formatPeriodDateTime(
+        period.collection_closes_at
+      )}.`;
+  }
 
   const metersByApartment =
     waterMeters.reduce(
@@ -104,7 +224,7 @@ export default function ResidentWaterPage() {
 
       <div
         style={{
-          marginBottom: 24,
+          marginBottom: 18,
         }}
       >
 
@@ -127,6 +247,46 @@ export default function ResidentWaterPage() {
           Submit the current values
           shown on your water meters.
         </p>
+
+      </div>
+
+      <div
+        style={{
+          marginBottom: 24,
+          padding: "14px 16px",
+          border:
+            submissionAllowed
+              ? "1px solid #86efac"
+              : "1px solid #d1d5db",
+          borderRadius: 14,
+          background:
+            submissionAllowed
+              ? "#f0fdf4"
+              : "#f9fafb",
+          color:
+            submissionAllowed
+              ? "#166534"
+              : "#4b5563",
+        }}
+      >
+
+        <div
+          style={{
+            fontWeight: 700,
+            marginBottom: 4,
+          }}
+        >
+          {periodTitle}
+        </div>
+
+        <div
+          style={{
+            fontSize: 14,
+            lineHeight: 1.5,
+          }}
+        >
+          {periodMessage}
+        </div>
 
       </div>
 
@@ -249,6 +409,9 @@ export default function ResidentWaterPage() {
                       }
                       onHistory={
                         handleOpenHistory
+                      }
+                      submissionDisabled={
+                        !submissionAllowed
                       }
                     />
 
