@@ -9,6 +9,18 @@ const water = {
       one: "{{count}} skaitītājs",
       other: "{{count}} skaitītāji",
     },
+
+    period: {
+      statusTitle: "Ūdens skaitītāju rādījumu iesniegšanas statuss",
+      openTitle: "Ūdens skaitītāju rādījumu iesniegšana ir atvērta",
+      closedTitle: "Ūdens skaitītāju rādījumu iesniegšana ir slēgta",
+      loading: "Ielādē ūdens skaitītāju rādījumu iesniegšanas periodu...",
+      loadFailed: "Neizdevās ielādēt ūdens skaitītāju rādījumu iesniegšanas periodu.",
+      unavailable: "Ūdens skaitītāju rādījumu iesniegšanas periods nav pieejams.",
+      openUntil: "Rādījumus var iesniegt līdz {{date}}.",
+      opensOn: "Nākamais rādījumu iesniegšanas periods sāksies {{date}}.",
+      closedOn: "Pēdējais rādījumu iesniegšanas periods beidzās {{date}}.",
+    },
   },
 
   card: {
