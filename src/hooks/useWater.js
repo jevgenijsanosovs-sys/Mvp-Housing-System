@@ -14,6 +14,25 @@ export default function useWater() {
     useState([]);
 
   // =====================================
+  // RESIDENT WATER REPORTING PERIOD
+  // =====================================
+
+  const [
+    waterReportingPeriod,
+    setWaterReportingPeriod
+  ] = useState(null);
+
+  const [
+    waterReportingPeriodLoading,
+    setWaterReportingPeriodLoading
+  ] = useState(false);
+
+  const [
+    waterReportingPeriodError,
+    setWaterReportingPeriodError
+  ] = useState("");
+
+  // =====================================
   // WATER METER HISTORY
   // =====================================
 
@@ -107,6 +126,106 @@ export default function useWater() {
   };
 
   // =====================================
+  // LOAD RESIDENT WATER REPORTING PERIOD
+  // =====================================
+
+  const loadWaterReportingPeriod =
+    async () => {
+
+      setWaterReportingPeriodLoading(
+        true
+      );
+
+      setWaterReportingPeriodError(
+        ""
+      );
+
+      try {
+
+        const d = await api(
+          "/api/water-reporting-period"
+        );
+
+        if (d?.error) {
+
+          const errorMessage =
+            d.error ||
+            "Water reporting period load failed";
+
+          setWaterReportingPeriodError(
+            errorMessage
+          );
+
+          setWaterReportingPeriod(
+            null
+          );
+
+          return null;
+        }
+
+        const periodData = {
+          ok:
+            d?.ok === true,
+
+          submission_allowed:
+            d?.submission_allowed ===
+            true,
+
+          state:
+            d?.state || "unavailable",
+
+          period:
+            d?.period || null,
+        };
+
+        setWaterReportingPeriod(
+          periodData
+        );
+
+        return periodData;
+
+      } catch (error) {
+
+        console.error(
+          "Load water reporting period failed:",
+          error
+        );
+
+        setWaterReportingPeriodError(
+          "Water reporting period load failed"
+        );
+
+        setWaterReportingPeriod(
+          null
+        );
+
+        return null;
+
+      } finally {
+
+        setWaterReportingPeriodLoading(
+          false
+        );
+      }
+    };
+
+  // =====================================
+  // CLEAR RESIDENT WATER REPORTING PERIOD
+  // =====================================
+
+  const clearWaterReportingPeriod =
+    () => {
+
+      setWaterReportingPeriod(
+        null
+      );
+
+      setWaterReportingPeriodError(
+        ""
+      );
+    };
+
+  // =====================================
   // LOAD WATER METER HISTORY
   // =====================================
 
@@ -176,21 +295,11 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // CLEAR WATER METER HISTORY
-  // =====================================
-
   const clearMeterHistory = () => {
-
     setMeterHistory(null);
   };
 
-  // =====================================
-  // LOAD ADMIN WATER
-  // =====================================
-
   const loadAdminWater = async () => {
-
     const d = await api(
       "/api/admin/water-readings"
     );
@@ -199,10 +308,6 @@ export default function useWater() {
       Array.isArray(d) ? d : []
     );
   };
-
-  // =====================================
-  // LOAD ADMIN WATER METERS
-  // =====================================
 
   const loadAdminWaterMeters =
     async () => {
@@ -217,10 +322,6 @@ export default function useWater() {
           : []
       );
     };
-
-  // =====================================
-  // LOAD CURRENT WATER REPORTING PERIOD
-  // =====================================
 
   const loadCurrentWaterReportingPeriod =
     async () => {
@@ -306,10 +407,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // CLEAR CURRENT WATER REPORTING PERIOD
-  // =====================================
-
   const clearCurrentWaterReportingPeriod =
     () => {
 
@@ -321,10 +418,6 @@ export default function useWater() {
         ""
       );
     };
-
-  // =====================================
-  // LOAD ADMIN MONTHLY REPORT
-  // =====================================
 
   const loadAdminMonthlyReport =
     async (
@@ -425,15 +518,11 @@ export default function useWater() {
               apartments_total: 0,
               apartments_submitted: 0,
               apartments_missing: 0,
-
               meters_total: 0,
               meters_submitted: 0,
               meters_missing: 0,
-
               meters_missing_previous: 0,
-
               meters_negative_consumption: 0,
-
               cold_consumption: 0,
               hot_consumption: 0,
             },
@@ -484,10 +573,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // CLEAR ADMIN MONTHLY REPORT
-  // =====================================
-
   const clearAdminMonthlyReport =
     () => {
 
@@ -497,10 +582,6 @@ export default function useWater() {
         ""
       );
     };
-
-  // =====================================
-  // PARSE READING
-  // =====================================
 
   const parseReadingValue = (
     value
@@ -540,10 +621,6 @@ export default function useWater() {
     );
   };
 
-  // =====================================
-  // SUBMIT READING
-  // =====================================
-
   const submitReading = async (
     meterId,
     value
@@ -554,7 +631,6 @@ export default function useWater() {
     ) {
 
       alert("Enter value");
-
       return false;
     }
 
@@ -578,10 +654,8 @@ export default function useWater() {
         "/api/submit-water-reading",
         {
           method: "POST",
-
           body: JSON.stringify({
             meter_id: meterId,
-
             reading_value:
               storedReadingValue,
           }),
@@ -590,21 +664,20 @@ export default function useWater() {
 
       if (r.ok) {
 
-        await loadMyWater();
+        await Promise.all([
+          loadMyWater(),
+          loadWaterReportingPeriod(),
+        ]);
 
         alert("Submitted");
-
         return true;
       }
 
       const messages = {
-
         water_collection_period_closed:
           "Water reading collection is currently closed.",
-
         reading_already_submitted_for_period:
           "A reading has already been submitted for this reporting period.",
-
         meter_not_allowed:
           "You cannot submit a reading for this meter.",
       };
@@ -625,14 +698,9 @@ export default function useWater() {
       );
 
       alert("Submit failed");
-
       return false;
     }
   };
-
-  // =====================================
-  // ADMIN SUBMIT READING
-  // =====================================
 
   const submitAdminReading =
     async (
@@ -644,28 +712,22 @@ export default function useWater() {
     ) => {
 
       if (!meterId) {
-
         alert(
           "Water meter not selected"
         );
-
         return false;
       }
 
       const storedReadingValue =
-        parseReadingValue(
-          value
-        );
+        parseReadingValue(value);
 
       if (
         storedReadingValue ===
         null
       ) {
-
         alert(
           "Enter the reading in m³ with up to 3 decimal places"
         );
-
         return false;
       }
 
@@ -693,11 +755,9 @@ export default function useWater() {
           normalizedSource
         )
       ) {
-
         alert(
           "Select a valid reading source"
         );
-
         return false;
       }
 
@@ -707,11 +767,9 @@ export default function useWater() {
         ).trim();
 
       if (!normalizedNote) {
-
         alert(
           "Enter a source note"
         );
-
         return false;
       }
 
@@ -721,17 +779,13 @@ export default function useWater() {
           "/api/admin/submit-water-reading",
           {
             method: "POST",
-
             body: JSON.stringify({
               meter_id:
                 meterId,
-
               reading_value:
                 storedReadingValue,
-
               submission_source:
                 normalizedSource,
-
               source_note:
                 normalizedNote,
             }),
@@ -756,7 +810,6 @@ export default function useWater() {
               await loadAdminMonthlyReport(
                 reportPeriod
                   .period_year,
-
                 reportPeriod
                   .period_month
               );
@@ -768,7 +821,6 @@ export default function useWater() {
           if (
             !suppressSuccessAlert
           ) {
-
             alert(
               "Reading submitted"
             );
@@ -778,28 +830,20 @@ export default function useWater() {
         }
 
         const messages = {
-
           forbidden:
             "Administrator access required.",
-
           invalid_meter_id:
             "Invalid water meter.",
-
           invalid_reading_value:
             "Invalid water reading.",
-
           invalid_submission_source:
             "Invalid reading source.",
-
           missing_source_note:
             "Enter a source note.",
-
           meter_not_found_or_inactive:
             "Water meter not found or inactive.",
-
           water_collection_period_closed:
             "Water reading collection is currently closed.",
-
           reading_already_submitted_for_period:
             "A reading has already been submitted for this meter and reporting period.",
         };
@@ -827,10 +871,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // CORRECT READING
-  // =====================================
-
   const correctReading = async (
     readingId,
     value,
@@ -838,11 +878,9 @@ export default function useWater() {
   ) => {
 
     if (!readingId) {
-
       alert(
         "Reading not selected"
       );
-
       return false;
     }
 
@@ -852,11 +890,9 @@ export default function useWater() {
     if (
       storedReadingValue === null
     ) {
-
       alert(
         "Enter the corrected reading in m³ with up to 3 decimal places"
       );
-
       return false;
     }
 
@@ -865,11 +901,9 @@ export default function useWater() {
         .trim();
 
     if (!correctionReason) {
-
       alert(
         "Enter correction reason"
       );
-
       return false;
     }
 
@@ -879,14 +913,11 @@ export default function useWater() {
         "/api/correct-water-reading",
         {
           method: "POST",
-
           body: JSON.stringify({
             reading_id:
               readingId,
-
             reading_value:
               storedReadingValue,
-
             reason:
               correctionReason,
           }),
@@ -899,7 +930,6 @@ export default function useWater() {
           meterHistory?.meter?.id;
 
         if (meterId) {
-
           await loadMeterHistory(
             meterId
           );
@@ -915,22 +945,16 @@ export default function useWater() {
       }
 
       const messages = {
-
         reading_not_active:
           "This reading has already been replaced.",
-
         only_latest_reading_can_be_corrected:
           "Only the latest reading can be corrected.",
-
         reading_value_unchanged:
           "The corrected value is the same as the current value.",
-
         reading_not_allowed:
           "You cannot correct this reading.",
-
         reading_period_not_assigned:
           "This reading is not assigned to a reporting period.",
-
         water_collection_period_closed:
           "The reporting period is closed. This reading can no longer be corrected.",
       };
@@ -957,10 +981,6 @@ export default function useWater() {
       return false;
     }
   };
-
-  // =====================================
-  // ADD WATER METER
-  // =====================================
 
   const addWaterMeter =
     async ({
@@ -1000,11 +1020,9 @@ export default function useWater() {
         ) ||
         normalizedApartmentId <= 0
       ) {
-
         alert(
           "Select an apartment"
         );
-
         return false;
       }
 
@@ -1016,20 +1034,16 @@ export default function useWater() {
           normalizedType
         )
       ) {
-
         alert(
           "Select a water meter type"
         );
-
         return false;
       }
 
       if (!normalizedSerialNumber) {
-
         alert(
           "Enter serial number"
         );
-
         return false;
       }
 
@@ -1039,40 +1053,31 @@ export default function useWater() {
           "/api/admin/water-meters",
           {
             method: "POST",
-
             body: JSON.stringify({
               apartment_id:
                 normalizedApartmentId,
-
               apartment_riser_id:
                 apartmentRiserId
                   ? Number(
                       apartmentRiserId
                     )
                   : null,
-
               type:
                 normalizedType,
-
               serial_number:
                 normalizedSerialNumber,
-
               manufacturer:
                 String(
                   manufacturer || ""
                 ).trim() || null,
-
               model:
                 String(
                   model || ""
                 ).trim() || null,
-
               installed_at:
                 installedAt || null,
-
               initial_reading:
                 initialReading,
-
               initial_reading_date:
                 initialReadingDate || null,
             }),
@@ -1082,14 +1087,12 @@ export default function useWater() {
         if (result?.ok) {
 
           if (!suppressReload) {
-
             await loadAdminWaterMeters();
           }
 
           if (
             !suppressSuccessAlert
           ) {
-
             alert(
               "Water meter added"
             );
@@ -1120,10 +1123,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // LOAD APARTMENT RISERS
-  // =====================================
-
   const loadApartmentRisers =
     async (
       apartmentId
@@ -1150,12 +1149,10 @@ export default function useWater() {
         );
 
         if (result?.error) {
-
           alert(
             result.error ||
             "Risers load failed"
           );
-
           return [];
         }
 
@@ -1180,10 +1177,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // UPLOAD CALIBRATION DOCUMENT
-  // =====================================
-
   const uploadCalibrationDocument =
     async ({
       meterId,
@@ -1202,29 +1195,23 @@ export default function useWater() {
       } = options;
 
       if (!meterId) {
-
         alert(
           "Water meter not selected"
         );
-
         return false;
       }
 
       if (!calibrationDate) {
-
         alert(
           "Select calibration date"
         );
-
         return false;
       }
 
       if (!certificate) {
-
         alert(
           "Select calibration document"
         );
-
         return false;
       }
 
@@ -1287,14 +1274,12 @@ export default function useWater() {
         if (result?.ok) {
 
           if (!suppressReload) {
-
             await loadAdminWaterMeters();
           }
 
           if (
             !suppressSuccessAlert
           ) {
-
             alert(
               "Calibration document uploaded"
             );
@@ -1304,25 +1289,18 @@ export default function useWater() {
         }
 
         const messages = {
-
           invalid_calibration_date:
             "Invalid calibration date.",
-
           invalid_validity_months:
             "Invalid calibration validity period.",
-
           certificate_file_required:
             "Select calibration document.",
-
           certificate_file_too_large:
             "Calibration document is too large. Maximum size is 10 MB.",
-
           invalid_certificate_file_type:
             "Supported formats: PDF, eDoc and ASiC-E.",
-
           water_meter_not_found:
             "Water meter not found.",
-
           water_certificate_storage_unavailable:
             "Calibration document storage is unavailable.",
         };
@@ -1352,10 +1330,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // LOAD WATER METER CALIBRATIONS
-  // =====================================
-
   const loadWaterMeterCalibrations =
     async (
       meterId
@@ -1376,19 +1350,16 @@ export default function useWater() {
         );
 
         if (result?.error) {
-
           alert(
             result.error ||
             "Calibration history load failed"
           );
-
           return null;
         }
 
         const data = {
           meter:
             result?.meter || null,
-
           calibrations:
             Array.isArray(
               result?.calibrations
@@ -1426,13 +1397,8 @@ export default function useWater() {
 
   const clearWaterMeterCalibrations =
     () => {
-
       setMeterCalibrations(null);
     };
-
-  // =====================================
-  // OPEN CALIBRATION DOCUMENT
-  // =====================================
 
   const openCalibrationDocument =
     async (
@@ -1517,7 +1483,6 @@ export default function useWater() {
 
         window.setTimeout(
           () => {
-
             URL.revokeObjectURL(
               objectUrl
             );
@@ -1542,10 +1507,6 @@ export default function useWater() {
       }
     };
 
-  // =====================================
-  // DEACTIVATE WATER METER
-  // =====================================
-
   const deactivateMeter =
     async (
       meterId,
@@ -1564,7 +1525,6 @@ export default function useWater() {
           "/api/admin/deactivate-water-meter",
           {
             method: "POST",
-
             body: JSON.stringify({
               meter_id: meterId,
               reason,
@@ -1575,14 +1535,12 @@ export default function useWater() {
         if (r?.ok) {
 
           if (!suppressReload) {
-
             await loadAdminWaterMeters();
           }
 
           if (
             !suppressSuccessAlert
           ) {
-
             alert(
               "Water meter deactivated"
             );
@@ -1617,6 +1575,10 @@ export default function useWater() {
 
     waterMeters,
 
+    waterReportingPeriod,
+    waterReportingPeriodLoading,
+    waterReportingPeriodError,
+
     meterHistory,
     meterHistoryLoading,
 
@@ -1635,6 +1597,10 @@ export default function useWater() {
     currentWaterReportingPeriodError,
 
     loadMyWater,
+
+    loadWaterReportingPeriod,
+    clearWaterReportingPeriod,
+
     loadMeterHistory,
     clearMeterHistory,
 
