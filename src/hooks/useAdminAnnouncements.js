@@ -174,10 +174,11 @@ export default function useAdminAnnouncements() {
           );
 
         if (publishImmediately) {
-          ensureSuccessfulResult(
-            await publishAnnouncement(id),
-            "Announcement publish failed."
-          );
+          result =
+            ensureSuccessfulResult(
+              await publishAnnouncement(id),
+              "Announcement publish failed."
+            );
         }
       } else {
         result =
@@ -195,7 +196,14 @@ export default function useAdminAnnouncements() {
 
       await loadAnnouncements();
 
-      return result?.announcement || null;
+      return {
+        announcement:
+          result?.announcement ||
+          null,
+        pushDelivery:
+          result?.push_delivery ||
+          null,
+      };
     } catch (saveError) {
       console.error(
         "SAVE ANNOUNCEMENT ERROR:",
@@ -220,14 +228,24 @@ export default function useAdminAnnouncements() {
     setError("");
 
     try {
-      ensureSuccessfulResult(
-        await publishAnnouncement(
-          announcementId
-        ),
-        "Announcement publish failed."
-      );
+      const result =
+        ensureSuccessfulResult(
+          await publishAnnouncement(
+            announcementId
+          ),
+          "Announcement publish failed."
+        );
 
       await loadAnnouncements();
+
+      return {
+        announcement:
+          result?.announcement ||
+          null,
+        pushDelivery:
+          result?.push_delivery ||
+          null,
+      };
     } catch (publishError) {
       console.error(
         "PUBLISH ANNOUNCEMENT ERROR:",
