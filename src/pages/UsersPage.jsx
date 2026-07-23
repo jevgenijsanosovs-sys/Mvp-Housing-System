@@ -5,7 +5,9 @@ import {
 } from "react";
 
 import {
+  useLocation,
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 
 import {
@@ -25,17 +27,19 @@ import {
 const TEXT = {
   en: {
     title: "Users",
-    search: "Search by name, personal code, email, phone or apartment",
+    search: "Search by name, email, phone or apartment",
     add: "+ Add User",
     loading: "Loading users...",
     all: "All",
     active: "Active",
     inactive: "Inactive",
     name: "Name",
-    personalCode: "Personal code",
     email: "Email",
     phone: "Phone",
     apartments: "Apartments",
+    apartmentSingular: "Apartment",
+    apartmentPlural: "Apartments",
+    backToApartment: "Back to apartment",
     status: "Status",
     actions: "Actions",
     edit: "Edit",
@@ -46,6 +50,7 @@ const TEXT = {
     editTitle: "Edit User",
     firstName: "First name",
     lastName: "Last name",
+    personalCode: "Personal code",
     password: "Temporary password",
     create: "Create User",
     save: "Save changes",
@@ -70,17 +75,19 @@ const TEXT = {
   },
   lv: {
     title: "Lietotāji",
-    search: "Meklēt pēc vārda, personas koda, e-pasta, tālruņa vai dzīvokļa",
+    search: "Meklēt pēc vārda, e-pasta, tālruņa vai dzīvokļa",
     add: "+ Pievienot lietotāju",
     loading: "Notiek lietotāju ielāde...",
     all: "Visi",
     active: "Aktīvs",
     inactive: "Neaktīvs",
     name: "Vārds",
-    personalCode: "Personas kods",
     email: "E-pasts",
     phone: "Tālrunis",
     apartments: "Dzīvokļi",
+    apartmentSingular: "Dzīvoklis",
+    apartmentPlural: "Dzīvokļi",
+    backToApartment: "Atpakaļ uz dzīvokli",
     status: "Statuss",
     actions: "Darbības",
     edit: "Rediģēt",
@@ -91,6 +98,7 @@ const TEXT = {
     editTitle: "Rediģēt lietotāju",
     firstName: "Vārds",
     lastName: "Uzvārds",
+    personalCode: "Personas kods",
     password: "Pagaidu parole",
     create: "Izveidot lietotāju",
     save: "Saglabāt izmaiņas",
@@ -115,17 +123,19 @@ const TEXT = {
   },
   ru: {
     title: "Пользователи",
-    search: "Поиск по имени, персональному коду, email, телефону или квартире",
+    search: "Поиск по имени, email, телефону или квартире",
     add: "+ Добавить пользователя",
     loading: "Загрузка пользователей...",
     all: "Все",
     active: "Активный",
     inactive: "Неактивный",
     name: "Имя",
-    personalCode: "Персональный код",
     email: "Email",
     phone: "Телефон",
     apartments: "Квартиры",
+    apartmentSingular: "Квартира",
+    apartmentPlural: "Квартиры",
+    backToApartment: "Вернуться к квартире",
     status: "Статус",
     actions: "Действия",
     edit: "Редактировать",
@@ -136,6 +146,7 @@ const TEXT = {
     editTitle: "Редактировать пользователя",
     firstName: "Имя",
     lastName: "Фамилия",
+    personalCode: "Персональный код",
     password: "Временный пароль",
     create: "Создать пользователя",
     save: "Сохранить изменения",
@@ -163,40 +174,67 @@ const TEXT = {
 function ApartmentChips({
   value,
   onOpen,
+  singularLabel,
+  pluralLabel,
+  disabled = false,
 }) {
-  const apartments =
-    String(
-      value || ""
-    )
-      .split(",")
-      .map(
-        (item) =>
-          item.trim()
-      )
-      .filter(Boolean);
+  const apartments = [
+    ...new Set(
+      String(value || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    ),
+  ];
+
+  if (apartments.length === 0) {
+    return null;
+  }
 
   return (
     <div
       style={{
         display: "flex",
+        alignItems: "center",
         flexWrap: "wrap",
         gap: 5,
       }}
     >
-      {apartments.map(
-        (number) => (
-          <button
-            type="button"
-            key={number}
-            onClick={() =>
-              onOpen(number)
+      <span
+        style={{
+          color: "var(--text)",
+          fontSize: 10,
+          fontWeight: 700,
+        }}
+      >
+        {apartments.length === 1
+          ? singularLabel
+          : pluralLabel}
+      </span>
+
+      {apartments.map((number) => (
+        <button
+          type="button"
+          key={number}
+          disabled={disabled}
+          onClick={() => {
+            if (!disabled) {
+              onOpen(number);
             }
-            style={chipStyle}
-          >
-            #{number}
-          </button>
-        )
-      )}
+          }}
+          style={{
+            ...chipStyle,
+            cursor: disabled
+              ? "default"
+              : "pointer",
+            opacity: disabled
+              ? 0.72
+              : 1,
+          }}
+        >
+          #{number}
+        </button>
+      ))}
     </div>
   );
 }
@@ -233,6 +271,13 @@ export default function UsersPage() {
   const navigate =
     useNavigate();
 
+  const location =
+    useLocation();
+
+  const [
+    searchParams,
+  ] = useSearchParams();
+
   const {
     language,
   } = useTranslation();
@@ -240,6 +285,18 @@ export default function UsersPage() {
   const text =
     TEXT[language] ||
     TEXT.en;
+
+  const crossNavigation =
+    location.state
+      ?.crossNavigation;
+
+  const openedFromApartments =
+    crossNavigation
+      ?.origin ===
+      "apartments";
+
+  const requestedUserId =
+    searchParams.get("user");
 
   const [
     search,
@@ -299,6 +356,31 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    if (
+      !requestedUserId ||
+      users.length === 0
+    ) {
+      return;
+    }
+
+    const requestedUser =
+      users.find(
+        (user) =>
+          String(user.id) ===
+          String(requestedUserId)
+      );
+
+    if (requestedUser) {
+      setSelectedUser(
+        requestedUser
+      );
+    }
+  }, [
+    requestedUserId,
+    users,
+  ]);
+
   const filteredUsers =
     useMemo(() => {
       const query =
@@ -336,7 +418,6 @@ export default function UsersPage() {
           return [
             user.first_name,
             user.last_name,
-            user.personal_code,
             user.email,
             user.phone,
             user.owner_apartments,
@@ -369,8 +450,34 @@ export default function UsersPage() {
 
   const openApartment =
     (number) => {
+      if (
+        openedFromApartments
+      ) {
+        return;
+      }
+
       navigate(
-        `/apartments?number=${number}`
+        `/apartments?number=${number}`,
+        {
+          state: {
+            crossNavigation: {
+              origin: "users",
+              returnTo: "/users",
+            },
+          },
+        }
+      );
+    };
+
+  const returnToApartment =
+    () => {
+      navigate(
+        crossNavigation
+          ?.returnTo ||
+          "/apartments",
+        {
+          replace: true,
+        }
       );
     };
 
@@ -441,7 +548,7 @@ export default function UsersPage() {
 
           .users-table {
             width: 100%;
-            min-width: 1050px;
+            min-width: 920px;
             border-collapse: collapse;
           }
 
@@ -486,6 +593,21 @@ export default function UsersPage() {
           }
         `}
       </style>
+
+      {openedFromApartments && (
+        <button
+          type="button"
+          onClick={
+            returnToApartment
+          }
+          style={{
+            ...smallButtonStyle,
+            marginBottom: 10,
+          }}
+        >
+          ← {text.backToApartment}
+        </button>
+      )}
 
       <header
         className="users-header"
@@ -605,7 +727,6 @@ export default function UsersPage() {
             <tr>
               <th>ID</th>
               <th>{text.name}</th>
-              <th>{text.personalCode}</th>
               <th>{text.email}</th>
               <th>{text.phone}</th>
               <th>{text.apartments}</th>
@@ -634,13 +755,7 @@ export default function UsersPage() {
                       {user.last_name}
                     </button>
                   </td>
-
-                  <td>
-                    {user.personal_code ||
-                      "—"}
-                  </td>
-
-                  <td>
+<td>
                     <a
                       href={`mailto:${user.email}`}
                     >
@@ -670,6 +785,15 @@ export default function UsersPage() {
                         .join(",")}
                       onOpen={
                         openApartment
+                      }
+                      singularLabel={
+                        text.apartmentSingular
+                      }
+                      pluralLabel={
+                        text.apartmentPlural
+                      }
+                      disabled={
+                        openedFromApartments
                       }
                     />
                   </td>
@@ -782,16 +906,7 @@ export default function UsersPage() {
                     : text.inactive}
                 </span>
               </div>
-
-              <div
-                style={mobileMetaStyle}
-              >
-                {text.personalCode}:{" "}
-                {user.personal_code ||
-                  "—"}
-              </div>
-
-              <div
+<div
                 style={mobileMetaStyle}
               >
                 {user.email}
@@ -812,6 +927,15 @@ export default function UsersPage() {
                   .join(",")}
                 onOpen={
                   openApartment
+                }
+                singularLabel={
+                  text.apartmentSingular
+                }
+                pluralLabel={
+                  text.apartmentPlural
+                }
+                disabled={
+                  openedFromApartments
                 }
               />
 
@@ -912,7 +1036,8 @@ export default function UsersPage() {
               text.personalCode
             }
             value={
-              newUser.personal_code
+              newUser.personal_code ||
+              ""
             }
             onChange={(value) =>
               setNewUser({
@@ -922,8 +1047,7 @@ export default function UsersPage() {
               })
             }
           />
-
-          <Field
+<Field
             label={text.phone}
             value={
               newUser.phone
@@ -1041,7 +1165,8 @@ export default function UsersPage() {
                 text.personalCode
               }
               value={
-                editingUser.personal_code
+                editingUser.personal_code ||
+                ""
               }
               onChange={(value) =>
                 setEditingUser({
@@ -1051,8 +1176,7 @@ export default function UsersPage() {
                 })
               }
             />
-
-            <Field
+<Field
               label={text.phone}
               value={
                 editingUser.phone
@@ -1176,17 +1300,7 @@ export default function UsersPage() {
               label={text.name}
               value={`${selectedUser.first_name} ${selectedUser.last_name}`}
             />
-
-            <InfoRow
-              label={
-                text.personalCode
-              }
-              value={
-                selectedUser.personal_code
-              }
-            />
-
-            <InfoRow
+<InfoRow
               label={text.email}
               value={
                 selectedUser.email
@@ -1398,7 +1512,11 @@ function InfoRow({
       </strong>
 
       <span>
-        {value || "—"}
+        {value === null ||
+        value === undefined ||
+        value === ""
+          ? "—"
+          : value}
       </span>
     </div>
   );
