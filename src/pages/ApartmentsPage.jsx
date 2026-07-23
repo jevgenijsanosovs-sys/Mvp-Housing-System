@@ -5,6 +5,8 @@ import {
 } from "react";
 
 import {
+  useLocation,
+  useNavigate,
   useSearchParams,
 } from "react-router-dom";
 
@@ -68,6 +70,7 @@ const TEXT = {
     hotWaterRiserCount: "Hot water riser count",
     levelCount: "Level count",
     change: "Change",
+    backToUsers: "Back to Users",
   },
 
   lv: {
@@ -118,6 +121,7 @@ const TEXT = {
     hotWaterRiserCount: "Karstā ūdens stāvvadu skaits",
     levelCount: "Līmeņu skaits",
     change: "Mainīt",
+    backToUsers: "Atpakaļ uz lietotājiem",
   },
 
   ru: {
@@ -168,6 +172,7 @@ const TEXT = {
     hotWaterRiserCount: "Количество стояков горячей воды",
     levelCount: "Количество уровней",
     change: "Изменить",
+    backToUsers: "Вернуться к пользователям",
   },
 };
 
@@ -355,6 +360,8 @@ function PeopleList({
   title,
   people,
   emptyText,
+  onOpenUser,
+  navigationDisabled = false,
 }) {
   return (
     <section style={subCardStyle}>
@@ -374,33 +381,74 @@ function PeopleList({
         </div>
       ) : (
         <div style={peopleGridStyle}>
-          {people.map((person) => (
-            <div
-              key={person.id}
-              style={personRowStyle}
-            >
-              <div style={{ minWidth: 0 }}>
-                <div style={personNameStyle}>
-                  {[
-                    person.first_name,
-                    person.last_name,
-                  ]
-                    .filter(Boolean)
-                    .join(" ") ||
-                    person.email ||
-                    "—"}
+          {people.map((person) => {
+            const displayName =
+              [
+                person.first_name,
+                person.last_name,
+              ]
+                .filter(Boolean)
+                .join(" ") ||
+              person.email ||
+              "—";
+
+            return (
+              <div
+                key={person.id}
+                style={personRowStyle}
+              >
+                <div style={{ minWidth: 0 }}>
+                  {navigationDisabled ? (
+                    <div style={personNameStyle}>
+                      {displayName}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onOpenUser(person.id)
+                      }
+                      style={{
+                        ...personNameStyle,
+                        padding: 0,
+                        border: "none",
+                        background: "none",
+                        color: "#2563eb",
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      {displayName}
+                    </button>
+                  )}
+
+                  <div style={personMetaStyle}>
+                    {person.email ? (
+                      <a
+                        href={`mailto:${person.email}`}
+                      >
+                        {person.email}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </div>
                 </div>
 
-                <div style={personMetaStyle}>
-                  {person.email || "—"}
+                <div style={personPhoneStyle}>
+                  {person.phone ? (
+                    <a
+                      href={`tel:${person.phone}`}
+                    >
+                      {person.phone}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
                 </div>
               </div>
-
-              <div style={personPhoneStyle}>
-                {person.phone || "—"}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
@@ -424,6 +472,12 @@ function SectionHeader({ title, subtitle }) {
 }
 
 export default function ApartmentsPage() {
+  const navigate =
+    useNavigate();
+
+  const location =
+    useLocation();
+
   const [searchParams] =
     useSearchParams();
 
@@ -440,6 +494,14 @@ export default function ApartmentsPage() {
 
   const apartmentNumber =
     searchParams.get("number");
+
+  const crossNavigation =
+    location.state
+      ?.crossNavigation;
+
+  const openedFromUsers =
+    crossNavigation
+      ?.origin === "users";
 
   const {
     apartments,
@@ -655,6 +717,41 @@ export default function ApartmentsPage() {
     setSelectionStep("details");
   };
 
+  const openUser =
+    (userId) => {
+      if (
+        openedFromUsers ||
+        !selectedApartment
+      ) {
+        return;
+      }
+
+      navigate(
+        `/users?user=${userId}`,
+        {
+          state: {
+            crossNavigation: {
+              origin: "apartments",
+              returnTo:
+                `/apartments?number=${selectedApartment.number}`,
+            },
+          },
+        }
+      );
+    };
+
+  const returnToUsers =
+    () => {
+      navigate(
+        crossNavigation
+          ?.returnTo ||
+          "/users",
+        {
+          replace: true,
+        }
+      );
+    };
+
   return (
     <div className="apartments-page">
       <style>
@@ -703,6 +800,21 @@ export default function ApartmentsPage() {
           }
         `}
       </style>
+
+      {openedFromUsers && (
+        <button
+          type="button"
+          onClick={
+            returnToUsers
+          }
+          style={{
+            ...secondaryButtonStyle,
+            marginBottom: 10,
+          }}
+        >
+          ← {text.backToUsers}
+        </button>
+      )}
 
       <div
         className="apartments-page-header"
@@ -1121,6 +1233,12 @@ export default function ApartmentsPage() {
                 text.noRecords
               }
               people={selectedApartment.owners || []}
+              onOpenUser={
+                openUser
+              }
+              navigationDisabled={
+                openedFromUsers
+              }
             />
 
             <PeopleList
@@ -1129,6 +1247,12 @@ export default function ApartmentsPage() {
                 text.noRecords
               }
               people={selectedApartment.residents || []}
+              onOpenUser={
+                openUser
+              }
+              navigationDisabled={
+                openedFromUsers
+              }
             />
           </div>
 
@@ -1658,6 +1782,20 @@ const primaryButtonStyle = {
   color: "#ffffff",
   fontSize: 11,
   fontWeight: 800,
+  cursor: "pointer",
+};
+
+const secondaryButtonStyle = {
+  minHeight: 36,
+  padding: "8px 12px",
+  border:
+    "1px solid var(--border)",
+  borderRadius: 8,
+  background:
+    "var(--surface)",
+  color:
+    "var(--text-h)",
+  fontWeight: 700,
   cursor: "pointer",
 };
 
