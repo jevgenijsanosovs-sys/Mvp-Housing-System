@@ -842,17 +842,6 @@ export default function UsersPage() {
                         {text.assign}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setStatusUser(
-                            user
-                          )
-                        }
-                        style={secondarySmallButtonStyle}
-                      >
-                        {text.changeStatus}
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -906,16 +895,32 @@ export default function UsersPage() {
                     : text.inactive}
                 </span>
               </div>
-<div
+              <div
                 style={mobileMetaStyle}
               >
-                {user.email}
+                {user.email ? (
+                  <a
+                    href={`mailto:${user.email}`}
+                  >
+                    {user.email}
+                  </a>
+                ) : (
+                  "—"
+                )}
               </div>
 
               <div
                 style={mobileMetaStyle}
               >
-                {user.phone || "—"}
+                {user.phone ? (
+                  <a
+                    href={`tel:${user.phone}`}
+                  >
+                    {user.phone}
+                  </a>
+                ) : (
+                  "—"
+                )}
               </div>
 
               <ApartmentChips
@@ -969,17 +974,6 @@ export default function UsersPage() {
                   {text.assign}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setStatusUser(
-                      user
-                    )
-                  }
-                  style={secondarySmallButtonStyle}
-                >
-                  {text.changeStatus}
-                </button>
               </div>
             </article>
           )
@@ -1300,17 +1294,33 @@ export default function UsersPage() {
               label={text.name}
               value={`${selectedUser.first_name} ${selectedUser.last_name}`}
             />
-<InfoRow
+            <InfoRow
               label={text.email}
               value={
-                selectedUser.email
+                selectedUser.email ? (
+                  <a
+                    href={`mailto:${selectedUser.email}`}
+                  >
+                    {selectedUser.email}
+                  </a>
+                ) : (
+                  "—"
+                )
               }
             />
 
             <InfoRow
               label={text.phone}
               value={
-                selectedUser.phone
+                selectedUser.phone ? (
+                  <a
+                    href={`tel:${selectedUser.phone}`}
+                  >
+                    {selectedUser.phone}
+                  </a>
+                ) : (
+                  "—"
+                )
               }
             />
 
@@ -1324,6 +1334,25 @@ export default function UsersPage() {
                   : text.inactive
               }
             />
+
+            <button
+              type="button"
+              onClick={() => {
+                setStatusUser(
+                  selectedUser
+                );
+                setSelectedUser(
+                  null
+                );
+              }}
+              style={{
+                ...secondarySmallButtonStyle,
+                width: "100%",
+                marginTop: 6,
+              }}
+            >
+              {text.changeStatus}
+            </button>
           </div>
         )}
       </Modal>
